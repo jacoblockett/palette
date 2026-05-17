@@ -1,4 +1,5 @@
 import { createPalette } from "../src/index.js"
+import { contrastRatio } from "../src/color/contrast.js"
 
 const palette = createPalette({
 	mode: "light",
@@ -132,6 +133,39 @@ style.textContent = `
 
 document.head.append(style)
 
+function pickDemoTextColor(background, mode) {
+	const candidates = [
+		mode.app.fg,
+		mode.app.mutedFg,
+		mode.app.subtleFg,
+		mode.app.bg,
+		mode.surfaces.base.fg,
+		mode.surfaces.base.bg,
+		mode.surfaces.raised.fg,
+		mode.surfaces.raised.bg
+	].filter((candidate, index, values) => candidate && values.indexOf(candidate) === index)
+
+	let bestCandidate = candidates[0]
+	let bestContrast = contrastRatio(bestCandidate, background)
+
+	for (const candidate of candidates.slice(1)) {
+		const candidateContrast = contrastRatio(candidate, background)
+
+		if (candidateContrast > bestContrast) {
+			bestCandidate = candidate
+			bestContrast = candidateContrast
+		}
+	}
+
+	return bestCandidate
+}
+
+function renderSwatch(label, value, mode) {
+	const textColor = pickDemoTextColor(value, mode)
+
+	return `<article class="swatch" style="background:${value};color:${textColor}"><strong>${label}</strong><span>${value}</span></article>`
+}
+
 let html = '<div class="demo-shell"><div class="mode-grid">'
 
 for (const [label, mode] of [
@@ -145,7 +179,7 @@ for (const [label, mode] of [
 	html += "<h2>App</h2>"
 	html += '<div class="swatch-grid">'
 	for (const [tokenName, value] of Object.entries(mode.app)) {
-		html += `<article class="swatch" style="background:${value};color:${mode.app.fg}"><strong>${tokenName}</strong><span>${value}</span></article>`
+		html += renderSwatch(tokenName, value, mode)
 	}
 	html += "</div></section>"
 
@@ -153,7 +187,7 @@ for (const [label, mode] of [
 	html += "<h2>Surfaces</h2>"
 	html += '<div class="group-stack">'
 	for (const [surfaceName, surface] of Object.entries(mode.surfaces)) {
-		html += `<section class="group-card" style="background:${surface.bg};color:${mode.app.fg};border-color:${surface.border}">`
+		html += `<section class="group-card" style="background:${surface.bg};color:${surface.fg};border-color:${surface.border}">`
 		html += `<h3>${surfaceName}</h3>`
 		html += '<div class="swatch-grid">'
 		for (const [tokenPath, value] of [
@@ -166,7 +200,7 @@ for (const [label, mode] of [
 			["child.hover.bg", surface.child.hover.bg],
 			["child.active.bg", surface.child.active.bg]
 		]) {
-			html += `<article class="swatch" style="background:${value};color:${mode.app.fg}"><strong>${surfaceName}.${tokenPath}</strong><span>${value}</span></article>`
+			html += renderSwatch(`${surfaceName}.${tokenPath}`, value, mode)
 		}
 		html += "</div></section>"
 	}
@@ -176,11 +210,11 @@ for (const [label, mode] of [
 	html += "<h2>Roles</h2>"
 	html += '<div class="group-stack">'
 	for (const [roleName, role] of Object.entries(mode.roles)) {
-		html += `<section class="group-card" style="background:${role.soft.bg};color:${mode.app.fg};border-color:${role.soft.border}">`
+		html += `<section class="group-card" style="background:${role.soft.bg};color:${role.soft.fg};border-color:${role.soft.border}">`
 		html += `<h3>${roleName}</h3>`
 		html += '<div class="group-stack">'
 		for (const [treatmentName, treatment] of Object.entries(role)) {
-			html += `<section class="group-card" style="background:${treatment.bg};color:${mode.app.fg};border-color:${treatment.border}">`
+			html += `<section class="group-card" style="background:${treatment.bg};color:${treatment.fg};border-color:${treatment.border}">`
 			html += `<h4>${treatmentName}</h4>`
 			html += '<div class="swatch-grid">'
 			for (const [tokenPath, value] of treatmentName === "solid" || treatmentName === "soft"
@@ -201,7 +235,7 @@ for (const [label, mode] of [
 						["hover.bg", treatment.hover.bg],
 						["active.bg", treatment.active.bg]
 					]) {
-				html += `<article class="swatch" style="background:${value};color:${mode.app.fg}"><strong>${roleName}.${treatmentName}.${tokenPath}</strong><span>${value}</span></article>`
+				html += renderSwatch(`${roleName}.${treatmentName}.${tokenPath}`, value, mode)
 			}
 			html += "</div></section>"
 		}
