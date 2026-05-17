@@ -161,19 +161,19 @@ function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app }) {
 	}
 
 	return {
-		solid: createSolidTreatment({ mode, roleRamp, app }),
+		solid: createSolidTreatment({ mode, roleRamp, neutralRamp, app }),
 		soft: createSoftTreatment({ mode, roleRamp, neutralRamp, app }),
 		outline: createOutlineTreatment({ mode, roleRamp, neutralRamp, surface }),
 		ghost: createGhostTreatment({ mode, roleRamp, neutralRamp, surface })
 	}
 }
 
-function createSolidTreatment({ mode, roleRamp, app }) {
+function createSolidTreatment({ mode, roleRamp, neutralRamp, app }) {
 	const solidCandidates = getSolidCandidates(roleRamp, mode)
 
 	return createNestedInteractiveRecipe({
 		bg: solidCandidates[0],
-		fgCandidates: ["#000000", "#ffffff"],
+		fgCandidates: [...getTextCandidates(neutralRamp, mode), ...getTextCandidates(roleRamp, mode)],
 		borderCandidates: getModeRoleStops(roleRamp, mode, [20, 30, 40, 50], [70, 80, 90, 95]),
 		hoverBgCandidates: getModeRoleStops(roleRamp, mode, [30, 40, 50, 60], [60, 70, 80, 90]),
 		activeBgCandidates: getModeRoleStops(roleRamp, mode, [20, 30, 40, 50], [70, 80, 90, 95]),

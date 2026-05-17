@@ -1,6 +1,6 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
 import { getRampColor, getTextCandidates } from "../ramps/createRamp.js"
-import { readableForeground, contrastRatio } from "../color/contrast.js"
+import { contrastRatio } from "../color/contrast.js"
 import { pickMostDistinctCandidate } from "../color/difference.js"
 
 export function createAppTokens({ mode, ramps }) {
@@ -31,7 +31,7 @@ export function createAppTokens({ mode, ramps }) {
 		])
 		const focusRing = pickVisibleCandidate([getRampColor(ramps.accent, 50)], bg, [border, strongBorder])
 		const selectionBg = getRampColor(ramps.accent, 80)
-		const selectionFg = readableForeground(selectionBg)
+		const selectionFg = pickReadableCandidate(getTextCandidates(ramps.neutral, mode), selectionBg, 4.5)
 
 		return {
 			bg,
@@ -64,7 +64,7 @@ export function createAppTokens({ mode, ramps }) {
 	])
 	const focusRing = pickVisibleCandidate([getRampColor(ramps.accent, 60)], bg, [border, strongBorder])
 	const selectionBg = getRampColor(ramps.accent, 30)
-	const selectionFg = readableForeground(selectionBg)
+	const selectionFg = pickReadableCandidate(getTextCandidates(ramps.neutral, mode), selectionBg, 4.5)
 
 	return {
 		bg,

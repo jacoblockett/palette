@@ -31,7 +31,11 @@ export function contrastRatio(foreground, background) {
 	return (lighter + 0.05) / (darker + 0.05)
 }
 
-export function readableForeground(background, candidates = ["#000000", "#ffffff"]) {
+export function readableForeground(background, candidates) {
+	if (!Array.isArray(candidates) || candidates.length === 0) {
+		throw new TypeError("Expected a non-empty candidates array")
+	}
+
 	let bestCandidate = candidates[0]
 	let bestRatio = -Infinity
 
