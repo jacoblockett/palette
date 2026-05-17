@@ -1,22 +1,13 @@
 import { normalizeHex } from "./color/normalize.js"
 import { MODE_LIGHT, MODE_DARK, REQUIRED_SEED_KEYS } from "./defaults.js"
+import { createMode } from "./modes/createMode.js"
 import { createRamps } from "./ramps/createRamp.js"
 
 export function createPalette(input) {
 	const normalizedInput = normalizeInput(input)
 	const ramps = createRamps(normalizedInput.seeds)
-	const light = {
-		app: {},
-		surfaces: {},
-		roles: {},
-		ramps
-	}
-	const dark = {
-		app: {},
-		surfaces: {},
-		roles: {},
-		ramps
-	}
+	const light = createMode({ mode: MODE_LIGHT, ramps })
+	const dark = createMode({ mode: MODE_DARK, ramps })
 	const modes = {
 		light,
 		dark
