@@ -1,20 +1,26 @@
 {
-  "name": "palette",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.0.9",
-      "onFail": "download"
-    }
-  },
-  "type": "module"
+	"name": "palette",
+	"version": "1.0.0",
+	"description": "A contrast-aware semantic UI palette generator based on seed colors.",
+	"main": "./src/index.js",
+	"exports": {
+		".": "./src/index.js"
+	},
+	"scripts": {
+		"format": "prettier --write src"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "^11.0.9",
+			"onFail": "download"
+		}
+	},
+	"type": "module",
+	"devDependencies": {
+		"prettier": "^3.8.3"
+	}
 }

@@ -3,3 +3,4 @@ node_modules
 .agents
 .npmrc
 /.vscode
+.pnpm-store
