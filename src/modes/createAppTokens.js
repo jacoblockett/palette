@@ -1,7 +1,6 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
 import { getRampColor, getTextCandidates } from "../ramps/createRamp.js"
-import { contrastRatio } from "../color/contrast.js"
-import { pickMostDistinctCandidate } from "../color/difference.js"
+import { pickReadableCandidate, pickVisibleCandidate } from "../recipes/selectCandidates.js"
 
 export function createAppTokens({ mode, ramps }) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
@@ -77,35 +76,4 @@ export function createAppTokens({ mode, ramps }) {
 		selectionBg,
 		selectionFg
 	}
-}
-
-function pickReadableCandidate(candidates, background, minimumContrastRatio) {
-	let bestCandidate = candidates[0]
-	let bestContrast = contrastRatio(bestCandidate, background)
-
-	if (bestContrast >= minimumContrastRatio) {
-		return bestCandidate
-	}
-
-	for (const candidate of candidates.slice(1)) {
-		const candidateContrast = contrastRatio(candidate, background)
-
-		if (candidateContrast >= minimumContrastRatio) {
-			return candidate
-		}
-
-		if (candidateContrast > bestContrast) {
-			bestCandidate = candidate
-			bestContrast = candidateContrast
-		}
-	}
-
-	return bestCandidate
-}
-
-function pickVisibleCandidate(candidates, background, avoid = []) {
-	return pickMostDistinctCandidate(candidates, {
-		from: background,
-		avoid
-	})
 }

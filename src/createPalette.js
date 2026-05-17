@@ -5,9 +5,10 @@ import { createRamps } from "./ramps/createRamp.js"
 
 export function createPalette(input) {
 	const normalizedInput = normalizeInput(input)
-	const ramps = createRamps(normalizedInput.seeds)
-	const light = createMode({ mode: MODE_LIGHT, ramps })
-	const dark = createMode({ mode: MODE_DARK, ramps })
+	const lightRamps = createRamps(normalizedInput.seeds)
+	const darkRamps = createRamps(normalizedInput.seeds)
+	const light = createMode({ mode: MODE_LIGHT, ramps: lightRamps })
+	const dark = createMode({ mode: MODE_DARK, ramps: darkRamps })
 	const modes = {
 		light,
 		dark

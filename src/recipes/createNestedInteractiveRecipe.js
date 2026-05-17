@@ -1,5 +1,5 @@
 import { createInteractiveRecipe } from "./createInteractiveRecipe.js"
-import { pickMostDistinctCandidate } from "../color/difference.js"
+import { pickVisibleCandidate } from "./selectCandidates.js"
 
 export function createNestedInteractiveRecipe({
 	bg,
@@ -45,15 +45,4 @@ export function createNestedInteractiveRecipe({
 		active: baseRecipe.active,
 		child
 	}
-}
-
-function pickVisibleCandidate(candidates, background, avoid = []) {
-	if (!Array.isArray(candidates) || candidates.length === 0) {
-		throw new TypeError("Expected a non-empty candidates array")
-	}
-
-	return pickMostDistinctCandidate(candidates, {
-		from: background,
-		avoid: avoid.filter(Boolean)
-	})
 }
