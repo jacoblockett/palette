@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palette.js - Generate UI Color Systems Instantly</title>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        palette: {
+                            text: 'var(--p-text)',
+                            bg: 'var(--p-bg)',
+                            primary: 'var(--p-primary)',
+                            secondary: 'var(--p-secondary)',
+                            accent: 'var(--p-accent)',
+                            // Algorithmic variations
+                            'text-muted': 'var(--p-text-muted)',
+                            'bg-card': 'var(--p-bg-card)',
+                            'bg-alt': 'var(--p-bg-alt)',
+                            'border': 'var(--p-border)',
+                            'primary-glow': 'var(--p-primary-glow)',
+                            'accent-glow': 'var(--p-accent-glow)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px var(--p-primary-glow)',
+                        'neon-accent': '0 0 20px var(--p-accent-glow)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            /* Start with Dark Mode seeds as default */
+            --p-text: #f8e2f2;
+            --p-bg: #0e030b;
+            --p-primary: #e48ec7;
+            --p-secondary: #81341f;
+            --p-accent: #d28c41;
+
+            /* Algorithmic utilities configured on load and change */
+            --p-text-muted: rgba(248, 226, 242, 0.6);
+            --p-bg-card: rgba(255, 255, 255, 0.03);
+            --p-bg-alt: rgba(255, 255, 255, 0.05);
+            --p-border: rgba(248, 226, 242, 0.15);
+            --p-primary-glow: rgba(228, 142, 199, 0.35);
+            --p-accent-glow: rgba(210, 140, 65, 0.25);
+        }
+
+        /* Modern interactive graphic styles */
+        .art-canvas {
+            perspective: 1000px;
+        }
+        .art-card {
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease-out;
+        }
+
+        /* Hide default color input styling to build premium custom UI */
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-palette-bg text-palette-text font-sans transition-colors duration-500 selection:bg-palette-primary selection:text-palette-bg overflow-x-hidden min-h-screen">
+
+    <!-- Navigation -->
+    <header class="sticky top-0 z-50 backdrop-blur-md border-b border-palette-border bg-palette-bg/80 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-3 group">
+                <div class="relative w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-tr from-palette-primary to-palette-accent text-palette-bg shadow-neon transition-transform group-hover:scale-110 duration-300">
+                    <i data-lucide="palette" class="w-5 h-5 text-palette-bg"></i>
+                </div>
+                <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-palette-text to-palette-primary bg-clip-text text-transparent">
+                    Palette<span class="text-palette-accent">.js</span>
+                </span>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <a href="#features" class="hover:text-palette-primary transition-colors">Features</a>
+                <a href="#playground" class="hover:text-palette-primary transition-colors">Playground</a>
+                <a href="#showcase" class="hover:text-palette-primary transition-colors">UI Examples</a>
+                <a href="#docs" class="hover:text-palette-primary transition-colors">Docs</a>
+                <a href="#signup" class="hover:text-palette-primary transition-colors">Sign Up</a>
+            </nav>
+
+            <!-- Controls (Light/Dark Toggle, Github Badge) -->
+            <div class="flex items-center space-x-4">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl border border-palette-border bg-palette-bg-card hover:bg-palette-bg-alt transition-all duration-200 text-palette-text hover:text-palette-primary" title="Toggle Light/Dark Mode">
+                    <i id="themeToggleIcon" data-lucide="sun" class="w-5 h-5"></i>
+                </button>
+                
+                <a href="https://github.com" target="_blank" class="hidden sm:inline-flex items-center space-x-2 px-4 py-2 text-sm font-semibold rounded-xl border border-palette-border hover:bg-palette-bg-alt hover:border-palette-primary transition-all">
+                    <i data-lucide="github" class="w-4 h-4"></i>
+                    <span>Star on GitHub</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero / Landing Splash -->
+    <main class="relative">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 md:py-28 lg:py-36">
+            <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                <!-- Left text column -->
+                <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full border border-palette-primary/20 bg-palette-primary/5 text-palette-primary text-xs font-semibold tracking-wider uppercase">
+                        <span class="flex h-2 w-2 rounded-full bg-palette-primary animate-pulse"></span>
+                        <span>Now in Public Beta</span>
+                    </div>
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none">
+                        Unleash dynamic <br class="hidden sm:inline"/>
+                        <span class="bg-gradient-to-r from-palette-primary via-palette-accent to-palette-text bg-clip-text text-transparent">UI Color Systems</span> <br/>
+                        from just 5 seeds.
+                    </h1>
+                    <p class="text-lg md:text-xl text-palette-text-muted max-w-2xl mx-auto lg:mx-0 font-light leading-relaxed">
+                        Provide a text, background, primary, secondary, and accent color. Palette.js automatically builds a harmonious, contrast-compliant scale of darks, lights, borders, states, and text hierarchies.
+                    </p>
+                    
+                    <!-- CTAs -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                        <a href="#playground" class="w-full sm:w-auto px-8 py-4 bg-palette-primary hover:bg-opacity-90 text-palette-bg font-bold rounded-xl shadow-neon hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-center">
+                            Open Visualizer
+                        </a>
+                        <a href="#docs" class="w-full sm:w-auto px-8 py-4 bg-palette-bg-card hover:bg-palette-bg-alt border border-palette-border text-palette-text font-semibold rounded-xl hover:border-palette-primary/50 transition-all duration-200 text-center">
+                            Read the Docs
+                        </a>
+                    </div>
+
+                    <!-- Library Stats / Highlights -->
+                    <div class="grid grid-cols-3 gap-6 pt-8 border-t border-palette-border max-w-md mx-auto lg:mx-0">
+                        <div>
+                            <div class="text-2xl font-bold text-palette-primary">1.2kb</div>
+                            <div class="text-xs text-palette-text-muted mt-1">Gzipped Size</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-palette-accent">0</div>
+                            <div class="text-xs text-palette-text-muted mt-1">Dependencies</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-palette-text">WCAG</div>
+                            <div class="text-xs text-palette-text-muted mt-1">AA/AAA Compliant</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right modern-art-inspired CSS graphic column -->
+                <div class="lg:col-span-5 flex justify-center items-center">
+                    <div class="art-canvas w-full max-w-[440px] aspect-square rounded-3xl border border-palette-border bg-palette-bg-card p-6 shadow-2xl relative overflow-hidden group">
+                        <div id="artCard" class="art-card w-full h-full relative rounded-2xl overflow-hidden bg-palette-bg/40 border border-palette-border/50">
+                            <!-- Background decorative Grid -->
+                            <div class="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-20 pointer-events-none">
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text flex items-center justify-center">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-palette-accent"></div>
+                                </div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-r border-palette-text"></div>
+                                <div class="border-b border-palette-text"></div>
+                            </div>
+
+                            <!-- Abstract Modern Shapes -->
+                            <!-- Primary Circle -->
+                            <div class="absolute top-[10%] left-[10%] w-[45%] h-[45%] rounded-full bg-palette-primary opacity-80 blur-[2px] shadow-neon animate-[pulse_6s_infinite] transition-all duration-500"></div>
+                            
+                            <!-- Accent Rotating Block -->
+                            <div class="absolute bottom-[15%] right-[10%] w-[35%] h-[50%] bg-palette-accent rounded-[2rem] origin-center rotate-45 hover:rotate-90 transition-transform duration-1000"></div>
+                            
+                            <!-- Secondary intersecting Stripe -->
+                            <div class="absolute bottom-[20%] left-[-10%] w-[80%] h-[12%] bg-palette-secondary -rotate-12 origin-left border border-palette-text/20 shadow-lg flex items-center justify-end pr-8">
+                                <div class="w-4 h-4 rounded-full bg-palette-bg"></div>
+                            </div>
+
+                            <!-- Geometric Floating Text Lines -->
+                            <div class="absolute top-[15%] right-[10%] flex flex-col space-y-2 items-end">
+                                <div class="h-3 w-28 bg-palette-text rounded-full opacity-90"></div>
+                                <div class="h-3 w-16 bg-palette-secondary rounded-full"></div>
+                                <div class="h-3 w-24 bg-palette-accent rounded-full opacity-60"></div>
+                            </div>
+
+                            <!-- Bauhaus-style solid line overlay -->
+                            <div class="absolute top-1/2 left-0 w-full h-0.5 bg-palette-border"></div>
+                            <div class="absolute top-0 left-1/2 h-full w-0.5 bg-palette-border"></div>
+
+                            <!-- Interactive dynamic indicator badge -->
+                            <div class="absolute bottom-6 left-6 px-3 py-1.5 rounded-lg bg-palette-bg/95 border border-palette-border shadow-md flex items-center space-x-2 text-[10px] font-mono tracking-widest uppercase">
+                                <span class="w-2 h-2 rounded-full bg-palette-accent animate-ping"></span>
+                                <span class="text-palette-text">Interactive Art</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Playground / Seed Editor -->
+    <section id="playground" class="py-20 bg-palette-bg-card border-y border-palette-border relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-palette-primary/5 to-transparent pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">The Seed Controller</h2>
+                <p class="text-palette-text-muted">
+                    Alter the five raw inputs below. Watch how the entire website updates its themes, contrasts, borders, shadows, and content states dynamically.
+                </p>
+            </div>
+
+            <!-- Controller Panel Box -->
+            <div class="bg-palette-bg border border-palette-border rounded-3xl p-6 md:p-10 shadow-xl max-w-5xl mx-auto">
+                <div class="grid lg:grid-cols-12 gap-10 items-center">
+                    
+                    <!-- Left Column: Inputs & Controls -->
+                    <div class="lg:col-span-5 space-y-8">
+                        <div>
+                            <h3 class="text-lg font-bold mb-4 flex items-center space-x-2 text-palette-primary">
+                                <i data-lucide="sliders" class="w-5 h-5"></i>
+                                <span>Modify Seed Colors</span>
+                            </h3>
+                            <!-- 5 Color pickers -->
+                            <div class="space-y-4">
+                                <!-- Text Color -->
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-palette-border bg-palette-bg-card">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="relative">
+                                            <input type="color" id="picker-text" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('text', this.value)">
+                                            <div id="preview-text" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-text"></div>
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs font-semibold text-palette-text-muted">Text Color</span>
+                                            <span id="hex-text" class="text-xs font-mono font-bold">#f8e2f2</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] uppercase font-mono px-2 py-1 bg-palette-bg-alt rounded-md text-palette-text/70">Seed 1</span>
+                                </div>
+
+                                <!-- Background Color -->
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-palette-border bg-palette-bg-card">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="relative">
+                                            <input type="color" id="picker-bg" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('bg', this.value)">
+                                            <div id="preview-bg" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-bg"></div>
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs font-semibold text-palette-text-muted">Background</span>
+                                            <span id="hex-bg" class="text-xs font-mono font-bold">#0e030b</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] uppercase font-mono px-2 py-1 bg-palette-bg-alt rounded-md text-palette-text/70">Seed 2</span>
+                                </div>
+
+                                <!-- Primary Color -->
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-palette-border bg-palette-bg-card">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="relative">
+                                            <input type="color" id="picker-primary" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('primary', this.value)">
+                                            <div id="preview-primary" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-primary"></div>
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs font-semibold text-palette-text-muted">Primary Color</span>
+                                            <span id="hex-primary" class="text-xs font-mono font-bold">#e48ec7</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] uppercase font-mono px-2 py-1 bg-palette-bg-alt rounded-md text-palette-text/70">Seed 3</span>
+                                </div>
+
+                                <!-- Secondary Color -->
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-palette-border bg-palette-bg-card">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="relative">
+                                            <input type="color" id="picker-secondary" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('secondary', this.value)">
+                                            <div id="preview-secondary" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-secondary"></div>
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs font-semibold text-palette-text-muted">Secondary</span>
+                                            <span id="hex-secondary" class="text-xs font-mono font-bold">#81341f</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] uppercase font-mono px-2 py-1 bg-palette-bg-alt rounded-md text-palette-text/70">Seed 4</span>
+                                </div>
+
+                                <!-- Accent Color -->
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-palette-border bg-palette-bg-card">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="relative">
+                                            <input type="color" id="picker-accent" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('accent', this.value)">
+                                            <div id="preview-accent" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-accent"></div>
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs font-semibold text-palette-text-muted">Accent Color</span>
+                                            <span id="hex-accent" class="text-xs font-mono font-bold">#d28c41</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] uppercase font-mono px-2 py-1 bg-palette-bg-alt rounded-md text-palette-text/70">Seed 5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Randomization / Utilities Buttons -->
+                        <div class="flex space-x-3">
+                            <button onclick="randomizePalette()" class="flex-1 py-3 px-4 rounded-xl bg-palette-secondary text-palette-text hover:bg-opacity-90 font-bold flex items-center justify-center space-x-2 transition-all">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-palette-accent"></i>
+                                <span>Randomize Seeds</span>
+                            </button>
+                            <button onclick="resetSeeds()" class="p-3 rounded-xl border border-palette-border bg-palette-bg hover:bg-palette-bg-alt transition-colors" title="Reset Defaults">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Simulated CSS code representation / JSON output -->
+                    <div class="lg:col-span-7 h-full flex flex-col justify-between space-y-6">
+                        <div class="rounded-2xl bg-palette-bg-card border border-palette-border p-6 font-mono text-xs overflow-x-auto select-all relative group/code">
+                            <div class="absolute top-4 right-4 text-[10px] tracking-wider uppercase font-sans text-palette-text-muted bg-palette-bg border border-palette-border px-2.5 py-1 rounded-md">
+                                Output Config
+                            </div>
+                            <span class="text-palette-text-muted">// Generated dynamically via Palette.js</span>
+                            <pre class="mt-4 text-palette-text leading-relaxed">
+<span class="text-palette-accent">const</span> <span class="text-palette-primary">system</span> = Palette({
+  text: <span class="text-palette-primary">"<span class="code-text">#f8e2f2</span>"</span>,
+  background: <span class="text-palette-primary">"<span class="code-bg">#0e030b</span>"</span>,
+  primary: <span class="text-palette-primary">"<span class="code-primary">#e48ec7</span>"</span>,
+  secondary: <span class="text-palette-primary">"<span class="code-secondary">#81341f</span>"</span>,
+  accent: <span class="text-palette-primary">"<span class="code-accent">#d28c41</span>"</span>,
+});
+
+<span class="text-palette-text-muted">// Ready to export into styling libraries</span>
+export const <span class="text-palette-accent">tailwindTheme</span> = {
+  theme: {
+    extend: {
+      colors: {
+        palette: {
+          text: system.colors.text,           <span class="text-palette-text-muted">// <span class="code-text">#f8e2f2</span></span>
+          background: system.colors.bg,       <span class="text-palette-text-muted">// <span class="code-bg">#0e030b</span></span>
+          primary: system.colors.primary,     <span class="text-palette-text-muted">// <span class="code-primary">#e48ec7</span></span>
+          border: system.shades.border,       <span class="text-palette-text-muted">// generated auto opacity</span>
+          card: system.shades.cardBg,         <span class="text-palette-text-muted">// generated contrast compliant</span>
+        }
+      }
+    }
+  }
+};</pre>
+                        </div>
+
+                        <!-- Feedback Box -->
+                        <div class="p-5 rounded-2xl border border-palette-border bg-palette-accent/5 flex items-start space-x-4">
+                            <div class="p-2 bg-palette-accent/15 rounded-lg text-palette-accent">
+                                <i data-lucide="info" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-palette-text">Automatic State Scaling</h4>
+                                <p class="text-xs text-palette-text-muted mt-1 leading-relaxed">
+                                    Instead of manually engineering over 40 color shades for alerts, cards, hover states, and disabled states, Palette.js dynamically computes color contrasts & alphas based on the ambient mode context.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Section -->
+    <section id="features" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-20 space-y-4">
+            <span class="text-xs font-bold text-palette-primary uppercase tracking-widest">Built for modern scale</span>
+            <h2 class="text-4xl sm:text-5xl font-extrabold tracking-tight">Designed for designers. Built for devs.</h2>
+            <p class="text-lg text-palette-text-muted">
+                You provide the creative spark. We handle the math, compliance, variables, and output configurations.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="p-8 rounded-3xl border border-palette-border bg-palette-bg-card hover:border-palette-primary/50 transition-all duration-300 space-y-5 group">
+                <div class="w-12 h-12 flex items-center justify-center rounded-2xl bg-palette-primary/10 text-palette-primary group-hover:scale-110 transition-transform">
+                    <i data-lucide="eye" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold">Contrast Guard</h3>
+                <p class="text-palette-text-muted text-sm leading-relaxed">
+                    Palette.js dynamically tests WCAG accessibility standards. It subtly adjusts hex values to guarantee AA & AAA readability scales.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="p-8 rounded-3xl border border-palette-border bg-palette-bg-card hover:border-palette-primary/50 transition-all duration-300 space-y-5 group">
+                <div class="w-12 h-12 flex items-center justify-center rounded-2xl bg-palette-accent/10 text-palette-accent group-hover:scale-110 transition-transform">
+                    <i data-lucide="sun-moon" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold">Contextual Awareness</h3>
+                <p class="text-palette-text-muted text-sm leading-relaxed">
+                    Adapts seamlessly into dark and light mode structures, generating contextual palettes relative to your environment’s base ambient text and backgrounds.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="p-8 rounded-3xl border border-palette-border bg-palette-bg-card hover:border-palette-primary/50 transition-all duration-300 space-y-5 group">
+                <div class="w-12 h-12 flex items-center justify-center rounded-2xl bg-palette-text/15 text-palette-text group-hover:scale-110 transition-transform">
+                    <i data-lucide="code-xml" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold">Framework Agnostic</h3>
+                <p class="text-palette-text-muted text-sm leading-relaxed">
+                    Output formats include Tailwind config objects, vanilla CSS custom property injects, CSS stylesheets, SASS variables, or plain Javascript JSON models.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase: Mock UI Dashboards adapting visually -->
+    <section id="showcase" class="py-20 bg-palette-bg-card/40 border-t border-palette-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="text-xs font-bold text-palette-accent uppercase tracking-widest">Real-time Interface Rendering</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">See how the UI components render</h2>
+                <p class="text-palette-text-muted">
+                    This mock client portal uses our custom theme tokens directly. Go back up and play with color seeds to observe real-time consistency.
+                </p>
+            </div>
+
+            <!-- Simulated App Interface Dashboard -->
+            <div class="max-w-5xl mx-auto rounded-3xl border border-palette-border bg-palette-bg shadow-2xl overflow-hidden">
+                <!-- Top Mock Window Bar -->
+                <div class="bg-palette-bg-alt border-b border-palette-border px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                    </div>
+                    <div class="text-[11px] font-mono text-palette-text-muted bg-palette-bg/40 border border-palette-border rounded-lg px-4 py-1 flex items-center space-x-2">
+                        <i data-lucide="lock" class="w-3 h-3"></i>
+                        <span>palettejs.org/sandbox/dashboard</span>
+                    </div>
+                    <div class="w-12"></div> <!-- spacer -->
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="grid md:grid-cols-12">
+                    <!-- Sidebar Navigation -->
+                    <aside class="md:col-span-3 border-r border-palette-border p-6 space-y-6">
+                        <div class="flex items-center space-x-3 text-palette-primary font-bold">
+                            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                            <span class="text-sm">Workspace</span>
+                        </div>
+                        <nav class="space-y-2">
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-palette-bg-alt text-palette-text text-xs font-semibold">
+                                <i data-lucide="home" class="w-4 h-4 text-palette-primary"></i>
+                                <span>Main Overview</span>
+                            </a>
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-text hover:bg-palette-bg-card rounded-xl text-xs font-semibold transition-all">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-text hover:bg-palette-bg-card rounded-xl text-xs font-semibold transition-all">
+                                <i data-lucide="folder" class="w-4 h-4"></i>
+                                <span>Projects</span>
+                            </a>
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-text hover:bg-palette-bg-card rounded-xl text-xs font-semibold transition-all">
+                                <i data-lucide="settings" class="w-4 h-4"></i>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </aside>
+
+                    <!-- Main Dashboard Content -->
+                    <main class="md:col-span-9 p-8 space-y-8">
+                        <!-- Welcome Header inside UI -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <h3 class="text-xl font-extrabold text-palette-text">Creative Dashboard</h3>
+                                <p class="text-xs text-palette-text-muted mt-1">Status: Active Theme Applied</p>
+                            </div>
+                            <!-- Small dynamic action button using Primary -->
+                            <button class="px-4 py-2 bg-palette-primary hover:bg-opacity-90 text-palette-bg text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>New Palette Project</span>
+                            </button>
+                        </div>
+
+                        <!-- Card Metric Row -->
+                        <div class="grid sm:grid-cols-3 gap-4">
+                            <!-- Card 1 -->
+                            <div class="p-5 rounded-2xl border border-palette-border bg-palette-bg-card space-y-2">
+                                <span class="text-[10px] text-palette-text-muted uppercase tracking-wider block font-semibold">Active Themes</span>
+                                <div class="text-3xl font-bold text-palette-primary">1,482</div>
+                                <span class="text-[9px] text-emerald-500 font-bold block">↑ +14% this month</span>
+                            </div>
+                            <!-- Card 2 -->
+                            <div class="p-5 rounded-2xl border border-palette-border bg-palette-bg-card space-y-2">
+                                <span class="text-[10px] text-palette-text-muted uppercase tracking-wider block font-semibold">API Requests</span>
+                                <div class="text-3xl font-bold text-palette-accent">489.2k</div>
+                                <span class="text-[9px] text-emerald-500 font-bold block">↑ +2.1% this week</span>
+                            </div>
+                            <!-- Card 3 -->
+                            <div class="p-5 rounded-2xl border border-palette-border bg-palette-bg-card space-y-2">
+                                <span class="text-[10px] text-palette-text-muted uppercase tracking-wider block font-semibold">Client Coverage</span>
+                                <div class="text-3xl font-bold text-palette-text">99.98%</div>
+                                <span class="text-[9px] text-palette-text-muted font-bold block">Contrast ratio validated</span>
+                            </div>
+                        </div>
+
+                        <!-- Graph / Decorative UI Art section -->
+                        <div class="p-6 rounded-2xl border border-palette-border bg-palette-bg-card space-y-4">
+                            <div class="flex justify-between items-center border-b border-palette-border pb-4">
+                                <h4 class="text-xs font-bold text-palette-text flex items-center space-x-2">
+                                    <i data-lucide="activity" class="w-4 h-4 text-palette-primary"></i>
+                                    <span>Engine Contrast Analytics</span>
+                                </h4>
+                                <span class="text-[10px] bg-palette-secondary text-palette-text py-0.5 px-2 rounded-full font-mono">Real-time</span>
+                            </div>
+                            
+                            <!-- Dummy bar heights that change their backgrounds to showcase harmony -->
+                            <div class="h-28 flex items-end justify-between space-x-2 sm:space-x-3 pt-4">
+                                <div class="w-full bg-palette-primary opacity-40 rounded-t-lg h-[40%]" title="40%"></div>
+                                <div class="w-full bg-palette-accent opacity-50 rounded-t-lg h-[65%]" title="65%"></div>
+                                <div class="w-full bg-palette-secondary opacity-60 rounded-t-lg h-[45%]" title="45%"></div>
+                                <div class="w-full bg-palette-primary opacity-80 rounded-t-lg h-[85%]" title="85%"></div>
+                                <div class="w-full bg-palette-accent rounded-t-lg h-[100%] shadow-neon-accent" title="100%"></div>
+                                <div class="w-full bg-palette-secondary rounded-t-lg h-[55%]" title="55%"></div>
+                                <div class="w-full bg-palette-primary opacity-90 rounded-t-lg h-[75%] shadow-neon" title="75%"></div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form and Input Showcase Section -->
+    <section id="signup" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            
+            <!-- Left Text Column -->
+            <div class="lg:col-span-6 space-y-6">
+                <span class="text-xs font-bold text-palette-primary uppercase tracking-widest">Developers & Enterprise</span>
+                <h2 class="text-4xl font-extrabold tracking-tight leading-none">
+                    Start engineering UI palettes automatically.
+                </h2>
+                <p class="text-palette-text-muted leading-relaxed">
+                    Ready to drop manual HEX generation inside your application design files? Create an account to receive your private API key to query Palette.js' automated API, offering cloud coordination of design systems.
+                </p>
+                <div class="space-y-4 pt-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="p-1 rounded-md bg-palette-primary/10 text-palette-primary mt-1">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-sm text-palette-text">Secure integration of design workflows into production pipelines.</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="p-1 rounded-md bg-palette-accent/10 text-palette-accent mt-1">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        </div>
+                        <p class="text-sm text-palette-text">Unlimited dynamically computed themes per endpoint.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Interactive Form Column -->
+            <div class="lg:col-span-6">
+                <div class="p-8 md:p-10 rounded-3xl border border-palette-border bg-palette-bg-card shadow-xl space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-palette-text">Create Free Beta Account</h3>
+                        <p class="text-xs text-palette-text-muted mt-1">No payment credentials requested.</p>
+                    </div>
+
+                    <form class="space-y-4" onsubmit="event.preventDefault();">
+                        <!-- Full Name input -->
+                        <div class="space-y-1.5">
+                            <label for="full-name" class="text-xs font-bold text-palette-text">Developer Name</label>
+                            <input type="text" id="full-name" placeholder="Grace Hopper" class="w-full px-4 py-3 text-sm rounded-xl border border-palette-border bg-palette-bg text-palette-text placeholder-palette-text-muted/40 focus:outline-none focus:border-palette-primary transition-all duration-200">
+                        </div>
+
+                        <!-- Email Address Input -->
+                        <div class="space-y-1.5">
+                            <label for="email" class="text-xs font-bold text-palette-text">Work Email</label>
+                            <input type="email" id="email" placeholder="grace@engineering.org" class="w-full px-4 py-3 text-sm rounded-xl border border-palette-border bg-palette-bg text-palette-text placeholder-palette-text-muted/40 focus:outline-none focus:border-palette-primary transition-all duration-200">
+                        </div>
+
+                        <!-- Dropdown Select -->
+                        <div class="space-y-1.5">
+                            <label for="framework" class="text-xs font-bold text-palette-text">Target Framework</label>
+                            <select id="framework" class="w-full px-4 py-3 text-sm rounded-xl border border-palette-border bg-palette-bg text-palette-text focus:outline-none focus:border-palette-primary transition-all duration-200">
+                                <option value="tailwind" class="bg-palette-bg">Tailwind CSS (Default)</option>
+                                <option value="css" class="bg-palette-bg">Vanilla CSS Custom Properties</option>
+                                <option value="react" class="bg-palette-bg">React / Styled Components</option>
+                                <option value="sass" class="bg-palette-bg">SASS / Less Variables</option>
+                            </select>
+                        </div>
+
+                        <!-- Checkbox & Terms -->
+                        <div class="flex items-start space-x-3 pt-2">
+                            <input type="checkbox" id="terms" class="mt-1 w-4 h-4 rounded border-palette-border bg-palette-bg text-palette-primary focus:ring-palette-primary focus:ring-opacity-20 cursor-pointer">
+                            <label for="terms" class="text-xs text-palette-text-muted leading-relaxed cursor-pointer select-none">
+                                I verify I want to opt-in to receiving notifications concerning Palette.js beta upgrades and documentation changes.
+                            </label>
+                        </div>
+
+                        <!-- Form Actions Buttons (Demonstrating Primary/Accent palettes) -->
+                        <div class="grid grid-cols-2 gap-4 pt-4">
+                            <button type="button" onclick="triggerNotification('Welcome aboard! Demo account registered.')" class="py-3.5 px-5 bg-palette-primary hover:bg-opacity-90 text-palette-bg font-bold rounded-xl text-center text-sm shadow-md transition-all active:scale-95">
+                                Submit Form
+                            </button>
+                            <button type="reset" class="py-3.5 px-5 border border-palette-border bg-palette-bg hover:bg-palette-bg-alt text-palette-text font-semibold rounded-xl text-center text-sm transition-all">
+                                Clear Entries
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Quick Docs / Snippet section -->
+    <section id="docs" class="py-20 bg-palette-bg-card/30 border-t border-palette-border">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="space-y-8">
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-extrabold">Instant Library Implementation</h2>
+                    <p class="text-palette-text-muted">Include Palette via npm or direct CDN injects to control variable spaces.</p>
+                </div>
+
+                <div class="rounded-3xl border border-palette-border bg-palette-bg overflow-hidden shadow-xl">
+                    <!-- Tab top row -->
+                    <div class="bg-palette-bg-alt border-b border-palette-border px-6 py-4 flex items-center justify-between">
+                        <span class="text-xs font-bold text-palette-primary">Quick Setup</span>
+                        <span class="text-xs text-palette-text-muted">package.json</span>
+                    </div>
+                    <!-- Code Editor mock -->
+                    <div class="p-6 font-mono text-xs leading-relaxed overflow-x-auto">
+                        <span class="text-palette-text-muted">// Step 1: Install the package</span><br/>
+                        <span class="text-palette-accent">npm i</span> @design/palette<br/><br/>
+
+                        <span class="text-palette-text-muted">// Step 2: Initialize within root wrapper file</span><br/>
+                        <span class="text-palette-accent">import</span> Palette <span class="text-palette-accent">from</span> <span class="text-palette-primary">'@design/palette'</span>;<br/><br/>
+
+                        <span class="text-palette-accent">const</span> dynamicStyles = Palette.generate({<br/>
+                        &nbsp;&nbsp;seeds: {<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;text: <span class="text-palette-accent">"#f8e2f2"</span>,<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;background: <span class="text-palette-accent">"#0e030b"</span>,<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;primary: <span class="text-palette-accent">"#e48ec7"</span><br/>
+                        &nbsp;&nbsp;}<br/>
+                        });<br/><br/>
+
+                        <span class="text-palette-text-muted">// Step 3: Call dynamicStyles.apply() to paint HTML elements live.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating interactive toast dynamic notification (Never use alert!) -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-[100] p-4 rounded-2xl bg-palette-bg border border-palette-border shadow-2xl flex items-center space-x-3 translate-y-24 opacity-0 transition-all duration-300 max-w-sm">
+        <div class="p-2 rounded-lg bg-palette-primary text-palette-bg">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <span id="toastMessage" class="text-xs font-bold text-palette-text">Notification message</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-palette-bg border-t border-palette-border py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                <!-- Brand col -->
+                <div class="col-span-2 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="relative w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-tr from-palette-primary to-palette-accent text-palette-bg shadow-sm">
+                            <i data-lucide="palette" class="w-4 h-4 text-palette-bg"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight text-palette-text">
+                            Palette<span class="text-palette-accent">.js</span>
+                        </span>
+                    </div>
+                    <p class="text-xs text-palette-text-muted max-w-sm leading-relaxed">
+                        The ultimate runtime utility turning basic primary colors into robust interactive, accessible system specifications.
+                    </p>
+                </div>
+
+                <!-- Column 1 Links -->
+                <div class="space-y-3">
+                    <h5 class="text-xs font-bold text-palette-text uppercase tracking-widest">Library</h5>
+                    <ul class="space-y-2 text-xs text-palette-text-muted">
+                        <li><a href="#features" class="hover:text-palette-primary transition-colors">Core Features</a></li>
+                        <li><a href="#playground" class="hover:text-palette-primary transition-colors">Color Sandbox</a></li>
+                        <li><a href="#docs" class="hover:text-palette-primary transition-colors">API Docs</a></li>
+                        <li><a href="#showcase" class="hover:text-palette-primary transition-colors">Integrations</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 2 Links -->
+                <div class="space-y-3">
+                    <h5 class="text-xs font-bold text-palette-text uppercase tracking-widest">Resources</h5>
+                    <ul class="space-y-2 text-xs text-palette-text-muted">
+                        <li><a href="https://github.com" class="hover:text-palette-primary transition-colors">GitHub Repository</a></li>
+                        <li><a href="#docs" class="hover:text-palette-primary transition-colors">NPM Package</a></li>
+                        <li><a href="#" class="hover:text-palette-primary transition-colors">Community Discord</a></li>
+                        <li><a href="#" class="hover:text-palette-primary transition-colors">Release Notes</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3 Links -->
+                <div class="space-y-3">
+                    <h5 class="text-xs font-bold text-palette-text uppercase tracking-widest">Legal</h5>
+                    <ul class="space-y-2 text-xs text-palette-text-muted">
+                        <li><a href="#" class="hover:text-palette-primary transition-colors">MIT License</a></li>
+                        <li><a href="#" class="hover:text-palette-primary transition-colors">Privacy Principles</a></li>
+                        <li><a href="#" class="hover:text-palette-primary transition-colors">Accessibility Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Bottom area -->
+            <div class="pt-8 border-t border-palette-border flex flex-col sm:flex-row items-center justify-between text-xs text-palette-text-muted gap-4">
+                <span>© 2026 Palette.js Inc. Beautiful designs compiled programmatic.</span>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-palette-primary transition-colors">Twitter</a>
+                    <a href="#" class="hover:text-palette-primary transition-colors">Bluesky</a>
+                    <a href="#" class="hover:text-palette-primary transition-colors">ProductHunt</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Track mode context state
+        let isDarkMode = true;
+
+        // Color Hex configurations
+        const currentPalette = {
+            text: '#f8e2f2',
+            bg: '#0e030b',
+            primary: '#e48ec7',
+            secondary: '#81341f',
+            accent: '#d28c41'
+        };
+
+        // Reset variables back to initial configurations requested
+        const defaultSeeds = {
+            text: '#f8e2f2',
+            bg: '#0e030b',
+            primary: '#e48ec7',
+            secondary: '#81341f',
+            accent: '#d28c41'
+        };
+
+        // Helper: Convert HEX code to raw RGB values
+        function hexToRgb(hex) {
+            let clean = hex.replace('#', '');
+            if (clean.length === 3) {
+                clean = clean.split('').map(char => char + char).join('');
+            }
+            const num = parseInt(clean, 16);
+            return {
+                r: (num >> 16) & 255,
+                g: (num >> 8) & 255,
+                b: num & 255
+            };
+        }
+
+        // Apply visual CSS Variable updates straight onto :root elements based on current seeds
+        function updatePageColors() {
+            const root = document.documentElement;
+
+            // Set raw seeds
+            root.style.setProperty('--p-text', currentPalette.text);
+            root.style.setProperty('--p-bg', currentPalette.bg);
+            root.style.setProperty('--p-primary', currentPalette.primary);
+            root.style.setProperty('--p-secondary', currentPalette.secondary);
+            root.style.setProperty('--p-accent', currentPalette.accent);
+
+            // Compute alpha shades
+            const textRGB = hexToRgb(currentPalette.text);
+            const primaryRGB = hexToRgb(currentPalette.primary);
+            const accentRGB = hexToRgb(currentPalette.accent);
+
+            // Dynamically set relative opacity definitions based on inputs
+            root.style.setProperty('--p-text-muted', `rgba(${textRGB.r}, ${textRGB.g}, ${textRGB.b}, 0.65)`);
+            root.style.setProperty('--p-border', `rgba(${textRGB.r}, ${textRGB.g}, ${textRGB.b}, 0.15)`);
+            root.style.setProperty('--p-primary-glow', `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, 0.35)`);
+            root.style.setProperty('--p-accent-glow', `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`);
+
+            // Adapt structural cards depending on Ambient State context
+            if (isDarkMode) {
+                root.style.setProperty('--p-bg-card', 'rgba(255, 255, 255, 0.04)');
+                root.style.setProperty('--p-bg-alt', 'rgba(255, 255, 255, 0.08)');
+            } else {
+                root.style.setProperty('--p-bg-card', 'rgba(0, 0, 0, 0.03)');
+                root.style.setProperty('--p-bg-alt', 'rgba(0, 0, 0, 0.06)');
+            }
+
+            // Sync structural controller picker visual state outputs
+            syncPickerUI();
+        }
+
+        // Sync visual Hex text displays inside inputs sandbox
+        function syncPickerUI() {
+            const keys = ['text', 'bg', 'primary', 'secondary', 'accent'];
+            keys.forEach(key => {
+                const hexVal = currentPalette[key];
+                
+                // Update label text elements inside controller inputs
+                const label = document.getElementById(`hex-${key}`);
+                if (label) label.textContent = hexVal.toLowerCase();
+
+                // Update input color selectors values
+                const picker = document.getElementById(`picker-${key}`);
+                if (picker) picker.value = hexVal;
+
+                // Update preview circle indicators
+                const preview = document.getElementById(`preview-${key}`);
+                if (preview) preview.style.backgroundColor = hexVal;
+
+                // Update structural code output panels text
+                const codeElements = document.querySelectorAll(`.code-${key}`);
+                codeElements.forEach(el => {
+                    el.textContent = hexVal.toLowerCase();
+                });
+            });
+        }
+
+        // Handle direct interactions with single color picker controls
+        function updateColorFromPicker(key, hexVal) {
+            currentPalette[key] = hexVal;
+            updatePageColors();
+        }
+
+        // Toggles absolute visual dark / light mode parameters mapping seeds context
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const root = document.documentElement;
+
+            // Invert layout role functions
+            const tempText = currentPalette.text;
+            currentPalette.text = currentPalette.bg;
+            currentPalette.bg = tempText;
+
+            // Update UI class systems
+            if (isDarkMode) {
+                root.classList.add('dark');
+                document.getElementById('themeToggleIcon').setAttribute('data-lucide', 'sun');
+            } else {
+                root.classList.remove('dark');
+                document.getElementById('themeToggleIcon').setAttribute('data-lucide', 'moon');
+            }
+
+            lucide.createIcons();
+            updatePageColors();
+            triggerNotification(isDarkMode ? "Inverted to Dark Mode config" : "Inverted to Light Mode config");
+        }
+
+        // Helper: Generate a random visual hex color
+        function generateRandomHex() {
+            const chars = '0123456789abcdef';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += chars[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Randomize all 5 color inputs
+        function randomizePalette() {
+            currentPalette.text = generateRandomHex();
+            currentPalette.bg = generateRandomHex();
+            currentPalette.primary = generateRandomHex();
+            currentPalette.secondary = generateRandomHex();
+            currentPalette.accent = generateRandomHex();
+
+            // Ensure readability standard logic simulation (light text / dark bg context auto guard)
+            // If the background is too light and isDarkMode is on, slightly invert contextually
+            updatePageColors();
+            triggerNotification("Dynamic Color Seeds Randomized!");
+        }
+
+        // Reset elements back to user-defined start seeds
+        function resetSeeds() {
+            currentPalette.text = defaultSeeds.text;
+            currentPalette.bg = defaultSeeds.bg;
+            currentPalette.primary = defaultSeeds.primary;
+            currentPalette.secondary = defaultSeeds.secondary;
+            currentPalette.accent = defaultSeeds.accent;
+            
+            // Re-apply configurations
+            updatePageColors();
+            triggerNotification("Seeds restored to defaults.");
+        }
+
+        // Trigger floating interactive notification
+        let toastTimeout;
+        function triggerNotification(msg) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            
+            toastMsg.textContent = msg;
+            
+            // clear prior transitions
+            clearTimeout(toastTimeout);
+            
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+
+            toastTimeout = setTimeout(() => {
+                toast.style.transform = 'translateY(100px)';
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+
+        // Micro interactions: Art canvas parallax tilt
+        const canvasContainer = document.querySelector('.art-canvas');
+        const artCard = document.getElementById('artCard');
+
+        if (canvasContainer && artCard) {
+            canvasContainer.addEventListener('mousemove', (e) => {
+                const rect = canvasContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left; // x coordinate inside element
+                const y = e.clientY - rect.top;  // y coordinate inside element
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((centerY - y) / centerY) * 15; // Max rot degrees
+                const rotateY = ((x - centerX) / centerX) * 15;
+
+                artCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            canvasContainer.addEventListener('mouseleave', () => {
+                artCard.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            });
+        }
+
+        // Run updates on initial loads
+        window.onload = function() {
+            lucide.createIcons();
+            updatePageColors();
+        };
+    </script>
+</body>
+</html>

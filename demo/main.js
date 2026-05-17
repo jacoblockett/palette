@@ -4,7 +4,7 @@ const SEED_KEYS = ["primary", "secondary", "accent", "neutral", "base"]
 
 const state = {
 	mode: "light",
-	seeds: randomizeSeedObject()
+	seeds: createRandomSeedSet()
 }
 
 const app = document.getElementById("app")
@@ -12,7 +12,21 @@ const style = document.createElement("style")
 
 style.textContent = `
 	:root {
-		font-family: "Segoe UI", Arial, sans-serif;
+		--page-max: 1180px;
+		--space-1: 8px;
+		--space-2: 12px;
+		--space-3: 16px;
+		--space-4: 24px;
+		--space-5: 32px;
+		--space-6: 48px;
+		--space-7: 72px;
+		--radius-sm: 14px;
+		--radius-md: 22px;
+		--radius-lg: 30px;
+		--shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.08);
+		--shadow-md: 0 20px 48px rgba(15, 23, 42, 0.12);
+		font-family:
+			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	}
 
 	* {
@@ -25,7 +39,7 @@ style.textContent = `
 
 	body {
 		margin: 0;
-		background: #dce4ee;
+		background: #e5e7eb;
 	}
 
 	button,
@@ -40,171 +54,186 @@ style.textContent = `
 
 	.demo-shell {
 		min-height: 100vh;
-		padding-bottom: 240px;
-		background: var(--app-bg);
+		background:
+			radial-gradient(circle at top, var(--glow-color), transparent 42%),
+			linear-gradient(180deg, var(--app-bg), var(--page-wash));
 		color: var(--app-fg);
+		padding-bottom: 240px;
 	}
 
 	.demo-nav {
 		position: sticky;
 		top: 0;
 		z-index: 20;
-		padding: 16px 24px;
-		background: color-mix(in srgb, var(--nav-bg) 90%, transparent);
-		backdrop-filter: blur(18px);
+		backdrop-filter: blur(20px);
 		border-bottom: 1px solid var(--nav-border);
+		background: color-mix(in srgb, var(--nav-bg) 78%, transparent);
+	}
+
+	.demo-nav-inner,
+	.demo-main {
+		inline-size: min(var(--page-max), calc(100vw - 32px));
+		margin: 0 auto;
 	}
 
 	.demo-nav-inner {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 16px;
-		max-width: 1200px;
-		margin: 0 auto;
+		gap: var(--space-3);
+		padding: 14px 0;
 	}
 
-	.demo-brand {
-		font-size: 1.1rem;
+	.demo-wordmark {
+		font-size: 1.05rem;
 		font-weight: 700;
-		letter-spacing: 0.04em;
+		letter-spacing: 0.08em;
+		text-transform: lowercase;
 	}
 
-	.demo-nav-links,
-	.demo-nav-actions,
-	.demo-hero-actions,
-	.demo-pill-row,
-	.demo-tab-row,
-	.demo-state-row,
-	.demo-compare-list,
-	.demo-toolbar-actions {
+	.demo-nav-links {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 10px;
-		align-items: center;
+		gap: 18px;
+		color: var(--nav-muted);
+	}
+
+	.demo-nav-link {
+		transition: color 180ms ease;
+	}
+
+	.demo-nav-link:hover {
+		color: var(--nav-fg);
 	}
 
 	.demo-main {
 		display: grid;
-		gap: 28px;
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 28px 24px 0;
-	}
-
-	.demo-section,
-	.demo-hero,
-	.demo-dashboard,
-	.demo-feature-card,
-	.demo-workflow,
-	.demo-compare-card,
-	.demo-testimonial,
-	.demo-faq-row,
-	.demo-hero-visual,
-	.demo-dashboard-card,
-	.demo-dashboard-sidebar,
-	.demo-dashboard-activity,
-	.demo-dashboard-metric,
-	.demo-dashboard-nested,
-	.demo-toolbar {
-		border: 1px solid;
-		border-radius: 28px;
-	}
-
-	.demo-hero,
-	.demo-dashboard,
-	.demo-workflow,
-	.demo-comparison,
-	.demo-social,
-	.demo-faq {
-		display: grid;
-		gap: 22px;
+		gap: var(--space-7);
+		padding: 28px 0 0;
 	}
 
 	.demo-hero {
-		grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-		padding: 28px;
-	}
-
-	.demo-badge,
-	.demo-pill,
-	.demo-tab,
-	.demo-step-index,
-	.demo-mini-state,
-	.demo-status-chip {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		padding: 8px 14px;
-		border: 1px solid;
-		border-radius: 999px;
-		white-space: nowrap;
-	}
-
-	.demo-copy {
 		display: grid;
-		gap: 14px;
-		align-content: start;
+		grid-template-columns: minmax(0, 1.02fr) minmax(340px, 0.98fr);
+		gap: var(--space-5);
+		align-items: center;
+	}
+
+	.demo-copy,
+	.demo-feature-card,
+	.demo-testimonial-card,
+	.demo-faq-row,
+	.demo-preview-card,
+	.demo-preview-pane,
+	.demo-preview-activity,
+	.demo-workflow-card,
+	.demo-compare-card,
+	.demo-toolbar,
+	.demo-product-panel {
+		position: relative;
 	}
 
 	.demo-copy h1,
 	.demo-copy h2,
 	.demo-copy h3,
-	.demo-copy h4,
 	.demo-copy p,
 	.demo-section-head h2,
 	.demo-section-head p,
-	.demo-brand-lockup p,
-	.demo-faq-row p,
-	.demo-faq-row strong {
+	.demo-preview-metric p,
+	.demo-preview-metric h3,
+	.demo-faq-row strong,
+	.demo-faq-row p {
 		margin: 0;
 	}
 
-	.demo-copy h1 {
-		font-size: clamp(2.6rem, 4vw, 4.8rem);
-		line-height: 0.98;
-		letter-spacing: -0.04em;
+	.demo-copy {
+		display: grid;
+		gap: var(--space-4);
 	}
 
-	.demo-copy h2,
-	.demo-section-head h2 {
-		font-size: clamp(1.7rem, 2.2vw, 2.5rem);
-		line-height: 1.05;
-		letter-spacing: -0.03em;
+	.demo-badge,
+	.demo-badge-quiet,
+	.demo-status,
+	.demo-mini-state,
+	.demo-toolbar-label {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+		white-space: nowrap;
+	}
+
+	.demo-badge,
+	.demo-badge-quiet,
+	.demo-status,
+	.demo-mini-state {
+		padding: 8px 14px;
+		border: 1px solid;
+	}
+
+	.demo-copy h1 {
+		font-size: clamp(3rem, 6vw, 5.8rem);
+		line-height: 0.94;
+		letter-spacing: -0.06em;
+		max-inline-size: 10ch;
 	}
 
 	.demo-copy p,
 	.demo-section-head p,
+	.demo-preview-activity-item,
+	.demo-feature-card p,
+	.demo-workflow-card p,
+	.demo-compare-row,
 	.demo-faq-row p {
-		line-height: 1.6;
+		line-height: 1.65;
+	}
+
+	.demo-copy .demo-lead {
+		max-inline-size: 60ch;
+		font-size: 1.05rem;
+	}
+
+	.demo-cta-row,
+	.demo-hero-meta,
+	.demo-preview-tabs,
+	.demo-preview-statuses,
+	.demo-preview-actions,
+	.demo-product-state-row,
+	.demo-toolbar-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		align-items: center;
 	}
 
 	.demo-button {
-		padding: 11px 16px;
-		border: 1px solid var(--button-border);
+		border: 1px solid var(--border);
+		background: var(--bg);
+		color: var(--fg);
+		padding: 11px 18px;
 		border-radius: 999px;
-		background: var(--button-bg);
-		color: var(--button-fg);
 		cursor: pointer;
 		transition:
-			background-color 140ms ease,
-			color 140ms ease,
-			border-color 140ms ease,
-			transform 140ms ease;
+			transform 180ms ease,
+			background-color 180ms ease,
+			color 180ms ease,
+			border-color 180ms ease,
+			box-shadow 180ms ease;
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
 	}
 
 	.demo-button:hover {
-		background: var(--button-hover-bg);
-		color: var(--button-hover-fg);
-		border-color: var(--button-hover-border);
+		background: var(--hover-bg);
+		color: var(--hover-fg);
+		border-color: var(--hover-border);
+		transform: translateY(-1px);
 	}
 
 	.demo-button:active {
-		background: var(--button-active-bg);
-		color: var(--button-active-fg);
-		border-color: var(--button-active-border);
-		transform: translateY(1px);
+		background: var(--active-bg);
+		color: var(--active-fg);
+		border-color: var(--active-border);
+		transform: translateY(0);
 	}
 
 	.demo-button:focus,
@@ -215,17 +244,106 @@ style.textContent = `
 
 	.demo-hero-visual {
 		display: grid;
-		gap: 16px;
-		padding: 20px;
-		align-content: start;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: linear-gradient(180deg, var(--hero-card-top), var(--hero-card-bottom));
+		border: 1px solid var(--hero-card-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
 	}
 
-	.demo-chart {
+	.demo-visual-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+	}
+
+	.demo-visual-dots {
+		display: flex;
+		gap: 8px;
+	}
+
+	.demo-visual-dot {
+		inline-size: 10px;
+		block-size: 10px;
+		border-radius: 999px;
+		background: currentColor;
+		opacity: 0.36;
+	}
+
+	.demo-visual-grid {
 		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
+		grid-template-columns: 92px minmax(0, 1fr);
+		gap: var(--space-3);
+	}
+
+	.demo-visual-sidebar,
+	.demo-visual-main,
+	.demo-preview-shell,
+	.demo-preview-card,
+	.demo-preview-pane,
+	.demo-preview-activity,
+	.demo-feature-card,
+	.demo-workflow-card,
+	.demo-compare-card,
+	.demo-testimonial-card,
+	.demo-faq-row,
+	.demo-toolbar,
+	.demo-product-panel,
+	.demo-form-panel,
+	.demo-list-panel,
+	.demo-settings-panel {
+		border-radius: var(--radius-md);
+	}
+
+	.demo-visual-sidebar {
+		padding: 14px;
+		display: grid;
+		gap: 10px;
+		min-height: 240px;
+	}
+
+	.demo-visual-nav-item {
+		padding: 8px 10px;
+		border-radius: 999px;
+		font-size: 0.86rem;
+	}
+
+	.demo-visual-main {
+		display: grid;
+		gap: var(--space-3);
+	}
+
+	.demo-visual-metrics {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-3);
+	}
+
+	.demo-preview-metric {
+		padding: 16px;
+		display: grid;
+		gap: 8px;
+	}
+
+	.demo-preview-metric h3 {
+		font-size: 1.65rem;
+		letter-spacing: -0.04em;
+	}
+
+	.demo-visual-chart {
+		padding: 18px;
+		display: grid;
+		gap: 16px;
+	}
+
+	.demo-chart-bars {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
 		gap: 10px;
 		align-items: end;
-		min-height: 140px;
+		min-height: 180px;
 	}
 
 	.demo-chart-bar {
@@ -233,171 +351,232 @@ style.textContent = `
 		min-height: 48px;
 	}
 
-	.demo-visual-grid {
+	.demo-visual-activity {
+		padding: 16px;
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 14px;
+		gap: 12px;
 	}
 
-	.demo-visual-card,
-	.demo-visual-panel {
-		display: grid;
-		gap: 10px;
-		padding: 14px;
-		border: 1px solid;
-		border-radius: 20px;
-	}
-
-	.demo-dashboard {
-		padding: 24px;
-	}
-
-	.demo-dashboard-grid {
-		display: grid;
-		grid-template-columns: 250px minmax(0, 1fr);
-		gap: 18px;
-	}
-
-	.demo-dashboard-sidebar,
-	.demo-dashboard-card,
-	.demo-dashboard-activity,
-	.demo-dashboard-metric,
-	.demo-dashboard-nested {
-		padding: 18px;
-	}
-
-	.demo-dashboard-sidebar {
-		display: grid;
-		gap: 16px;
-		align-content: start;
-	}
-
-	.demo-dashboard-main {
-		display: grid;
-		gap: 16px;
-	}
-
-	.demo-metric-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 16px;
-	}
-
-	.demo-dashboard-card {
-		display: grid;
-		gap: 14px;
-	}
-
-	.demo-dashboard-card-header,
-	.demo-faq-row {
-		display: flex;
-		align-items: start;
-		justify-content: space-between;
-		gap: 16px;
-	}
-
-	.demo-dashboard-activity-list,
-	.demo-compare-list,
-	.demo-workflow-grid,
-	.demo-feature-grid,
-	.demo-testimonial-grid,
-	.demo-faq-grid {
-		display: grid;
-		gap: 14px;
-	}
-
-	.demo-dashboard-activity-item,
-	.demo-compare-item {
+	.demo-activity-item,
+	.demo-compare-row {
 		display: flex;
 		gap: 10px;
 		align-items: center;
 	}
 
-	.demo-dot {
-		inline-size: 10px;
-		block-size: 10px;
+	.demo-activity-mark,
+	.demo-compare-mark,
+	.demo-feature-accent {
+		inline-size: 12px;
+		block-size: 12px;
 		border-radius: 999px;
 		flex: none;
 	}
 
-	.demo-state-board {
+	.demo-visual-nested {
+		padding: 14px;
+		display: grid;
+		gap: 10px;
+	}
+
+	.demo-section-stack {
+		display: grid;
+		gap: var(--space-5);
+	}
+
+	.demo-section-head {
+		display: grid;
+		gap: 12px;
+		max-inline-size: 60ch;
+	}
+
+	.demo-section-head h2 {
+		font-size: clamp(1.8rem, 3vw, 3rem);
+		line-height: 1.02;
+		letter-spacing: -0.04em;
+	}
+
+	.demo-product-shell {
+		display: grid;
+		gap: var(--space-4);
+		padding: 24px;
+		background: linear-gradient(180deg, var(--product-top), var(--product-bottom));
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+	}
+
+	.demo-product-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.demo-product-grid {
+		display: grid;
+		grid-template-columns: 1.25fr 0.95fr;
+		gap: var(--space-4);
+	}
+
+	.demo-product-column {
+		display: grid;
+		gap: var(--space-4);
+	}
+
+	.demo-product-panel,
+	.demo-settings-panel,
+	.demo-form-panel,
+	.demo-list-panel {
+		padding: 18px;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.demo-form-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.demo-field {
+		display: grid;
+		gap: 8px;
+	}
+
+	.demo-field span {
+		font-size: 0.82rem;
+	}
+
+	.demo-input {
+		padding: 11px 12px;
+		border: 1px solid var(--field-border);
+		border-radius: 14px;
+		background: var(--field-bg);
+		color: var(--field-fg);
+	}
+
+	.demo-list {
+		display: grid;
+		gap: 10px;
+	}
+
+	.demo-list-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 12px 0;
+		border-top: 1px solid color-mix(in srgb, var(--list-divider) 55%, transparent);
+	}
+
+	.demo-list-row:first-child {
+		border-top: 0;
+		padding-top: 0;
+	}
+
+	.demo-state-cluster {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 12px;
 	}
 
 	.demo-state-card {
+		padding: 14px;
 		display: grid;
 		gap: 12px;
-		padding: 14px;
-		border: 1px solid;
 		border-radius: 20px;
 	}
 
+	.demo-state-card strong {
+		font-size: 0.84rem;
+	}
+
 	.demo-feature-grid,
-	.demo-testimonial-grid,
-	.demo-faq-grid {
-		grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	.demo-social-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 18px;
 	}
 
 	.demo-feature-card,
-	.demo-testimonial,
+	.demo-testimonial-card,
 	.demo-faq-row,
 	.demo-compare-card,
-	.demo-workflow {
+	.demo-workflow-card {
 		padding: 22px;
+		box-shadow: var(--shadow-sm);
 	}
 
 	.demo-feature-card,
-	.demo-testimonial,
+	.demo-testimonial-card,
+	.demo-workflow-card,
 	.demo-compare-card {
 		display: grid;
 		gap: 14px;
 	}
 
-	.demo-feature-marker {
-		inline-size: 14px;
-		block-size: 14px;
-		border-radius: 999px;
-	}
-
 	.demo-workflow-grid {
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-	}
-
-	.demo-step {
 		display: grid;
-		gap: 12px;
-		padding: 18px;
-		border: 1px solid;
-		border-radius: 22px;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 18px;
 	}
 
-	.demo-comparison-grid {
+	.demo-step-mark {
+		inline-size: 36px;
+		block-size: 36px;
+		border-radius: 14px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+	}
+
+	.demo-compare-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 16px;
+		gap: 18px;
 	}
 
-	.demo-testimonial-quote {
-		font-size: 1.04rem;
-		line-height: 1.7;
+	.demo-social-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.demo-testimonial-card blockquote {
+		margin: 0;
+		font-size: 1.02rem;
+		line-height: 1.8;
+	}
+
+	.demo-faq-grid {
+		display: grid;
+		gap: 14px;
+	}
+
+	.demo-faq-row {
+		display: flex;
+		align-items: start;
+		justify-content: space-between;
+		gap: 18px;
 	}
 
 	.demo-toolbar {
 		position: fixed;
 		left: 50%;
-		bottom: 20px;
+		bottom: 18px;
 		z-index: 30;
-		display: grid;
-		gap: 16px;
-		inline-size: min(1180px, calc(100vw - 32px));
-		padding: 18px;
+		inline-size: min(1000px, calc(100vw - 32px));
 		transform: translateX(-50%);
-		box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+		padding: 16px;
+		backdrop-filter: blur(22px);
+		box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+		border: 1px solid var(--toolbar-border);
+		background: color-mix(in srgb, var(--toolbar-bg) 88%, transparent);
 	}
 
-	.demo-toolbar-head {
+	.demo-toolbar-inner {
+		display: grid;
+		gap: 14px;
+	}
+
+	.demo-toolbar-top {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -410,10 +589,15 @@ style.textContent = `
 	}
 
 	.demo-toolbar-title strong,
-	.demo-seed-control label {
+	.demo-seed-label {
 		font-size: 0.76rem;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
+	}
+
+	.demo-toolbar-copy {
+		color: var(--toolbar-muted);
+		font-size: 0.92rem;
 	}
 
 	.demo-seed-grid {
@@ -425,49 +609,49 @@ style.textContent = `
 	.demo-seed-control {
 		display: grid;
 		gap: 8px;
-		padding: 12px;
-		border: 1px solid;
-		border-radius: 20px;
 	}
 
 	.demo-seed-row {
 		display: grid;
-		grid-template-columns: 48px minmax(0, 1fr);
+		grid-template-columns: 44px minmax(0, 1fr);
 		gap: 8px;
 	}
 
+	.demo-seed-row input[type="color"],
+	.demo-seed-row input[type="text"] {
+		border: 1px solid var(--toolbar-input-border);
+		border-radius: 14px;
+		background: var(--toolbar-input-bg);
+		color: var(--toolbar-fg);
+		transition:
+			border-color 180ms ease,
+			background-color 180ms ease;
+	}
+
 	.demo-seed-row input[type="color"] {
-		inline-size: 48px;
+		inline-size: 44px;
 		block-size: 42px;
 		padding: 0;
-		border: 1px solid;
-		border-radius: 14px;
-		background: transparent;
 	}
 
 	.demo-seed-row input[type="text"] {
 		inline-size: 100%;
 		padding: 10px 12px;
-		border: 1px solid;
-		border-radius: 14px;
-		background: transparent;
-		color: inherit;
 	}
 
-	.demo-toolbar button,
-	.demo-toolbar input {
-		border-color: var(--toolbar-border);
-	}
-
-	@media (max-width: 1024px) {
+	@media (max-width: 1080px) {
 		.demo-hero,
-		.demo-dashboard-grid,
-		.demo-comparison-grid,
-		.demo-workflow-grid {
+		.demo-product-grid,
+		.demo-feature-grid,
+		.demo-workflow-grid,
+		.demo-compare-grid,
+		.demo-social-grid {
 			grid-template-columns: 1fr;
 		}
 
-		.demo-metric-grid {
+		.demo-visual-grid,
+		.demo-state-cluster,
+		.demo-visual-metrics {
 			grid-template-columns: 1fr;
 		}
 
@@ -476,25 +660,26 @@ style.textContent = `
 		}
 	}
 
-	@media (max-width: 720px) {
+	@media (max-width: 760px) {
 		.demo-shell {
-			padding-bottom: 360px;
+			padding-bottom: 350px;
 		}
 
-		.demo-nav,
+		.demo-nav-inner,
 		.demo-main {
-			padding-left: 16px;
-			padding-right: 16px;
+			inline-size: calc(100vw - 24px);
 		}
 
-		.demo-hero,
-		.demo-dashboard,
-		.demo-feature-card,
-		.demo-workflow,
-		.demo-compare-card,
-		.demo-testimonial,
-		.demo-faq-row {
-			padding: 18px;
+		.demo-nav-inner {
+			padding: 12px 0;
+		}
+
+		.demo-main {
+			padding-top: 18px;
+		}
+
+		.demo-nav-links {
+			display: none;
 		}
 
 		.demo-toolbar {
@@ -506,12 +691,13 @@ style.textContent = `
 			border-radius: 24px 24px 0 0;
 		}
 
-		.demo-toolbar-head {
+		.demo-toolbar-top {
 			flex-direction: column;
-			align-items: stretch;
+			align-items: start;
 		}
 
-		.demo-seed-grid {
+		.demo-seed-grid,
+		.demo-form-grid {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -519,25 +705,94 @@ style.textContent = `
 
 document.head.append(style)
 
-function randomHexColor() {
-	const channels = Array.from({ length: 3 }, () => Math.floor(Math.random() * 256))
+function wrapHue(value) {
+	return ((value % 360) + 360) % 360
+}
 
-	return `#${channels.map(channel => channel.toString(16).padStart(2, "0")).join("")}`
+function randomInRange(min, max) {
+	return min + Math.random() * (max - min)
+}
+
+function hslToHex(h, s, l) {
+	const hue = wrapHue(h)
+	const saturation = Math.max(0, Math.min(100, s)) / 100
+	const lightness = Math.max(0, Math.min(100, l)) / 100
+	const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation
+	const segment = hue / 60
+	const x = chroma * (1 - Math.abs((segment % 2) - 1))
+	let red = 0
+	let green = 0
+	let blue = 0
+
+	if (segment >= 0 && segment < 1) {
+		red = chroma
+		green = x
+	} else if (segment < 2) {
+		red = x
+		green = chroma
+	} else if (segment < 3) {
+		green = chroma
+		blue = x
+	} else if (segment < 4) {
+		green = x
+		blue = chroma
+	} else if (segment < 5) {
+		red = x
+		blue = chroma
+	} else {
+		red = chroma
+		blue = x
+	}
+
+	const match = lightness - chroma / 2
+	const toChannel = value => Math.round((value + match) * 255).toString(16).padStart(2, "0")
+
+	return `#${toChannel(red)}${toChannel(green)}${toChannel(blue)}`
+}
+
+function randomHexColor() {
+	return hslToHex(randomInRange(0, 360), randomInRange(12, 78), randomInRange(44, 62))
+}
+
+function createRandomSeedSet() {
+	const anchor = randomInRange(0, 360)
+	const neutralHue = wrapHue(anchor + randomInRange(-8, 8))
+	const baseHue = wrapHue(anchor + randomInRange(-8, 8))
+
+	return {
+		primary: hslToHex(anchor, randomInRange(62, 78), randomInRange(42, 58)),
+		secondary: hslToHex(anchor + randomInRange(32, 72), randomInRange(44, 62), randomInRange(42, 58)),
+		accent: hslToHex(anchor + randomInRange(155, 215), randomInRange(60, 78), randomInRange(42, 58)),
+		neutral: hslToHex(neutralHue, randomInRange(6, 16), randomInRange(46, 58)),
+		base: hslToHex(baseHue, randomInRange(5, 14), randomInRange(86, 96))
+	}
 }
 
 function randomizeSeedObject() {
-	return Object.fromEntries(SEED_KEYS.map(key => [key, randomHexColor()]))
+	return {
+		primary: randomHexColor(),
+		secondary: randomHexColor(),
+		accent: randomHexColor(),
+		neutral: randomHexColor(),
+		base: randomHexColor()
+	}
 }
 
 function randomizeSeeds() {
-	state.seeds = randomizeSeedObject()
+	state.seeds = createRandomSeedSet()
 	render()
 }
 
 function getPalette() {
 	return createPalette({
 		mode: state.mode,
-		seeds: state.seeds
+		seeds: {
+			primary: state.seeds.primary,
+			secondary: state.seeds.secondary,
+			accent: state.seeds.accent,
+			neutral: state.seeds.neutral,
+			base: state.seeds.base
+		}
 	})
 }
 
@@ -554,38 +809,67 @@ function isValidHexInput(value) {
 	return /^#(?:[\da-f]{3}|[\da-f]{6})$/i.test(value.trim())
 }
 
-function treatmentStyle(treatment) {
+function normalizeSeedInput(value) {
+	const nextValue = value.trim().toLowerCase()
+
+	if (nextValue.length === 4) {
+		return `#${nextValue[1]}${nextValue[1]}${nextValue[2]}${nextValue[2]}${nextValue[3]}${nextValue[3]}`
+	}
+
+	return nextValue
+}
+
+function treatmentVars(treatment) {
 	return [
-		`--button-bg:${treatment.bg}`,
-		`--button-fg:${treatment.fg}`,
-		`--button-border:${treatment.border}`,
-		`--button-hover-bg:${treatment.hover.bg}`,
-		`--button-hover-fg:${treatment.hover.fg}`,
-		`--button-hover-border:${treatment.hover.border}`,
-		`--button-active-bg:${treatment.active.bg}`,
-		`--button-active-fg:${treatment.active.fg}`,
-		`--button-active-border:${treatment.active.border}`
+		`--bg:${treatment.bg}`,
+		`--fg:${treatment.fg}`,
+		`--border:${treatment.border}`,
+		`--hover-bg:${treatment.hover.bg}`,
+		`--hover-fg:${treatment.hover.fg}`,
+		`--hover-border:${treatment.hover.border}`,
+		`--active-bg:${treatment.active.bg}`,
+		`--active-fg:${treatment.active.fg}`,
+		`--active-border:${treatment.active.border}`
 	].join(";")
 }
 
-function renderButton(label, treatment, extraClassText = "") {
-	return `<button type="button" class="demo-button ${escapeHtml(extraClassText)}" style="${treatmentStyle(treatment)}">${escapeHtml(label)}</button>`
+function surfaceVars(surface) {
+	return [
+		`--surface-bg:${surface.bg}`,
+		`--surface-fg:${surface.fg}`,
+		`--surface-border:${surface.border}`,
+		`--surface-child-bg:${surface.child.bg}`,
+		`--surface-child-fg:${surface.child.fg}`,
+		`--surface-child-border:${surface.child.border}`,
+		`--surface-hover-bg:${surface.hover.bg}`,
+		`--surface-active-bg:${surface.active.bg}`
+	].join(";")
+}
+
+function renderButton(label, treatment, className = "") {
+	return `<button type="button" class="demo-button ${escapeHtml(className)}" style="${treatmentVars(treatment)}">${escapeHtml(label)}</button>`
+}
+
+function renderBadge(label, treatment) {
+	return `<span class="demo-badge" style="background:${treatment.bg};color:${treatment.fg};border-color:${treatment.border}">${escapeHtml(label)}</span>`
+}
+
+function renderCard(className, surface, content) {
+	return `<article class="${escapeHtml(className)}" style="${surfaceVars(surface)}background:var(--surface-bg);color:var(--surface-fg)">${content}</article>`
 }
 
 function renderNav(mode) {
 	return `
-		<nav class="demo-nav" style="background:${mode.surfaces.overlay.bg};color:${mode.surfaces.overlay.fg};border-color:${mode.surfaces.overlay.border}">
+		<nav class="demo-nav" style="--nav-bg:${mode.surfaces.overlay.bg};--nav-fg:${mode.surfaces.overlay.fg};--nav-muted:${mode.app.mutedFg};--nav-border:${mode.surfaces.overlay.border}">
 			<div class="demo-nav-inner">
-				<div class="demo-brand">palette</div>
+				<div class="demo-wordmark">palette</div>
 				<div class="demo-nav-links">
-					<a class="demo-button" href="#generator" style="${treatmentStyle(mode.roles.neutral.ghost)}">Generator</a>
-					<a class="demo-button" href="#features" style="${treatmentStyle(mode.roles.neutral.ghost)}">Features</a>
-					<a class="demo-button" href="#workflow" style="${treatmentStyle(mode.roles.neutral.ghost)}">Workflow</a>
-					<a class="demo-button" href="#faq" style="${treatmentStyle(mode.roles.neutral.ghost)}">FAQ</a>
+					<a class="demo-nav-link" href="#product">Product</a>
+					<a class="demo-nav-link" href="#engine">Engine</a>
+					<a class="demo-nav-link" href="#workflow">Workflow</a>
+					<a class="demo-nav-link" href="#faq">FAQ</a>
 				</div>
-				<div class="demo-nav-actions">
-					${renderButton("Try the generator", mode.roles.primary.solid)}
-				</div>
+				${renderButton("Try it live", mode.roles.primary.solid)}
 			</div>
 		</nav>
 	`
@@ -593,42 +877,77 @@ function renderNav(mode) {
 
 function renderHero(mode) {
 	return `
-		<section id="generator" class="demo-hero" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
+		<section class="demo-hero">
 			<div class="demo-copy">
-				<span class="demo-badge" style="background:${mode.roles.accent.soft.bg};color:${mode.roles.accent.soft.fg};border-color:${mode.roles.accent.soft.border}">Contrast-aware UI palettes</span>
-				<h1>Generate complete UI palettes from five seed colors.</h1>
-				<p style="color:${mode.app.mutedFg}">palette turns a compact set of directional seeds into app foundations, surfaces, semantic roles, hover states, active states, and one level of nested interaction colors for realistic interfaces.</p>
-				<div class="demo-hero-actions">
-					${renderButton("Generate a theme", mode.roles.primary.solid)}
-					${renderButton("See the workflow", mode.roles.secondary.outline)}
+				${renderBadge("Contrast-aware palette engine", mode.roles.accent.soft)}
+				<h1>Five seed colors. A complete UI system.</h1>
+				<p class="demo-lead" style="color:${mode.app.mutedFg}">palette generates app foundations, surfaces, semantic roles, state colors, and nested interaction colors from just five required seeds, then resolves them into practical UI-ready recipes.</p>
+				<div class="demo-cta-row">
+					${renderButton("Generate a system", mode.roles.primary.solid)}
+					${renderButton("See how it works", mode.roles.secondary.outline)}
+				</div>
+				<div class="demo-hero-meta">
+					${renderBadge("Deterministic", mode.roles.info.soft)}
+					${renderBadge("Seed-derived", mode.roles.success.soft)}
+					${renderBadge("State-aware", mode.roles.warning.soft)}
 				</div>
 			</div>
-			<div class="demo-hero-visual" style="background:${mode.surfaces.overlay.bg};color:${mode.surfaces.overlay.fg};border-color:${mode.surfaces.overlay.border}">
-				<div class="demo-chart">
-					<div class="demo-chart-bar" style="height:48px;background:${mode.roles.info.soft.bg}"></div>
-					<div class="demo-chart-bar" style="height:84px;background:${mode.roles.primary.soft.bg}"></div>
-					<div class="demo-chart-bar" style="height:66px;background:${mode.roles.secondary.soft.bg}"></div>
-					<div class="demo-chart-bar" style="height:108px;background:${mode.roles.accent.soft.bg}"></div>
-					<div class="demo-chart-bar" style="height:92px;background:${mode.roles.success.soft.bg}"></div>
-					<div class="demo-chart-bar" style="height:74px;background:${mode.roles.warning.soft.bg}"></div>
-				</div>
-				<div class="demo-pill-row">
-					<span class="demo-pill" style="background:${mode.roles.success.soft.bg};color:${mode.roles.success.soft.fg};border-color:${mode.roles.success.soft.border}">Healthy contrast</span>
-					<span class="demo-pill" style="background:${mode.roles.info.soft.bg};color:${mode.roles.info.soft.fg};border-color:${mode.roles.info.soft.border}">Stateful tokens</span>
-					<span class="demo-pill" style="background:${mode.roles.danger.soft.bg};color:${mode.roles.danger.soft.fg};border-color:${mode.roles.danger.soft.border}">No fixed defaults</span>
+			<div class="demo-hero-visual" style="--hero-card-top:${mode.surfaces.raised.bg};--hero-card-bottom:${mode.surfaces.overlay.bg};--hero-card-border:${mode.surfaces.raised.border};color:${mode.surfaces.raised.fg}">
+				<div class="demo-visual-top">
+					<strong>Theme preview</strong>
+					<div class="demo-visual-dots">
+						<span class="demo-visual-dot"></span>
+						<span class="demo-visual-dot"></span>
+						<span class="demo-visual-dot"></span>
+					</div>
 				</div>
 				<div class="demo-visual-grid">
-					<div class="demo-visual-card" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
-						<strong>Launch overview</strong>
-						<p style="color:${mode.app.mutedFg}">App-scale tokens that keep the first layer clean and legible.</p>
-						${renderButton("Open workspace", mode.roles.primary.soft)}
+					<div class="demo-visual-sidebar" style="background:${mode.surfaces.sunken.bg};color:${mode.surfaces.sunken.fg}">
+						<div class="demo-visual-nav-item" style="background:${mode.roles.primary.soft.bg};color:${mode.roles.primary.soft.fg}">Overview</div>
+						<div class="demo-visual-nav-item" style="background:${mode.roles.neutral.ghost.bg};color:${mode.roles.neutral.ghost.fg}">Signals</div>
+						<div class="demo-visual-nav-item" style="background:${mode.roles.neutral.ghost.hover.bg};color:${mode.roles.neutral.ghost.hover.fg}">System</div>
 					</div>
-					<div class="demo-visual-panel" style="background:${mode.surfaces.base.child.bg};color:${mode.surfaces.base.child.fg};border-color:${mode.surfaces.base.child.border}">
-						<strong>Nested panel</strong>
-						<p style="color:${mode.app.subtleFg}">Child tokens create depth without recursive color drift.</p>
-						<div class="demo-pill-row">
-							<span class="demo-status-chip" style="background:${mode.roles.warning.soft.bg};color:${mode.roles.warning.soft.fg};border-color:${mode.roles.warning.soft.border}">Needs review</span>
-							<span class="demo-status-chip" style="background:${mode.roles.info.soft.bg};color:${mode.roles.info.soft.fg};border-color:${mode.roles.info.soft.border}">In progress</span>
+					<div class="demo-visual-main">
+						<div class="demo-visual-metrics">
+							<div class="demo-preview-metric" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+								<p style="color:${mode.app.subtleFg}">Palette health</p>
+								<h3>94%</h3>
+							</div>
+							<div class="demo-preview-metric" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+								<p style="color:${mode.app.subtleFg}">Surface depth</p>
+								<h3>4 layers</h3>
+							</div>
+							<div class="demo-preview-metric" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+								<p style="color:${mode.app.subtleFg}">Roles</p>
+								<h3>8 total</h3>
+							</div>
+						</div>
+						<div class="demo-visual-chart" style="background:${mode.surfaces.overlay.bg};color:${mode.surfaces.overlay.fg}">
+							<div class="demo-chart-bars">
+								<div class="demo-chart-bar" style="height:46px;background:${mode.roles.info.soft.bg}"></div>
+								<div class="demo-chart-bar" style="height:86px;background:${mode.roles.primary.soft.bg}"></div>
+								<div class="demo-chart-bar" style="height:70px;background:${mode.roles.secondary.soft.bg}"></div>
+								<div class="demo-chart-bar" style="height:118px;background:${mode.roles.accent.soft.bg}"></div>
+								<div class="demo-chart-bar" style="height:92px;background:${mode.roles.success.soft.bg}"></div>
+								<div class="demo-chart-bar" style="height:76px;background:${mode.roles.warning.soft.bg}"></div>
+								<div class="demo-chart-bar" style="height:60px;background:${mode.roles.danger.soft.bg}"></div>
+							</div>
+						</div>
+						<div class="demo-visual-activity" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+							<div class="demo-preview-statuses">
+								<span class="demo-status" style="background:${mode.roles.success.soft.bg};color:${mode.roles.success.soft.fg};border-color:${mode.roles.success.soft.border}">Healthy</span>
+								<span class="demo-status" style="background:${mode.roles.warning.soft.bg};color:${mode.roles.warning.soft.fg};border-color:${mode.roles.warning.soft.border}">Review</span>
+								<span class="demo-status" style="background:${mode.roles.info.soft.bg};color:${mode.roles.info.soft.fg};border-color:${mode.roles.info.soft.border}">Ready</span>
+								<span class="demo-status" style="background:${mode.roles.danger.soft.bg};color:${mode.roles.danger.soft.fg};border-color:${mode.roles.danger.soft.border}">Blocked</span>
+							</div>
+							<div class="demo-visual-nested" style="background:${mode.surfaces.base.child.bg};color:${mode.surfaces.base.child.fg}">
+								<strong>Nested activity panel</strong>
+								<p style="color:${mode.app.subtleFg}">One bounded child layer gives embedded review flows enough depth without spiraling into custom one-off states.</p>
+								<div class="demo-preview-actions">
+									${renderButton("Open review", mode.roles.primary.soft)}
+									${renderButton("Archive", mode.roles.neutral.ghost)}
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -637,84 +956,94 @@ function renderHero(mode) {
 	`
 }
 
-function renderDashboardPreview(mode) {
+function renderProductPreview(mode) {
 	return `
-		<section class="demo-dashboard" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
+		<section id="product" class="demo-section-stack">
 			<div class="demo-section-head">
-				<h2>Dashboard preview</h2>
-				<p style="color:${mode.app.mutedFg}">A realistic interface shell showing navigation, metrics, activity, nested content, and explicit rest, hover, and active treatments.</p>
+				<h2>See the generated system in context.</h2>
+				<p style="color:${mode.app.mutedFg}">Instead of exposing raw scales, the demo applies the generated palette to a realistic product slice with tabs, forms, feedback states, nested panels, and explicit button states.</p>
 			</div>
-			<div class="demo-dashboard-grid">
-				<aside class="demo-dashboard-sidebar" style="background:${mode.surfaces.sunken.bg};color:${mode.surfaces.sunken.fg};border-color:${mode.surfaces.sunken.border}">
-					<div class="demo-brand-lockup">
-						<strong>Preview workspace</strong>
-						<p style="color:${mode.app.subtleFg}">Semantic navigation states built from the generated role system.</p>
-					</div>
-					<div class="demo-tab-row">
-						<span class="demo-tab" style="background:${mode.roles.primary.soft.bg};color:${mode.roles.primary.soft.fg};border-color:${mode.roles.primary.soft.border}">Overview</span>
-						<span class="demo-tab" style="background:${mode.roles.neutral.ghost.bg};color:${mode.roles.neutral.ghost.fg};border-color:${mode.roles.neutral.ghost.border}">Signals</span>
-						<span class="demo-tab" style="background:${mode.roles.neutral.ghost.hover.bg};color:${mode.roles.neutral.ghost.hover.fg};border-color:${mode.roles.neutral.ghost.hover.border}">System</span>
-					</div>
-					${renderButton("New palette", mode.roles.secondary.outline)}
-				</aside>
-				<div class="demo-dashboard-main">
-					<div class="demo-metric-grid">
-						<div class="demo-dashboard-metric" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
-							<strong>Theme coverage</strong>
-							<h3>94%</h3>
-							<p style="color:${mode.app.mutedFg}">App, surfaces, roles, and nested interactions aligned.</p>
-						</div>
-						<div class="demo-dashboard-metric" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
-							<strong>Contrast pass rate</strong>
-							<h3>4.5+</h3>
-							<p style="color:${mode.app.mutedFg}">Foreground candidates resolve against their own generated backgrounds.</p>
-						</div>
-						<div class="demo-dashboard-metric" style="background:${mode.surfaces.overlay.bg};color:${mode.surfaces.overlay.fg};border-color:${mode.surfaces.overlay.border}">
-							<strong>Semantic roles</strong>
-							<h3>8 roles</h3>
-							<p style="color:${mode.app.mutedFg}">Primary, secondary, accent, neutral, and four generated statuses.</p>
-						</div>
-					</div>
-					<div class="demo-dashboard-card" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
-						<div class="demo-dashboard-card-header">
+			<div class="demo-product-shell" style="--product-top:${mode.surfaces.base.bg};--product-bottom:${mode.surfaces.raised.bg};background:linear-gradient(180deg,var(--product-top),var(--product-bottom));color:${mode.surfaces.base.fg}">
+				<div class="demo-product-tabs">
+					<span class="demo-badge-quiet" style="background:${mode.roles.primary.solid.bg};color:${mode.roles.primary.solid.fg};border-color:${mode.roles.primary.solid.border}">Overview</span>
+					<span class="demo-badge-quiet" style="background:${mode.roles.neutral.ghost.bg};color:${mode.roles.neutral.ghost.fg};border-color:${mode.roles.neutral.ghost.border}">Components</span>
+					<span class="demo-badge-quiet" style="background:${mode.roles.neutral.ghost.bg};color:${mode.roles.neutral.ghost.fg};border-color:${mode.roles.neutral.ghost.border}">Docs</span>
+				</div>
+				<div class="demo-product-grid">
+					<div class="demo-product-column">
+						<div class="demo-product-panel" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg}">
 							<div class="demo-copy">
-								<h3>Activity panel</h3>
-								<p style="color:${mode.app.mutedFg}">Recent palette revisions, role updates, and rollout milestones.</p>
+								<h3>Release settings</h3>
+								<p style="color:${mode.app.mutedFg}">Adjust global tone and preview semantic controls before publishing a system update.</p>
 							</div>
-							${renderButton("Review changes", mode.roles.primary.solid)}
+							<div class="demo-form-grid">
+								<div class="demo-field">
+									<span>System name</span>
+									<div class="demo-input" style="--field-bg:${mode.surfaces.raised.child.bg};--field-fg:${mode.surfaces.raised.child.fg};--field-border:${mode.surfaces.raised.child.border};background:var(--field-bg);color:var(--field-fg)">Spring rollout</div>
+								</div>
+								<div class="demo-field">
+									<span>Audience</span>
+									<div class="demo-input" style="--field-bg:${mode.surfaces.raised.child.bg};--field-fg:${mode.surfaces.raised.child.fg};--field-border:${mode.surfaces.raised.child.border};background:var(--field-bg);color:var(--field-fg)">Production apps</div>
+								</div>
+							</div>
+							<div class="demo-preview-actions">
+								${renderButton("Save draft", mode.roles.secondary.outline)}
+								${renderButton("Publish", mode.roles.primary.solid)}
+							</div>
 						</div>
-						<div class="demo-dashboard-activity-list">
-							<div class="demo-dashboard-activity-item">
-								<span class="demo-dot" style="background:${mode.roles.success.soft.bg}"></span>
-								<span>App foundations aligned across both modes.</span>
+						<div class="demo-product-panel" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+							<div class="demo-copy">
+								<h3>Activity feed</h3>
+								<p style="color:${mode.app.mutedFg}">Recent palette decisions and rollout signals.</p>
 							</div>
-							<div class="demo-dashboard-activity-item">
-								<span class="demo-dot" style="background:${mode.roles.warning.soft.bg}"></span>
-								<span>Nested preview surfaced a softer active state for overlay panels.</span>
+							<div class="demo-list">
+								<div class="demo-list-row" style="--list-divider:${mode.surfaces.base.border}">
+									<span>Foreground contrast resolved for app shells.</span>
+									${renderBadge("Stable", mode.roles.success.soft)}
+								</div>
+								<div class="demo-list-row" style="--list-divider:${mode.surfaces.base.border}">
+									<span>Nested interaction states applied to forms.</span>
+									${renderBadge("Review", mode.roles.warning.soft)}
+								</div>
+								<div class="demo-list-row" style="--list-divider:${mode.surfaces.base.border}">
+									<span>Accent treatments updated for key flows.</span>
+									${renderBadge("Ready", mode.roles.info.soft)}
+								</div>
 							</div>
-							<div class="demo-dashboard-activity-item">
-								<span class="demo-dot" style="background:${mode.roles.info.soft.bg}"></span>
-								<span>Primary treatment tuned to feel stronger without losing legibility.</span>
-							</div>
-						</div>
-						<div class="demo-dashboard-nested" style="background:${mode.surfaces.raised.child.bg};color:${mode.surfaces.raised.child.fg};border-color:${mode.surfaces.raised.child.border}">
-							<strong>Nested review pane</strong>
-							<p style="color:${mode.app.subtleFg}">One bounded child layer is enough to preview embedded cards, filter panels, and compact settings blocks.</p>
-							${renderButton("Open nested view", mode.roles.neutral.ghost)}
 						</div>
 					</div>
-					<div class="demo-state-board">
-						<div class="demo-state-card" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
-							<strong>Rest</strong>
-							${renderButton("Primary action", mode.roles.primary.solid)}
+					<div class="demo-product-column">
+						<div class="demo-product-panel" style="background:${mode.surfaces.overlay.bg};color:${mode.surfaces.overlay.fg}">
+							<div class="demo-copy">
+								<h3>Notification center</h3>
+								<p style="color:${mode.app.mutedFg}">Role treatments keep feedback states distinct without leaving the palette family.</p>
+							</div>
+							<div class="demo-preview-statuses">
+								${renderBadge("Healthy", mode.roles.success.soft)}
+								${renderBadge("Watchlist", mode.roles.warning.soft)}
+								${renderBadge("Incident", mode.roles.danger.soft)}
+								${renderBadge("Heads up", mode.roles.info.soft)}
+							</div>
 						</div>
-						<div class="demo-state-card" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
-							<strong>Hover</strong>
-							<button type="button" class="demo-button" style="--button-bg:${mode.roles.primary.solid.hover.bg};--button-fg:${mode.roles.primary.solid.hover.fg};--button-border:${mode.roles.primary.solid.hover.border};--button-hover-bg:${mode.roles.primary.solid.hover.bg};--button-hover-fg:${mode.roles.primary.solid.hover.fg};--button-hover-border:${mode.roles.primary.solid.hover.border};--button-active-bg:${mode.roles.primary.solid.hover.bg};--button-active-fg:${mode.roles.primary.solid.hover.fg};--button-active-border:${mode.roles.primary.solid.hover.border}">Primary action</button>
-						</div>
-						<div class="demo-state-card" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
-							<strong>Active</strong>
-							<button type="button" class="demo-button" style="--button-bg:${mode.roles.primary.solid.active.bg};--button-fg:${mode.roles.primary.solid.active.fg};--button-border:${mode.roles.primary.solid.active.border};--button-hover-bg:${mode.roles.primary.solid.active.bg};--button-hover-fg:${mode.roles.primary.solid.active.fg};--button-hover-border:${mode.roles.primary.solid.active.border};--button-active-bg:${mode.roles.primary.solid.active.bg};--button-active-fg:${mode.roles.primary.solid.active.fg};--button-active-border:${mode.roles.primary.solid.active.border}">Primary action</button>
+						<div class="demo-product-panel" style="background:${mode.surfaces.sunken.bg};color:${mode.surfaces.sunken.fg}">
+							<div class="demo-copy">
+								<h3>Button states</h3>
+								<p style="color:${mode.app.mutedFg}">Rest, hover, and active examples rendered directly from generated treatments.</p>
+							</div>
+							<div class="demo-state-cluster">
+								<div class="demo-state-card" style="background:${mode.surfaces.sunken.child.bg};color:${mode.surfaces.sunken.child.fg}">
+									<strong>Rest</strong>
+									${renderButton("Primary action", mode.roles.primary.solid)}
+								</div>
+								<div class="demo-state-card" style="background:${mode.surfaces.sunken.child.bg};color:${mode.surfaces.sunken.child.fg}">
+									<strong>Hover</strong>
+									<button type="button" class="demo-button" style="--bg:${mode.roles.primary.solid.hover.bg};--fg:${mode.roles.primary.solid.hover.fg};--border:${mode.roles.primary.solid.hover.border};--hover-bg:${mode.roles.primary.solid.hover.bg};--hover-fg:${mode.roles.primary.solid.hover.fg};--hover-border:${mode.roles.primary.solid.hover.border};--active-bg:${mode.roles.primary.solid.hover.bg};--active-fg:${mode.roles.primary.solid.hover.fg};--active-border:${mode.roles.primary.solid.hover.border}">Primary action</button>
+								</div>
+								<div class="demo-state-card" style="background:${mode.surfaces.sunken.child.bg};color:${mode.surfaces.sunken.child.fg}">
+									<strong>Active</strong>
+									<button type="button" class="demo-button" style="--bg:${mode.roles.primary.solid.active.bg};--fg:${mode.roles.primary.solid.active.fg};--border:${mode.roles.primary.solid.active.border};--hover-bg:${mode.roles.primary.solid.active.bg};--hover-fg:${mode.roles.primary.solid.active.fg};--hover-border:${mode.roles.primary.solid.active.border};--active-bg:${mode.roles.primary.solid.active.bg};--active-fg:${mode.roles.primary.solid.active.fg};--active-border:${mode.roles.primary.solid.active.border}">Primary action</button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -727,38 +1056,38 @@ function renderFeatures(mode) {
 	const features = [
 		{
 			title: "App foundations",
-			copy: "Use generated app tokens to establish the global canvas, foreground contrast, borders, focus rings, and selection styling.",
+			copy: "Global canvas, text contrast, borders, focus rings, and selection states arrive already resolved.",
 			treatment: mode.roles.primary.soft
 		},
 		{
 			title: "Surface depth",
-			copy: "Base, raised, sunken, and overlay surfaces provide visual layering without inventing ad hoc container colors.",
+			copy: "Base, raised, sunken, and overlay surfaces create visual layering without ad hoc container color decisions.",
 			treatment: mode.roles.secondary.soft
 		},
 		{
 			title: "Semantic roles",
-			copy: "Primary, secondary, accent, neutral, success, warning, danger, and info map directly onto realistic interaction treatments.",
+			copy: "Primary, secondary, accent, neutral, and generated feedback roles map cleanly onto UI treatments.",
 			treatment: mode.roles.accent.soft
 		},
 		{
-			title: "Nested interactions",
-			copy: "One child layer keeps embedded UI deterministic, legible, and bounded across hover and active states.",
+			title: "Nested interaction states",
+			copy: "One bounded child layer keeps embedded cards and forms coherent across hover and active states.",
 			treatment: mode.roles.info.soft
 		}
 	]
 
 	return `
-		<section id="features" class="demo-section demo-features">
+		<section id="engine" class="demo-section-stack">
 			<div class="demo-section-head">
-				<h2>Designed around real interface states.</h2>
-				<p style="color:${mode.app.mutedFg}">palette does more than tint a scale. It resolves foundations, depth, roles, and nested interactions into usable interface primitives.</p>
+				<h2>Built for real UI decisions.</h2>
+				<p style="color:${mode.app.mutedFg}">The engine is organized around the choices product interfaces actually need to make, not just around raw hue scales.</p>
 			</div>
 			<div class="demo-feature-grid">
 				${features
 					.map(
 						feature => `
-							<article class="demo-feature-card" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
-								<span class="demo-feature-marker" style="background:${feature.treatment.bg};border-color:${feature.treatment.border}"></span>
+							<article class="demo-feature-card" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg}">
+								<span class="demo-feature-accent" style="background:${feature.treatment.bg}"></span>
 								<h3>${escapeHtml(feature.title)}</h3>
 								<p style="color:${mode.app.mutedFg}">${escapeHtml(feature.copy)}</p>
 							</article>
@@ -772,27 +1101,27 @@ function renderFeatures(mode) {
 
 function renderWorkflow(mode) {
 	const steps = [
-		"Choose five seeds",
-		"Build tonal ramps",
-		"Resolve contrast",
-		"Apply semantic recipes"
+		"Normalize five required seeds",
+		"Build perceptual ramps",
+		"Resolve contrast per state",
+		"Return semantic recipes"
 	]
 
 	return `
-		<section id="workflow" class="demo-workflow" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
+		<section id="workflow" class="demo-section-stack">
 			<div class="demo-section-head">
-				<h2>From seeds to usable UI.</h2>
-				<p style="color:${mode.app.mutedFg}">The workflow stays compact, deterministic, and aligned with interface roles instead of raw scales.</p>
+				<h2>How the engine thinks.</h2>
+				<p style="color:${mode.app.mutedFg}">Each stage keeps the output bounded, deterministic, and useful for real interface work.</p>
 			</div>
 			<div class="demo-workflow-grid">
 				${steps
 					.map(
 						(step, index) => `
-							<div class="demo-step" style="background:${mode.surfaces.base.child.bg};color:${mode.surfaces.base.child.fg};border-color:${mode.surfaces.base.child.border}">
-								<span class="demo-step-index" style="background:${(index + 1) % 2 === 0 ? mode.roles.secondary.soft.bg : mode.roles.primary.soft.bg};color:${(index + 1) % 2 === 0 ? mode.roles.secondary.soft.fg : mode.roles.primary.soft.fg};border-color:${(index + 1) % 2 === 0 ? mode.roles.secondary.soft.border : mode.roles.primary.soft.border}">${index + 1}</span>
+							<article class="demo-workflow-card" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+								<span class="demo-step-mark" style="background:${index % 2 === 0 ? mode.roles.primary.soft.bg : mode.roles.accent.soft.bg};color:${index % 2 === 0 ? mode.roles.primary.soft.fg : mode.roles.accent.soft.fg}">${index + 1}</span>
 								<h3>${escapeHtml(step)}</h3>
-								<p style="color:${mode.app.subtleFg}">Each stage contributes finite candidates that resolve into practical semantic tokens.</p>
-							</div>
+								<p style="color:${mode.app.mutedFg}">Finite candidate selection turns directional seeds into practical interface states without open-ended adjustment loops.</p>
+							</article>
 						`
 					)
 					.join("")}
@@ -801,49 +1130,20 @@ function renderWorkflow(mode) {
 	`
 }
 
-function renderComparison(mode) {
-	return `
-		<section class="demo-comparison">
-			<div class="demo-section-head">
-				<h2>From raw scales to semantic UI recipes.</h2>
-				<p style="color:${mode.app.mutedFg}">A usable theme needs more than numbered hues. It needs role-aware decisions that hold up in context.</p>
-			</div>
-			<div class="demo-comparison-grid">
-				<article class="demo-compare-card" style="background:${mode.surfaces.sunken.bg};color:${mode.surfaces.sunken.fg};border-color:${mode.surfaces.sunken.border}">
-					<h3>Raw color scales</h3>
-					<div class="demo-compare-list">
-						<div class="demo-compare-item"><span class="demo-dot" style="background:${mode.roles.neutral.soft.bg}"></span><span>Good at showing spectrum coverage.</span></div>
-						<div class="demo-compare-item"><span class="demo-dot" style="background:${mode.roles.neutral.soft.bg}"></span><span>Leaves component states to manual judgment.</span></div>
-						<div class="demo-compare-item"><span class="demo-dot" style="background:${mode.roles.neutral.soft.bg}"></span><span>Usually drifts when nested surfaces appear.</span></div>
-					</div>
-				</article>
-				<article class="demo-compare-card" style="background:${mode.roles.primary.soft.bg};color:${mode.roles.primary.soft.fg};border-color:${mode.roles.primary.soft.border}">
-					<h3>Semantic UI recipes</h3>
-					<div class="demo-compare-list">
-						<div class="demo-compare-item"><span class="demo-dot" style="background:${mode.roles.success.soft.bg}"></span><span>Resolves contrast against each generated background.</span></div>
-						<div class="demo-compare-item"><span class="demo-dot" style="background:${mode.roles.success.soft.bg}"></span><span>Maps directly to app, surface, and role treatments.</span></div>
-						<div class="demo-compare-item"><span class="demo-dot" style="background:${mode.roles.success.soft.bg}"></span><span>Keeps nested interaction layers bounded and predictable.</span></div>
-					</div>
-				</article>
-			</div>
-		</section>
-	`
-}
-
 function renderSocialProof(mode) {
 	return `
-		<section class="demo-social">
+		<section class="demo-section-stack">
 			<div class="demo-section-head">
-				<h2>Built for teams shipping design systems.</h2>
-				<p style="color:${mode.app.mutedFg}">Designers and engineers need palettes that stay coherent across real product states, not just moodboards.</p>
+				<h2>Made for teams shaping product systems.</h2>
+				<p style="color:${mode.app.mutedFg}">Contrast-aware, seed-derived palettes help design systems stay coherent across product surfaces and interaction states.</p>
 			</div>
-			<div class="demo-testimonial-grid">
-				<article class="demo-testimonial" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
-					<p class="demo-testimonial-quote">“palette made it obvious how to turn a handful of seeds into usable app surfaces, role treatments, and interaction states without hand-curating every component.”</p>
+			<div class="demo-social-grid">
+				<article class="demo-testimonial-card" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg}">
+					<blockquote>“palette helped us move from raw scales to usable interface recipes. We could reason about app layers, hover states, and semantic roles as one system.”</blockquote>
 					<strong>Design systems lead</strong>
 				</article>
-				<article class="demo-testimonial" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg};border-color:${mode.surfaces.raised.border}">
-					<p class="demo-testimonial-quote">“The contrast-aware output helped our team move from raw scales to production-ready semantic tokens much faster, especially across light and dark modes.”</p>
+				<article class="demo-testimonial-card" style="background:${mode.surfaces.raised.bg};color:${mode.surfaces.raised.fg}">
+					<blockquote>“The generator gives our engineers something they can apply immediately. The output feels related, intentional, and ready for real product surfaces.”</blockquote>
 					<strong>Frontend platform engineer</strong>
 				</article>
 			</div>
@@ -852,41 +1152,34 @@ function renderSocialProof(mode) {
 }
 
 function renderFaq(mode) {
-	const items = [
-		{
-			question: "Why only five seed colors?",
-			answer: "A small set of directional inputs keeps the public API stable while still giving the generator enough structure to derive roles, surfaces, and states."
-		},
-		{
-			question: "Are status colors hard-coded?",
-			answer: "No. Success, warning, danger, and info are generated from transformed versions of the required seed ramps so they stay related to your chosen palette."
-		},
-		{
-			question: "Does this generate nested interaction states too?",
-			answer: "Yes. The current generator includes one bounded child layer so embedded cards and panels can remain coherent without recursive drift."
-		}
-	]
-
 	return `
-		<section id="faq" class="demo-faq">
+		<section id="faq" class="demo-section-stack">
 			<div class="demo-section-head">
 				<h2>FAQ</h2>
-				<p style="color:${mode.app.mutedFg}">A few quick answers about how the generator is intended to be used.</p>
+				<p style="color:${mode.app.mutedFg}">A few direct answers about how the current engine behaves.</p>
 			</div>
 			<div class="demo-faq-grid">
-				${items
-					.map(
-						item => `
-							<div class="demo-faq-row" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
-								<div class="demo-copy">
-									<strong>${escapeHtml(item.question)}</strong>
-									<p style="color:${mode.app.mutedFg}">${escapeHtml(item.answer)}</p>
-								</div>
-								<span class="demo-pill" style="background:${mode.surfaces.base.child.bg};color:${mode.surfaces.base.child.fg};border-color:${mode.surfaces.base.child.border}">Answer</span>
-							</div>
-						`
-					)
-					.join("")}
+				<div class="demo-faq-row" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+					<div class="demo-copy">
+						<strong>Why five seed colors?</strong>
+						<p style="color:${mode.app.mutedFg}">Five inputs are enough to steer brand, support, highlight, neutral structure, and environmental bias without expanding the public API.</p>
+					</div>
+					${renderBadge("Focused input", mode.roles.primary.soft)}
+				</div>
+				<div class="demo-faq-row" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+					<div class="demo-copy">
+						<strong>Does randomization use fixed defaults?</strong>
+						<p style="color:${mode.app.mutedFg}">No. The demo creates a fresh related seed set on reload and on demand, then feeds those five values into the public generator.</p>
+					</div>
+					${renderBadge("No fixed preset", mode.roles.secondary.soft)}
+				</div>
+				<div class="demo-faq-row" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg}">
+					<div class="demo-copy">
+						<strong>What does nested interaction mean?</strong>
+						<p style="color:${mode.app.mutedFg}">The current output includes one child layer so embedded panels and cards can inherit their own background, foreground, and state colors without recursive trees.</p>
+					</div>
+					${renderBadge("Bounded depth", mode.roles.info.soft)}
+				</div>
 			</div>
 		</section>
 	`
@@ -897,29 +1190,31 @@ function renderToolbar(palette) {
 	const toggleLabel = state.mode === "light" ? "Dark mode" : "Light mode"
 
 	return `
-		<div class="demo-toolbar" style="background:${mode.surfaces.overlay.bg};color:${mode.surfaces.overlay.fg};border-color:${mode.surfaces.overlay.border};--toolbar-border:${mode.surfaces.overlay.border};--focus-ring:${mode.app.focusRing}">
-			<div class="demo-toolbar-head">
-				<div class="demo-toolbar-title">
-					<strong>Color setup</strong>
-					<span>Edit the five required seeds or randomize a new palette.</span>
+		<div class="demo-toolbar" style="--toolbar-bg:${mode.surfaces.overlay.bg};--toolbar-border:${mode.surfaces.overlay.border};--toolbar-fg:${mode.surfaces.overlay.fg};--toolbar-muted:${mode.app.mutedFg};--toolbar-input-bg:${mode.surfaces.base.bg};--toolbar-input-border:${mode.surfaces.base.border};--focus-ring:${mode.app.focusRing};color:var(--toolbar-fg)">
+			<div class="demo-toolbar-inner">
+				<div class="demo-toolbar-top">
+					<div class="demo-toolbar-title">
+						<strong>Color setup</strong>
+						<span class="demo-toolbar-copy">Randomized on reload. Edit any seed.</span>
+					</div>
+					<div class="demo-toolbar-actions">
+						<button type="button" class="demo-button" data-action="randomize" style="${treatmentVars(mode.roles.accent.solid)}">Randomize</button>
+						<button type="button" class="demo-button" data-action="toggle-mode" style="${treatmentVars(mode.roles.neutral.outline)}">${escapeHtml(toggleLabel)}</button>
+					</div>
 				</div>
-				<div class="demo-toolbar-actions">
-					<button type="button" class="demo-button" data-action="randomize" style="${treatmentStyle(mode.roles.accent.solid)}">Randomize</button>
-					<button type="button" class="demo-button" data-action="toggle-mode" style="${treatmentStyle(mode.roles.primary.soft)}">${escapeHtml(toggleLabel)}</button>
+				<div class="demo-seed-grid">
+					${SEED_KEYS.map(
+						key => `
+							<label class="demo-seed-control">
+								<span class="demo-seed-label">${escapeHtml(key)}</span>
+								<div class="demo-seed-row">
+									<input type="color" data-seed-key="${escapeHtml(key)}" value="${escapeHtml(state.seeds[key])}" />
+									<input type="text" data-seed-key="${escapeHtml(key)}" value="${escapeHtml(state.seeds[key])}" spellcheck="false" />
+								</div>
+							</label>
+						`
+					).join("")}
 				</div>
-			</div>
-			<div class="demo-seed-grid">
-				${SEED_KEYS.map(
-					key => `
-						<div class="demo-seed-control" style="background:${mode.surfaces.base.bg};color:${mode.surfaces.base.fg};border-color:${mode.surfaces.base.border}">
-							<label for="seed-${escapeHtml(key)}">${escapeHtml(key)}</label>
-							<div class="demo-seed-row">
-								<input id="seed-${escapeHtml(key)}" data-seed-key="${escapeHtml(key)}" type="color" value="${escapeHtml(state.seeds[key])}" />
-								<input data-seed-key="${escapeHtml(key)}" type="text" value="${escapeHtml(state.seeds[key])}" spellcheck="false" />
-							</div>
-						</div>
-					`
-				).join("")}
 			</div>
 		</div>
 	`
@@ -930,14 +1225,13 @@ function render() {
 	const mode = palette.current
 
 	app.innerHTML = `
-		<div class="demo-shell" style="--app-bg:${mode.app.bg};--app-fg:${mode.app.fg}">
+		<div class="demo-shell" style="--app-bg:${mode.app.bg};--app-fg:${mode.app.fg};--page-wash:${mode.surfaces.base.bg};--glow-color:${mode.roles.accent.soft.bg}">
 			${renderNav(mode)}
 			<main class="demo-main">
 				${renderHero(mode)}
-				${renderDashboardPreview(mode)}
+				${renderProductPreview(mode)}
 				${renderFeatures(mode)}
 				${renderWorkflow(mode)}
-				${renderComparison(mode)}
 				${renderSocialProof(mode)}
 				${renderFaq(mode)}
 			</main>
@@ -968,7 +1262,7 @@ app.addEventListener("input", event => {
 
 	state.seeds = {
 		...state.seeds,
-		[target.dataset.seedKey]: target.value.trim().toLowerCase()
+		[target.dataset.seedKey]: normalizeSeedInput(target.value)
 	}
 	render()
 })
