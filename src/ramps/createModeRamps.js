@@ -4,26 +4,22 @@ import { createRamp } from "./createRamp.js"
 const MODE_RAMP_OPTIONS = {
 	[MODE_LIGHT]: {
 		role: {
-			chromaScale: 0.82,
-			minChroma: 0.04,
-			maxChroma: 0.22
+			profile: "chromatic",
+			chromaScale: 0.9
 		},
 		neutral: {
-			chromaScale: 0.38,
-			minChroma: 0,
-			maxChroma: 0.055
+			profile: "neutral",
+			chromaScale: 0.42
 		}
 	},
 	[MODE_DARK]: {
 		role: {
-			chromaScale: 1.16,
-			minChroma: 0.08,
-			maxChroma: 0.3
+			profile: "chromatic",
+			chromaScale: 1.05
 		},
 		neutral: {
-			chromaScale: 0.5,
-			minChroma: 0,
-			maxChroma: 0.07
+			profile: "neutral",
+			chromaScale: 0.5
 		}
 	}
 }
