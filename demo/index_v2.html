@@ -160,18 +160,7 @@
 					<div
 						class="flex items-center gap-2 bg-black/5 p-1 rounded-xl border"
 						style="border-color: rgba(var(--color-text-rgb), 0.1)">
-						<span class="text-xs font-bold px-2.5 opacity-75">Scheme:</span>
-						<select
-							id="schemeSelect"
-							class="bg-white text-xs font-bold py-1.5 px-3 rounded-lg border outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer text-slate-800">
-							<option value="random">Pure Randomize</option>
-							<option value="monochromatic">Monochromatic Spark</option>
-							<option value="analogous" selected>Analogous Blend</option>
-							<option value="complementary">Complementary Contrast</option>
-							<option value="triadic">Triadic Harmony</option>
-							<option value="sunset">Sunset Glow</option>
-							<option value="forest">Nordic Forest</option>
-						</select>
+						<span class="text-xs font-bold px-2.5 opacity-75" id="modeIndicator">Mode: Light</span>
 					</div>
 
 					<button
@@ -185,8 +174,8 @@
 						id="toggleThemeMode"
 						class="font-bold py-2.5 px-4 rounded-xl text-xs border flex items-center gap-2 transition-all"
 						style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.1)"
-						title="Swap Text/Background to Toggle Dark/Light Mode">
-						<i class="fa-solid fa-circle-half-stroke"></i> Contrast Shift
+						title="Generate a palette for the opposite mode">
+						<i class="fa-solid fa-circle-half-stroke"></i> Toggle Mode
 					</button>
 
 					<button
@@ -739,9 +728,12 @@
 			<span id="toastMsg">Action completed successfully.</span>
 		</div>
 
-		<script>
+		<script type="module">
+			import { palette } from "../src/index.js"
+
 			// --- Global State configuration ---
 			const state = {
+				mode: "light",
 				colors: {
 					text: "#1E293B",
 					background: "#F8FAFC",
@@ -909,14 +901,6 @@
 				return /^#[0-9A-F]{6}$/i.test(hex)
 			}
 
-			// --- STREAMING_CHUNK: Processing Palette creation and mathematical offsets ---
-			function generateRandomColor() {
-				const h = Math.floor(Math.random() * 361)
-				const s = Math.floor(Math.random() * 41) + 50
-				const l = Math.floor(Math.random() * 31) + 35
-				return hslToHex(h, s, l)
-			}
-
 			function updateColorsAndSync(newColors) {
 				for (const key in state.colors) {
 					if (!state.locks[key] && newColors[key]) {
@@ -926,86 +910,9 @@
 				renderApp()
 			}
 
-			function createPalette() {
-				const scheme = document.getElementById("schemeSelect").value
-				const seedColorHex = state.locks.primary ? state.colors.primary : generateRandomColor()
-				const seedHsl = hexToHsl(seedColorHex)
-
-				let tempColors = {}
-
-				switch (scheme) {
-					case "monochromatic":
-						tempColors.text = hslToHex(seedHsl.h, Math.min(15, seedHsl.s), 15)
-						tempColors.background = hslToHex(seedHsl.h, Math.min(10, seedHsl.s), 97)
-						tempColors.primary = seedColorHex
-						tempColors.secondary = hslToHex(seedHsl.h, Math.max(0, seedHsl.s - 25), Math.min(100, seedHsl.l + 15))
-						tempColors.accent = hslToHex(seedHsl.h, Math.max(0, seedHsl.s - 40), Math.min(100, seedHsl.l + 30))
-						break
-
-					case "complementary":
-						const compHue = (seedHsl.h + 180) % 360
-						tempColors.text = hslToHex(seedHsl.h, 15, 12)
-						tempColors.background = hslToHex(seedHsl.h, 10, 98)
-						tempColors.primary = seedColorHex
-						tempColors.secondary = hslToHex(compHue, seedHsl.s, seedHsl.l)
-						tempColors.accent = hslToHex((seedHsl.h + 30) % 360, seedHsl.s + 10, 50)
-						break
-
-					case "triadic":
-						const tHue1 = (seedHsl.h + 120) % 360
-						const tHue2 = (seedHsl.h + 240) % 360
-						tempColors.text = hslToHex(seedHsl.h, 15, 12)
-						tempColors.background = hslToHex(seedHsl.h, 5, 98)
-						tempColors.primary = seedColorHex
-						tempColors.secondary = hslToHex(tHue1, seedHsl.s, seedHsl.l)
-						tempColors.accent = hslToHex(tHue2, seedHsl.s + 10, 50)
-						break
-
-					case "sunset":
-						tempColors.text = "#1E1212"
-						tempColors.background = "#FDF6F6"
-						tempColors.primary = "#F43F5E"
-						tempColors.secondary = "#F97316"
-						tempColors.accent = "#EAB308"
-						break
-
-					case "forest":
-						tempColors.text = "#0F171A"
-						tempColors.background = "#F4F7F6"
-						tempColors.primary = "#0F766E"
-						tempColors.secondary = "#15803D"
-						tempColors.accent = "#D97706"
-						break
-
-					case "analogous":
-					default:
-						const offset1 = (seedHsl.h + 30) % 360
-						const offset2 = (seedHsl.h - 30 + 360) % 360
-						tempColors.text = hslToHex(seedHsl.h, 20, 15)
-						tempColors.background = hslToHex(seedHsl.h, 10, 97)
-						tempColors.primary = seedColorHex
-						tempColors.secondary = hslToHex(offset1, seedHsl.s, seedHsl.l)
-						tempColors.accent = hslToHex(offset2, seedHsl.s + 15, 55)
-						break
-
-					case "random":
-						tempColors.text = hslToHex(
-							Math.floor(Math.random() * 361),
-							10 + Math.floor(Math.random() * 15),
-							10 + Math.floor(Math.random() * 15)
-						)
-						tempColors.background = hslToHex(
-							Math.floor(Math.random() * 361),
-							5 + Math.floor(Math.random() * 10),
-							92 + Math.floor(Math.random() * 7)
-						)
-						tempColors.primary = generateRandomColor()
-						tempColors.secondary = generateRandomColor()
-						tempColors.accent = generateRandomColor()
-						break
-				}
-
-				updateColorsAndSync(tempColors)
+			function generateLibraryPalette() {
+				const generatedColors = palette({ mode: state.mode, seeds: state.colors })
+				updateColorsAndSync(generatedColors)
 			}
 
 			// --- STREAMING_CHUNK: App Rendering loop & custom property synchronization ---
@@ -1049,6 +956,8 @@
 						card.classList.remove("z-10", "ring-4", "ring-indigo-500/50")
 					}
 				}
+
+				document.getElementById("modeIndicator").textContent = state.mode === "light" ? "Mode: Light" : "Mode: Dark"
 
 				// Fire accessibility calculator calculations
 				calculateAccessibilityWCAG()
@@ -1248,19 +1157,14 @@ module.exports = {
 
 			// --- STREAMING_CHUNK: Initializing Event Listeners on Load ---
 			function initEventListeners() {
-				document.getElementById("btnGenerate").addEventListener("click", createPalette)
+				document.getElementById("btnGenerate").addEventListener("click", generateLibraryPalette)
 
 				document.getElementById("btnReset").addEventListener("click", () => {
 					for (const key in state.locks) {
 						state.locks[key] = false
 					}
-					state.colors = {
-						text: "#1E293B",
-						background: "#F8FAFC",
-						primary: "#6366F1",
-						secondary: "#10B981",
-						accent: "#F59E0B"
-					}
+					state.mode = "light"
+					state.colors = palette({ mode: state.mode, seeds: state.colors })
 					renderApp()
 					triggerToast("Locks and palette reset to default configurations.")
 				})
@@ -1350,25 +1254,18 @@ module.exports = {
 					copyToClipboard(blockContent)
 				})
 
-				// Swap Contrast Mode function: Instantly swaps background and text tokens
 				document.getElementById("toggleThemeMode").addEventListener("click", () => {
-					const tempText = state.colors.text
-					state.colors.text = state.colors.background
-					state.colors.background = tempText
-
-					// Keep lock status mapped dynamically
-					const tempLock = state.locks.text
-					state.locks.text = state.locks.background
-					state.locks.background = tempLock
-
-					renderApp()
-					triggerToast("Swapped text and background layers.")
+					state.mode = state.mode === "light" ? "dark" : "light"
+					const generatedColors = palette({ mode: state.mode, seeds: state.colors })
+					updateColorsAndSync(generatedColors)
+					triggerToast(`Generated ${state.mode} mode palette.`)
 				})
 			}
 
 			window.onload = function () {
 				initEventListeners()
 				initQuickSwatches()
+				state.colors = palette({ mode: state.mode, seeds: state.colors })
 				renderApp()
 			}
 		</script>
