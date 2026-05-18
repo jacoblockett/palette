@@ -1,6 +1,6 @@
 # palette
 
-`palette` is a semantic UI palette generator built around a five-seed API. It accepts five public semantic seeds: `text`, `background`, `primary`, `secondary`, and `accent`, generates light and dark mode outputs from one normalized palette identity, uses OKLCH tone scales, sRGB gamut mapping, contrast-aware pair solving, and semantic role separation, and returns plain JavaScript objects containing solid hex colors for semantic UI token consumption.
+`palette` is a semantic UI palette generator built around a five-seed API. It accepts five public semantic seeds: `text`, `background`, `primary`, `secondary`, and `accent`; uses `text` and `background` to define the internal tonal axis for each mode; solves chromatic roles against that tonal axis instead of assigning them from fixed light and dark tone buckets; composes `primary`, `secondary`, and `accent` together as a semantic role hierarchy; and returns plain JavaScript objects containing solid hex colors for semantic UI token consumption.
 
 ## Usage
 
@@ -47,32 +47,45 @@ const palette = createPalette({
 
 - `text`: semantic text source used to derive the neutral identity rail.
 - `background`: semantic environment source used to derive the base surface identity rail.
-- `primary`: main brand or action identity color.
-- `secondary`: supporting brand or action identity color.
-- `accent`: highlight, selection, and focus-adjacent identity color.
+- `primary`: dominant action role identity color.
+- `secondary`: subordinate supporting role identity color.
+- `accent`: sparse high-salience highlight role identity color.
 - Near-neutral `text` and `background` seeds are collapsed into stable low-chroma neutral rails.
 - Near-neutral role seeds receive deterministic hue and chroma recovery so role families do not collapse into unstable gray-source hues.
-- Public seeds define palette identity, not guaranteed final token values.
+- Role seed colors define identity direction and hierarchy input, not final token values.
 - Generated token colors may differ from seed colors because the engine maps identity into mode-specific tones, sRGB gamut, and contrast-safe foreground/background pairs.
 
 `success`, `warning`, `danger`, and `info` are generated role families. They are not accepted as public input seeds.
 
 ## Palette Identity and Modes
 
-`createPalette` normalizes the five public seeds into one internal identity. Light and dark modes are then generated from that identity by role-preserving tonal remapping.
+`createPalette` normalizes the five public seeds into one internal identity. `text` and `background` form the neutral tonal axis for light and dark modes, and light and dark output are produced from that identity by role-preserving tonal-axis remapping.
 
-- Role colors are selected with semantic separation constraints against surfaces and previously assigned role colors.
 - Mode switching does not reinterpret current-mode output colors as new source seeds.
+- The tonal axis defines background tone, text tone, contrast span, polarity, and role anchor tones.
 - `text` and `background` become the internal neutral and base rails.
 - `primary`, `secondary`, and `accent` become chromatic role families.
 - `current` points to the requested mode.
 - `inverse` points to the opposite mode.
 
+## Role Composition
+
+Primary, secondary, and accent are solved together before final role tokens are emitted.
+
+- The solver ranks candidate combinations for contrast, surface separation, sibling role separation, tonal-axis presence, chroma hierarchy, and role prominence.
+- Primary is weighted as the strongest action role.
+- Secondary is intentionally quieter than primary.
+- Accent remains distinct and sparse rather than replacing primary or secondary.
+- Solid, soft, outline, ghost, hover, active, and child states are generated from the solved role composition.
+- Generated roles are assigned after the core roles and are separated against existing role colors.
+
 ## Color Generation
 
 - Tone scales are generated in OKLCH.
 - OKLCH output is mapped into sRGB by preserving lightness and hue while reducing chroma.
-- Role foreground candidates are expanded tone-first before black or white readable fallbacks are used.
+- Role candidates are generated from broad OKLCH tone and chroma candidate spaces.
+- Fixed tone lists are not the final role assignment policy.
+- Palette-derived foreground candidates are expanded tone-first before final black or white safety fallbacks are used.
 - The engine prefers palette-derived foregrounds before final safety fallback colors.
 - Output is returned as solid hex colors.
 
@@ -171,7 +184,7 @@ Every role contains these treatments:
 ```
 
 - `primary`, `secondary`, `accent`, and `neutral` are derived from the semantic identity rails.
-- `primary`, `secondary`, and `accent` are assigned sequentially to reduce semantic collapse.
+- `primary`, `secondary`, and `accent` are composed together as the core semantic role set.
 - `success`, `warning`, `danger`, and `info` are generated role families.
 - Generated roles are assigned after the core roles and are separated against existing role colors.
 - No additional role seed input is accepted by the public API.
@@ -240,12 +253,12 @@ Nested interactive recipe shape:
 
 ## Contrast-Aware Generation
 
-- Foregrounds are solved against their assigned backgrounds.
 - App text targets `7:1` contrast.
 - Body, role, muted, selection, hover, active, and child foregrounds use their configured contrast targets.
 - Non-text UI boundaries and visible state changes target `3:1`.
+- Foreground and background pairs are selected during role assignment, not after roles are already final.
 - Borders, focus rings, state backgrounds, and child backgrounds use contrast-aware visible candidate selection.
-- Foreground/background pairs are selected together for role fills where relevant.
+- Role treatments use generated token pairs, including `fg`, `bg`, `border`, `hover`, `active`, and nested child values.
 - Black or white readable fallbacks are used only as final safety fallbacks after palette-derived tone candidates fail.
 - Generated colors may differ from exact seed colors because seeds provide identity direction, not fixed final token values.
 
@@ -266,9 +279,11 @@ const palette = createPalette({
 
 - `createRandomPaletteSeeds` returns `text`, `background`, `primary`, `secondary`, and `accent`.
 - Random generation uses OKLCH latent parameters rather than HSL or random RGB channels.
-- Random generation samples multiple hue relationship patterns.
+- Random generation samples semantic composition presets.
+- Random generation samples coordinated role compositions instead of isolated primary, secondary, and accent hues.
+- Presets define hue relationships, role chroma hierarchy, and role tone bias.
 - Generated candidates are scored across both light and dark palette outputs.
-- Scoring considers required contrast, semantic role separation, surface separation, and role prominence.
+- Scoring considers required contrast, semantic role hierarchy, role separation, surface separation, and role prominence.
 
 ## Example
 
@@ -289,5 +304,7 @@ palette.current.app.bg
 palette.current.app.fg
 palette.current.surfaces.base.bg
 palette.current.roles.primary.solid.bg
+palette.current.roles.primary.solid.fg
+palette.current.roles.accent.soft.bg
 palette.inverse.app.bg
 ```
