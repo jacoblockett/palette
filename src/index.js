@@ -15,6 +15,19 @@ const ROLE_RANGES = {
 	}
 }
 
+const CHROMATIC_LIGHTNESS_SEARCH_RANGES = {
+	light: {
+		primary: [0.08, 0.88],
+		secondary: [0.08, 0.88],
+		accent: [0.08, 0.9]
+	},
+	dark: {
+		primary: [0.16, 0.96],
+		secondary: [0.14, 0.94],
+		accent: [0.16, 0.96]
+	}
+}
+
 function randomFloat(min, max) {
 	return min + Math.random() * (max - min)
 }
@@ -128,6 +141,22 @@ function oklabDistance(colorA, colorB) {
 	return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
 }
 
+function relativeLuminanceFromOklch(oklch) {
+	const linearSrgb = oklabToLinearSrgb(oklchToOklab(oklch))
+	const r = clamp(linearSrgb.r, 0, 1)
+	const g = clamp(linearSrgb.g, 0, 1)
+	const b = clamp(linearSrgb.b, 0, 1)
+
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function wcagContrast(firstOklch, secondOklch) {
+	const firstLuminance = relativeLuminanceFromOklch(firstOklch) + 0.05
+	const secondLuminance = relativeLuminanceFromOklch(secondOklch) + 0.05
+
+	return Math.max(firstLuminance, secondLuminance) / Math.min(firstLuminance, secondLuminance)
+}
+
 function inverseWithinRange(value, sourceMin, sourceMax, targetMin, targetMax) {
 	const normalized = clamp((value - sourceMin) / (sourceMax - sourceMin), 0, 1)
 	const inverted = 1 - normalized
@@ -139,6 +168,10 @@ function projectWithinRange(value, sourceMin, sourceMax, targetMin, targetMax) {
 	const normalized = clamp((value - sourceMin) / (sourceMax - sourceMin), 0, 1)
 
 	return targetMin + normalized * (targetMax - targetMin)
+}
+
+function isChromaticRole(role) {
+	return role === "primary" || role === "secondary" || role === "accent"
 }
 
 function sampleRole(mode, role, primaryHue) {
@@ -160,7 +193,46 @@ function mapSampledRole(sampled) {
 	}
 }
 
-function invertRole(sourceOklch, role, sourceMode, targetMode) {
+function deriveChromaticRoleByContrast(sourceOklch, role, targetMode, sourceBackgroundOklch, targetBackgroundOklch) {
+	const sourceContrast = wcagContrast(sourceOklch, sourceBackgroundOklch)
+	const [minLightness, maxLightness] = CHROMATIC_LIGHTNESS_SEARCH_RANGES[targetMode][role]
+	let bestCandidate = null
+	let bestScore = Number.POSITIVE_INFINITY
+	let bestLightnessDistance = Number.POSITIVE_INFINITY
+	let bestChromaDistance = Number.POSITIVE_INFINITY
+
+	for (let index = 0; index <= 400; index += 1) {
+		const lightness = minLightness + ((maxLightness - minLightness) * index) / 400
+		const candidate = gamutMapOklch({
+			l: lightness,
+			c: sourceOklch.c,
+			h: sourceOklch.h
+		})
+		const candidateContrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
+		const score = Math.abs(candidateContrast - sourceContrast)
+		const lightnessDistance = Math.abs(candidate.oklch.l - sourceOklch.l)
+		const chromaDistance = Math.abs(candidate.oklch.c - sourceOklch.c)
+
+		if (
+			score < bestScore ||
+			(score === bestScore && lightnessDistance < bestLightnessDistance) ||
+			(score === bestScore && lightnessDistance === bestLightnessDistance && chromaDistance < bestChromaDistance)
+		) {
+			bestCandidate = candidate
+			bestScore = score
+			bestLightnessDistance = lightnessDistance
+			bestChromaDistance = chromaDistance
+		}
+	}
+
+	return bestCandidate
+}
+
+function deriveRoleForMode(sourceOklch, role, sourceMode, targetMode, sourceBackgroundOklch, targetBackgroundOklch) {
+	if (isChromaticRole(role)) {
+		return deriveChromaticRoleByContrast(sourceOklch, role, targetMode, sourceBackgroundOklch, targetBackgroundOklch)
+	}
+
 	const sourceRange = ROLE_RANGES[sourceMode][role]
 	const targetRange = ROLE_RANGES[targetMode][role]
 	const inverted = {
@@ -247,12 +319,47 @@ export function palette(options = {}) {
 			accent: mapSampledRole(sampleRole(mode, "accent"))
 		}
 		const derivedCandidate = {
-			text: invertRole(sampledCandidate.text.oklch, "text", mode, oppositeMode),
-			background: invertRole(sampledCandidate.background.oklch, "background", mode, oppositeMode),
-			primary: invertRole(sampledCandidate.primary.oklch, "primary", mode, oppositeMode),
-			secondary: invertRole(sampledCandidate.secondary.oklch, "secondary", mode, oppositeMode),
-			accent: invertRole(sampledCandidate.accent.oklch, "accent", mode, oppositeMode)
+			text: deriveRoleForMode(
+				sampledCandidate.text.oklch,
+				"text",
+				mode,
+				oppositeMode,
+				sampledCandidate.background.oklch,
+				null
+			),
+			background: deriveRoleForMode(
+				sampledCandidate.background.oklch,
+				"background",
+				mode,
+				oppositeMode,
+				sampledCandidate.background.oklch,
+				null
+			)
 		}
+		derivedCandidate.primary = deriveRoleForMode(
+			sampledCandidate.primary.oklch,
+			"primary",
+			mode,
+			oppositeMode,
+			sampledCandidate.background.oklch,
+			derivedCandidate.background.oklch
+		)
+		derivedCandidate.secondary = deriveRoleForMode(
+			sampledCandidate.secondary.oklch,
+			"secondary",
+			mode,
+			oppositeMode,
+			sampledCandidate.background.oklch,
+			derivedCandidate.background.oklch
+		)
+		derivedCandidate.accent = deriveRoleForMode(
+			sampledCandidate.accent.oklch,
+			"accent",
+			mode,
+			oppositeMode,
+			sampledCandidate.background.oklch,
+			derivedCandidate.background.oklch
+		)
 		const pairedCandidate =
 			mode === "light"
 				? { light: sampledCandidate, dark: derivedCandidate }
