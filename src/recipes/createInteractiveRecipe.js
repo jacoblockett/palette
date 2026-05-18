@@ -1,5 +1,6 @@
+import { CONTRAST_TARGETS } from "./contrastTargets.js"
 import { createStateRecipe } from "./createStateRecipe.js"
-import { pickVisibleCandidate } from "./selectCandidates.js"
+import { pickVisibleContrastCandidate } from "./selectCandidates.js"
 
 export function createInteractiveRecipe({
 	bg,
@@ -17,7 +18,7 @@ export function createInteractiveRecipe({
 		minimumFgContrast,
 		parentBg
 	})
-	const hoverBg = pickVisibleCandidate(hoverBgCandidates, bg, [parentBg])
+	const hoverBg = pickVisibleContrastCandidate(hoverBgCandidates, bg, CONTRAST_TARGETS.nonText, [parentBg])
 	const hover = createStateRecipe({
 		bg: hoverBg,
 		fgCandidates,
@@ -25,7 +26,7 @@ export function createInteractiveRecipe({
 		minimumFgContrast,
 		parentBg: base.bg
 	})
-	const activeBg = pickVisibleCandidate(activeBgCandidates, bg, [hover.bg, parentBg])
+	const activeBg = pickVisibleContrastCandidate(activeBgCandidates, bg, CONTRAST_TARGETS.nonText, [hover.bg, parentBg])
 	const active = createStateRecipe({
 		bg: activeBg,
 		fgCandidates,

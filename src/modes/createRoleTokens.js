@@ -4,6 +4,7 @@ import { hexToOklch, oklchToHex, normalizeHue, clampChroma } from "../color/oklc
 import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
 import { createInteractiveRecipe } from "../recipes/createInteractiveRecipe.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
+import { pickReadablePair } from "../recipes/selectCandidates.js"
 
 const ROLE_TONE_TARGETS = {
 	[MODE_LIGHT]: {
@@ -197,9 +198,18 @@ function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app }) {
 }
 
 function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
+	const roleFgCandidates = [...getTextCandidates(neutralRamp, mode), ...getTextCandidates(roleRamp, mode)]
+	const solidBackgroundCandidates = getRoleToneColors(roleRamp, targets.solid)
+	const solidPair = pickReadablePair({
+		backgroundCandidates: solidBackgroundCandidates,
+		foregroundCandidates: roleFgCandidates,
+		minimumContrastRatio: CONTRAST_TARGETS.roleText,
+		preferredBg: solidBackgroundCandidates[0]
+	})
+
 	return createNestedInteractiveRecipe({
-		bg: getRoleToneColors(roleRamp, targets.solid)[0],
-		fgCandidates: [...getTextCandidates(neutralRamp, mode), ...getTextCandidates(roleRamp, mode)],
+		bg: solidPair.bg,
+		fgCandidates: [solidPair.fg, ...roleFgCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.solidBorder),
 		hoverBgCandidates: getRoleToneColors(roleRamp, targets.solidHover),
 		activeBgCandidates: getRoleToneColors(roleRamp, targets.solidActive),
@@ -218,9 +228,18 @@ function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 }
 
 function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
+	const roleFgCandidates = [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)]
+	const softBackgroundCandidates = getRoleToneColors(roleRamp, targets.soft)
+	const softPair = pickReadablePair({
+		backgroundCandidates: softBackgroundCandidates,
+		foregroundCandidates: roleFgCandidates,
+		minimumContrastRatio: CONTRAST_TARGETS.roleText,
+		preferredBg: softBackgroundCandidates[0]
+	})
+
 	return createNestedInteractiveRecipe({
-		bg: getRoleToneColors(roleRamp, targets.soft)[0],
-		fgCandidates: [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)],
+		bg: softPair.bg,
+		fgCandidates: [softPair.fg, ...roleFgCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.softBorder),
 		hoverBgCandidates: getRoleToneColors(roleRamp, targets.softHover),
 		activeBgCandidates: getRoleToneColors(roleRamp, targets.softActive),
@@ -239,9 +258,16 @@ function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 }
 
 function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
+	const foregroundCandidates = [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)]
+	const outlinePair = pickReadablePair({
+		backgroundCandidates: [surface.bg],
+		foregroundCandidates,
+		minimumContrastRatio: CONTRAST_TARGETS.roleText
+	})
+
 	return createInteractiveRecipe({
 		bg: surface.bg,
-		fgCandidates: [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)],
+		fgCandidates: [outlinePair.fg, ...foregroundCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.outlineBorder),
 		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
 		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
@@ -251,9 +277,16 @@ function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface 
 }
 
 function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
+	const foregroundCandidates = [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)]
+	const ghostPair = pickReadablePair({
+		backgroundCandidates: [surface.bg],
+		foregroundCandidates,
+		minimumContrastRatio: CONTRAST_TARGETS.roleText
+	})
+
 	return createInteractiveRecipe({
 		bg: surface.bg,
-		fgCandidates: [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)],
+		fgCandidates: [ghostPair.fg, ...foregroundCandidates],
 		borderCandidates: getRoleToneColors(neutralRamp, targets.outlineBorder),
 		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
 		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),

@@ -1,9 +1,10 @@
-import { pickReadableCandidate, pickVisibleCandidate } from "./selectCandidates.js"
+import { CONTRAST_TARGETS } from "./contrastTargets.js"
+import { pickReadableCandidate, pickVisibleContrastCandidate } from "./selectCandidates.js"
 
 export function createStateRecipe({ bg, fgCandidates, borderCandidates, minimumFgContrast, parentBg }) {
 	return {
 		bg,
 		fg: pickReadableCandidate(fgCandidates, bg, minimumFgContrast),
-		border: pickVisibleCandidate(borderCandidates, bg, [parentBg])
+		border: pickVisibleContrastCandidate(borderCandidates, bg, CONTRAST_TARGETS.nonText, [parentBg])
 	}
 }

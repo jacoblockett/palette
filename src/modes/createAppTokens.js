@@ -2,7 +2,7 @@ import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
 import { getRampColor } from "../ramps/createRamp.js"
 import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
 import { MODE_TONE_TARGETS } from "./toneTargets.js"
-import { pickReadableCandidate, pickVisibleCandidate } from "../recipes/selectCandidates.js"
+import { pickReadableCandidate, pickReadablePair, pickVisibleContrastCandidate } from "../recipes/selectCandidates.js"
 
 export function createAppTokens({ mode, ramps }) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
@@ -23,11 +23,30 @@ export function createAppTokens({ mode, ramps }) {
 		bg,
 		CONTRAST_TARGETS.subtleText
 	)
-	const border = pickVisibleCandidate(getStopColors(ramps.neutral, targets.border), bg)
-	const strongBorder = pickVisibleCandidate(getStopColors(ramps.neutral, targets.strongBorder), bg, [border])
-	const focusRing = pickVisibleCandidate(getStopColors(ramps.accent, targets.focusRing), bg, [border, strongBorder])
-	const selectionBg = getRampColor(ramps.accent, targets.selectionBg)
-	const selectionFg = pickReadableCandidate(appFgCandidates, selectionBg, CONTRAST_TARGETS.selectionText)
+	const border = pickVisibleContrastCandidate(
+		getStopColors(ramps.neutral, targets.border),
+		bg,
+		CONTRAST_TARGETS.nonText
+	)
+	const strongBorder = pickVisibleContrastCandidate(
+		getStopColors(ramps.neutral, targets.strongBorder),
+		bg,
+		CONTRAST_TARGETS.nonText,
+		[border]
+	)
+	const focusRing = pickVisibleContrastCandidate(
+		getStopColors(ramps.accent, targets.focusRing),
+		bg,
+		CONTRAST_TARGETS.nonText,
+		[border, strongBorder]
+	)
+	const selectionPair = pickReadablePair({
+		backgroundCandidates: [getRampColor(ramps.accent, targets.selectionBg)],
+		foregroundCandidates: appFgCandidates,
+		minimumContrastRatio: CONTRAST_TARGETS.selectionText
+	})
+	const selectionBg = selectionPair.bg
+	const selectionFg = selectionPair.fg
 
 	return {
 		bg,

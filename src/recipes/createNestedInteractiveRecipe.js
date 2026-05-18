@@ -1,5 +1,6 @@
+import { CONTRAST_TARGETS } from "./contrastTargets.js"
 import { createInteractiveRecipe } from "./createInteractiveRecipe.js"
-import { pickVisibleCandidate } from "./selectCandidates.js"
+import { pickVisibleContrastCandidate } from "./selectCandidates.js"
 
 export function createNestedInteractiveRecipe({
 	bg,
@@ -22,7 +23,7 @@ export function createNestedInteractiveRecipe({
 		minimumFgContrast,
 		parentBg
 	})
-	const childBg = pickVisibleCandidate(childBgCandidates, baseRecipe.bg, [
+	const childBg = pickVisibleContrastCandidate(childBgCandidates, baseRecipe.bg, CONTRAST_TARGETS.nonText, [
 		baseRecipe.hover.bg,
 		baseRecipe.active.bg,
 		parentBg
