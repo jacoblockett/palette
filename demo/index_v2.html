@@ -957,6 +957,10 @@
 					}
 				}
 
+				const backgroundRgb = hexToRgb(state.colors.background)
+				root.style.setProperty("--color-bg", state.colors.background)
+				root.style.setProperty("--color-bg-rgb", `${backgroundRgb.r}, ${backgroundRgb.g}, ${backgroundRgb.b}`)
+
 				document.getElementById("modeIndicator").textContent = state.mode === "light" ? "Mode: Light" : "Mode: Dark"
 
 				// Fire accessibility calculator calculations
@@ -1018,7 +1022,7 @@
 					block.textContent = `/* CSS Variable Framework Integration */
 :root {
   --color-text: ${state.colors.text};
-  --color-bg: ${state.colors.background};
+  --color-background: ${state.colors.background};
   --color-primary: ${state.colors.primary};
   --color-secondary: ${state.colors.secondary};
   --color-accent: ${state.colors.accent};
@@ -1262,12 +1266,12 @@ module.exports = {
 				})
 			}
 
-			window.onload = function () {
+			document.addEventListener("DOMContentLoaded", () => {
 				initEventListeners()
 				initQuickSwatches()
 				state.colors = palette({ mode: state.mode, seeds: state.colors })
 				renderApp()
-			}
+			})
 		</script>
 	</body>
 </html>
