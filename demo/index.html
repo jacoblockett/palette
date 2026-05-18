@@ -49,6 +49,15 @@
     </script>
 
     <style>
+        html.mode-snap,
+        html.mode-snap *,
+        html.mode-snap *::before,
+        html.mode-snap *::after {
+            transition-property: none !important;
+            transition-duration: 0s !important;
+            transition-delay: 0s !important;
+        }
+
         :root {
             /* Start with Dark Mode seeds as default */
             --p-text: #f8e2f2;
@@ -354,17 +363,17 @@
                     <div class="lg:col-span-7 h-full flex flex-col justify-between space-y-6">
                         <div class="rounded-2xl bg-palette-bg-card border border-palette-border p-6 font-mono text-xs overflow-x-auto select-all relative group/code">
                             <div class="absolute top-4 right-4 text-[10px] tracking-wider uppercase font-sans text-palette-text-muted bg-palette-bg border border-palette-border px-2.5 py-1 rounded-md">
-                                Output Config
+                                Resolved Mode Tokens
                             </div>
-                            <span class="text-palette-text-muted">// Generated dynamically via Palette.js</span>
+                            <span class="text-palette-text-muted">// Resolved current-mode token values via Palette.js</span>
                             <pre class="mt-4 text-palette-text leading-relaxed">
-<span class="text-palette-accent">const</span> <span class="text-palette-primary">system</span> = Palette({
+<span class="text-palette-accent">const</span> <span class="text-palette-primary">currentModeTokens</span> = {
   text: <span class="text-palette-primary">"<span class="code-text">#f8e2f2</span>"</span>,
   background: <span class="text-palette-primary">"<span class="code-background">#0e030b</span>"</span>,
   primary: <span class="text-palette-primary">"<span class="code-primary">#e48ec7</span>"</span>,
   secondary: <span class="text-palette-primary">"<span class="code-secondary">#81341f</span>"</span>,
   accent: <span class="text-palette-primary">"<span class="code-accent">#d28c41</span>"</span>,
-});
+};
 
 <span class="text-palette-text-muted">// Ready to export into styling libraries</span>
 export const <span class="text-palette-accent">tailwindTheme</span> = {
@@ -372,9 +381,9 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
     extend: {
       colors: {
         palette: {
-          text: system.colors.text,           <span class="text-palette-text-muted">// <span class="code-text">#f8e2f2</span></span>
-          background: system.colors.bg,       <span class="text-palette-text-muted">// <span class="code-background">#0e030b</span></span>
-          primary: system.colors.primary,     <span class="text-palette-text-muted">// <span class="code-primary">#e48ec7</span></span>
+          text: currentModeTokens.text,       <span class="text-palette-text-muted">// <span class="code-text">#f8e2f2</span></span>
+          background: currentModeTokens.background, <span class="text-palette-text-muted">// <span class="code-background">#0e030b</span></span>
+          primary: currentModeTokens.primary, <span class="text-palette-text-muted">// <span class="code-primary">#e48ec7</span></span>
           border: system.shades.border,       <span class="text-palette-text-muted">// generated auto opacity</span>
           card: system.shades.cardBg,         <span class="text-palette-text-muted">// generated contrast compliant</span>
         }
@@ -783,6 +792,16 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             });
         }
 
+        function getResolvedDisplayValues(palette) {
+            return {
+                text: palette.current.app.fg,
+                background: palette.current.app.bg,
+                primary: palette.current.roles.primary.solid.bg,
+                secondary: palette.current.roles.secondary.solid.bg,
+                accent: palette.current.roles.accent.solid.bg
+            };
+        }
+
         function updatePageColors() {
             const root = document.documentElement;
             const palette = getGeneratedPalette();
@@ -799,16 +818,17 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             root.style.setProperty('--p-primary-glow', palette.current.roles.primary.soft.bg);
             root.style.setProperty('--p-accent-glow', palette.current.roles.accent.soft.bg);
 
-            syncPickerUI();
+            syncPickerUI(palette);
         }
 
-        function syncPickerUI() {
+        function syncPickerUI(palette) {
             const keys = ['text', 'background', 'primary', 'secondary', 'accent'];
+            const resolvedValues = getResolvedDisplayValues(palette);
 
             keys.forEach(key => {
-                const hexVal = currentPalette[key];
+                const hexVal = resolvedValues[key].toLowerCase();
                 const label = document.getElementById(`hex-${key}`);
-                if (label) label.textContent = hexVal.toLowerCase();
+                if (label) label.textContent = hexVal;
 
                 const picker = document.getElementById(`picker-${key}`);
                 if (picker) picker.value = hexVal;
@@ -818,7 +838,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 
                 const codeElements = document.querySelectorAll(`.code-${key}`);
                 codeElements.forEach(el => {
-                    el.textContent = hexVal.toLowerCase();
+                    el.textContent = hexVal;
                 });
             });
         }
@@ -828,21 +848,35 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             updatePageColors();
         }
 
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
+        function applyInstantModeUpdate(callback) {
             const root = document.documentElement;
-            const themeToggleIcon = document.getElementById('themeToggleIcon');
+            root.classList.add('mode-snap');
+            root.offsetHeight;
+            callback();
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    root.classList.remove('mode-snap');
+                });
+            });
+        }
 
-            if (isDarkMode) {
-                root.classList.add('dark');
-                themeToggleIcon?.setAttribute('data-lucide', 'sun');
-            } else {
-                root.classList.remove('dark');
-                themeToggleIcon?.setAttribute('data-lucide', 'moon');
-            }
+        function toggleTheme() {
+            applyInstantModeUpdate(() => {
+                isDarkMode = !isDarkMode;
+                const root = document.documentElement;
+                const themeToggleIcon = document.getElementById('themeToggleIcon');
 
-            lucide.createIcons();
-            updatePageColors();
+                if (isDarkMode) {
+                    root.classList.add('dark');
+                    themeToggleIcon?.setAttribute('data-lucide', 'sun');
+                } else {
+                    root.classList.remove('dark');
+                    themeToggleIcon?.setAttribute('data-lucide', 'moon');
+                }
+
+                lucide.createIcons();
+                updatePageColors();
+            });
             triggerNotification(isDarkMode ? "Inverted to Dark Mode config" : "Inverted to Light Mode config");
         }
 
