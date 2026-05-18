@@ -1,6 +1,6 @@
 # palette
 
-`palette` is a contrast-aware semantic UI palette generator. It takes five required seed colors, generates both light and dark mode palettes, and returns plain JavaScript objects containing solid hex colors for semantic UI token consumption.
+`palette` is a semantic UI palette generator. It accepts five public semantic seeds: `text`, `background`, `primary`, `secondary`, and `accent`, generates light and dark mode outputs from one normalized palette identity, and returns plain JavaScript objects containing solid hex colors for semantic UI token consumption.
 
 ## Usage
 
@@ -10,8 +10,8 @@ import { createPalette } from "palette"
 const palette = createPalette({
 	mode: "light",
 	seeds: {
-		text: "#475569",
-		background: "#94a3b8",
+		text: "#1f2937",
+		background: "#f8fafc",
 		primary: "#4f46e5",
 		secondary: "#0f766e",
 		accent: "#d97706"
@@ -27,32 +27,49 @@ const palette = createPalette({
 const palette = createPalette({
 	mode: "dark",
 	seeds: {
-		text: "#475569",
-		background: "#94a3b8",
-		primary: "#4f46e5",
-		secondary: "#0f766e",
-		accent: "#d97706"
+		text: "#e5e7eb",
+		background: "#111827",
+		primary: "#818cf8",
+		secondary: "#2dd4bf",
+		accent: "#f59e0b"
 	}
 })
 ```
 
 - Every seed is required: `text`, `background`, `primary`, `secondary`, and `accent`.
 - Missing input, missing `seeds`, or missing seed keys throw `TypeError`.
-- Accepted seed formats are `#rgb` and `#rrggbb`.
-- Output colors are normalized to lowercase `#rrggbb`.
 - `mode` may be `"light"` or `"dark"`.
 - If `mode` is omitted, it defaults to `"light"`.
+- Accepted seed formats are `#rgb` and `#rrggbb`.
+- Output colors are normalized lowercase `#rrggbb`.
 
 ## Seed Responsibilities
 
-- `primary`: main brand or action color.
-- `secondary`: supporting brand or action color.
-- `accent`: highlight and focus-adjacent color.
-- `text`: semantic text seed that drives the internal neutral ramp for text, borders, and neutral UI.
-- `background`: semantic background seed that drives the internal base ramp for app and surface bias.
-- Public seeds are semantic authoring inputs. The generator derives internal neutral and surface ramp sources from `text` and `background`, then builds separate light and dark ramps from those internal seeds.
+- `text`: semantic text source used to derive the neutral identity rail.
+- `background`: semantic environment source used to derive the base surface identity rail.
+- `primary`: main brand or action identity color.
+- `secondary`: supporting brand or action identity color.
+- `accent`: highlight, selection, and focus-adjacent identity color.
+- Public seeds define palette identity, not guaranteed final token values.
+- Generated token colors may differ from seed colors because the engine maps identity into mode-specific tones, sRGB gamut, and contrast-safe foreground/background pairs.
 
-`success`, `warning`, `danger`, and `info` are generated from the five required seed ramps. They are not accepted as public input seeds.
+`success`, `warning`, `danger`, and `info` are generated role families. They are not accepted as public input seeds.
+
+## Palette Identity and Modes
+
+`createPalette` normalizes the five public seeds into one internal identity. Light and dark modes are then generated as two tonal renderings of that identity.
+
+- Mode switching does not reinterpret current-mode output colors as new source seeds.
+- `text` and `background` become the internal neutral and base rails.
+- `primary`, `secondary`, and `accent` become chromatic role families.
+- `current` points to the requested mode.
+- `inverse` points to the opposite mode.
+
+## Color Generation
+
+- Tone scales are generated in OKLCH.
+- OKLCH output is mapped into sRGB by preserving lightness and hue while reducing chroma.
+- Output is returned as solid hex colors.
 
 ## Return Shape
 
@@ -85,7 +102,7 @@ const palette = createPalette({
 - `source` contains the normalized public semantic seeds.
 - `current` points to the requested mode output.
 - `inverse` points to the opposite mode output.
-- Each mode contains `app`, `surfaces`, `roles`, and `ramps`.
+- `modes.light` and `modes.dark` each contain `app`, `surfaces`, `roles`, and `ramps`.
 
 ## `mode.app`
 
@@ -105,9 +122,6 @@ const palette = createPalette({
 }
 ```
 
-- App foreground tokens are chosen from generated neutral ramp candidates.
-- `focusRing` and `selectionBg` derive from the accent ramp.
-
 ## `mode.surfaces`
 
 `mode.surfaces` contains:
@@ -121,7 +135,7 @@ const palette = createPalette({
 }
 ```
 
-Every surface is a nested interactive recipe. Surfaces derive from the base and neutral ramps and are intended for cards, panels, overlays, and nested UI containers.
+Every surface is a nested interactive recipe intended for cards, panels, overlays, and nested UI containers.
 
 ## `mode.roles`
 
@@ -151,8 +165,8 @@ Every role contains these treatments:
 }
 ```
 
-- `primary`, `secondary`, `accent`, and `neutral` derive from mode-specific ramps created from the public semantic seeds and their internally derived neutral/base ramp sources.
-- `success`, `warning`, `danger`, and `info` are generated from transformed versions of required seed ramps.
+- `primary`, `secondary`, `accent`, and `neutral` are derived from the semantic identity rails.
+- `success`, `warning`, `danger`, and `info` are generated role families.
 - No additional role seed input is accepted by the public API.
 
 ## Recipe Shapes
@@ -219,11 +233,31 @@ Nested interactive recipe shape:
 
 ## Contrast-Aware Generation
 
-- Foreground candidates are selected against their generated background.
-- Hover and active states select their own foregrounds.
-- Borders and state backgrounds are selected from finite tonal candidates.
-- The generator uses bounded candidate selection instead of unbounded adjustment loops.
-- Generated colors may differ from exact seed colors because seeds provide direction and ramps, not fixed final token values.
+- Foregrounds are solved against their assigned backgrounds.
+- App foreground targets `7:1` contrast.
+- Body, role, muted, selection, hover, active, and child foregrounds target their configured contrast thresholds.
+- Black or white readable foreground fallbacks are used when palette candidate foregrounds do not meet the required contrast.
+- Borders and state backgrounds are selected from generated tone candidates.
+- Generated colors may differ from exact seed colors because seeds provide identity direction, not fixed final token values.
+
+## Random Semantic Seeds
+
+`palette` also exports `createRandomPaletteSeeds` for library-owned semantic seed generation.
+
+```js
+import { createPalette, createRandomPaletteSeeds } from "palette"
+
+const seeds = createRandomPaletteSeeds({ mode: "dark" })
+
+const palette = createPalette({
+	mode: "dark",
+	seeds
+})
+```
+
+- `createRandomPaletteSeeds` returns `text`, `background`, `primary`, `secondary`, and `accent`.
+- Random generation uses OKLCH.
+- Generated seed sets are screened through the palette engine for core light and dark contrast pairs before being returned.
 
 ## Example
 
@@ -232,8 +266,8 @@ import { createPalette } from "palette"
 
 const palette = createPalette({
 	seeds: {
-		text: "#475569",
-		background: "#94a3b8",
+		text: "#1f2937",
+		background: "#f8fafc",
 		primary: "#4f46e5",
 		secondary: "#0f766e",
 		accent: "#d97706"
@@ -241,8 +275,8 @@ const palette = createPalette({
 })
 
 palette.current.app.bg
+palette.current.app.fg
 palette.current.surfaces.base.bg
 palette.current.roles.primary.solid.bg
-palette.current.roles.primary.solid.hover.bg
-palette.current.roles.primary.solid.child.hover.bg
+palette.inverse.app.bg
 ```
