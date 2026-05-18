@@ -1,51 +1,12 @@
 import fs from "node:fs"
 import { spawn } from "node:child_process"
 
-const usageMessage = "Usage: pnpm dev -- <1|2>"
-
-function resolveVersion(argv) {
-	for (let index = 0; index < argv.length; index += 1) {
-		const argument = argv[index]
-
-		if (argument === "--version") {
-			return argv[index + 1]
-		}
-
-		if (argument.startsWith("--version=")) {
-			return argument.slice("--version=".length)
-		}
-
-		if (
-			argument === "1" ||
-			argument === "v1" ||
-			argument === "index" ||
-			argument === "index.html" ||
-			argument === "2" ||
-			argument === "v2" ||
-			argument === "index_v2" ||
-			argument === "index_v2.html"
-		) {
-			return argument
-		}
-	}
-
-	return null
-}
-
-function mapDemoPath(version) {
-	if (version === "1" || version === "v1" || version === "index" || version === "index.html") {
-		return "demo/index.html"
-	}
-
-	if (version === "2" || version === "v2" || version === "index_v2" || version === "index_v2.html") {
-		return "demo/index_v2.html"
-	}
-
-	return null
-}
-
-const version = resolveVersion(process.argv.slice(2))
-const demoPath = mapDemoPath(version)
+const usageMessage = "Usage: pnpm dev <1|2>"
+const version = process.argv
+	.slice(2)
+	.filter(argument => argument !== "--")
+	.find(argument => argument === "1" || argument === "2")
+const demoPath = version === "1" ? "demo/index.html" : version === "2" ? "demo/index_v2.html" : null
 
 if (!demoPath) {
 	process.stderr.write(`${usageMessage}\n`)
@@ -57,7 +18,7 @@ if (!fs.existsSync(demoPath)) {
 	process.exit(1)
 }
 
-const viteProcess = spawn("node_modules/.bin/vite", ["--host", "0.0.0.0", "--open", `/${demoPath}`], {
+const viteProcess = spawn("vite", ["--host", "0.0.0.0", "--open", `/${demoPath}`], {
 	shell: true,
 	stdio: "inherit"
 })
