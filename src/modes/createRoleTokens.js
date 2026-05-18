@@ -1,7 +1,8 @@
 import { MODE_LIGHT, MODE_DARK, ROLE_KEYS, GENERATED_ROLE_KEYS } from "../defaults.js"
-import { createRamp, getRampColor, getTextCandidates, TONE_STOPS } from "../ramps/createRamp.js"
+import { createRamp, getRampColor, TONE_STOPS } from "../ramps/createRamp.js"
 import { hexToOklch, oklchToHex, normalizeHue, clampChroma } from "../color/oklch.js"
 import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
+import { createForegroundCandidates } from "../recipes/createForegroundCandidates.js"
 import { createInteractiveRecipe } from "../recipes/createInteractiveRecipe.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 import { pickReadablePair } from "../recipes/selectCandidates.js"
@@ -198,7 +199,11 @@ function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app }) {
 }
 
 function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
-	const roleFgCandidates = [...getTextCandidates(neutralRamp, mode), ...getTextCandidates(roleRamp, mode)]
+	const roleFgCandidates = createForegroundCandidates({
+		mode,
+		primaryRamp: neutralRamp,
+		fallbackRamp: roleRamp
+	})
 	const solidBackgroundCandidates = getRoleToneColors(roleRamp, targets.solid)
 	const solidPair = pickReadablePair({
 		backgroundCandidates: solidBackgroundCandidates,
@@ -228,7 +233,11 @@ function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 }
 
 function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
-	const roleFgCandidates = [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)]
+	const roleFgCandidates = createForegroundCandidates({
+		mode,
+		primaryRamp: roleRamp,
+		fallbackRamp: neutralRamp
+	})
 	const softBackgroundCandidates = getRoleToneColors(roleRamp, targets.soft)
 	const softPair = pickReadablePair({
 		backgroundCandidates: softBackgroundCandidates,
@@ -258,7 +267,11 @@ function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 }
 
 function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
-	const foregroundCandidates = [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)]
+	const foregroundCandidates = createForegroundCandidates({
+		mode,
+		primaryRamp: roleRamp,
+		fallbackRamp: neutralRamp
+	})
 	const outlinePair = pickReadablePair({
 		backgroundCandidates: [surface.bg],
 		foregroundCandidates,
@@ -277,7 +290,11 @@ function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface 
 }
 
 function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
-	const foregroundCandidates = [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)]
+	const foregroundCandidates = createForegroundCandidates({
+		mode,
+		primaryRamp: roleRamp,
+		fallbackRamp: neutralRamp
+	})
 	const ghostPair = pickReadablePair({
 		backgroundCandidates: [surface.bg],
 		foregroundCandidates,

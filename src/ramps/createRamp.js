@@ -125,6 +125,22 @@ export function getTextCandidates(ramp, mode) {
 	throw new TypeError('Expected mode to be "light" or "dark"')
 }
 
+export function getToneFirstForegroundCandidates(ramp, mode, preferredStops = []) {
+	let searchOrder
+
+	if (mode === MODE_LIGHT) {
+		searchOrder = [5, 10, 12, 16, 20, 25, 30, 35, 40, 45, 50]
+	} else if (mode === MODE_DARK) {
+		searchOrder = [100, 98, 95, 92, 90, 88, 85, 80, 75, 70, 65, 60]
+	} else {
+		throw new TypeError('Expected mode to be "light" or "dark"')
+	}
+
+	const combinedStops = [...new Set([...preferredStops, ...searchOrder])]
+
+	return getRampCandidates(ramp, combinedStops)
+}
+
 function resolveProfileOptions(options) {
 	const baseProfile = options.profile === "neutral" ? NEUTRAL_PROFILE : CHROMATIC_PROFILE
 

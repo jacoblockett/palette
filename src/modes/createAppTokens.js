@@ -1,6 +1,7 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
 import { getRampColor } from "../ramps/createRamp.js"
 import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
+import { createForegroundCandidates } from "../recipes/createForegroundCandidates.js"
 import { MODE_TONE_TARGETS } from "./toneTargets.js"
 import { pickReadableCandidate, pickReadablePair, pickVisibleContrastCandidate } from "../recipes/selectCandidates.js"
 
@@ -15,11 +16,30 @@ export function createAppTokens({ mode, ramps }) {
 
 	const targets = MODE_TONE_TARGETS[mode]
 	const bg = getRampColor(ramps.base, targets.appBg)
-	const appFgCandidates = getStopColors(ramps.neutral, targets.appFg)
+	const appFgCandidates = createForegroundCandidates({
+		mode,
+		primaryRamp: ramps.neutral,
+		fallbackRamp: ramps.neutral,
+		preferredStops: targets.appFg
+	})
 	const fg = pickReadableCandidate(appFgCandidates, bg, CONTRAST_TARGETS.appText)
-	const mutedFg = pickReadableCandidate(getStopColors(ramps.neutral, targets.mutedFg), bg, CONTRAST_TARGETS.mutedText)
+	const mutedFg = pickReadableCandidate(
+		createForegroundCandidates({
+			mode,
+			primaryRamp: ramps.neutral,
+			fallbackRamp: ramps.neutral,
+			preferredStops: targets.mutedFg
+		}),
+		bg,
+		CONTRAST_TARGETS.mutedText
+	)
 	const subtleFg = pickReadableCandidate(
-		getStopColors(ramps.neutral, targets.subtleFg),
+		createForegroundCandidates({
+			mode,
+			primaryRamp: ramps.neutral,
+			fallbackRamp: ramps.neutral,
+			preferredStops: targets.subtleFg
+		}),
 		bg,
 		CONTRAST_TARGETS.subtleText
 	)

@@ -1,6 +1,7 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
-import { getRampColor, getTextCandidates, TONE_STOPS } from "../ramps/createRamp.js"
+import { getRampColor, TONE_STOPS } from "../ramps/createRamp.js"
 import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
+import { createForegroundCandidates } from "../recipes/createForegroundCandidates.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 import { MODE_TONE_TARGETS } from "./toneTargets.js"
 
@@ -18,7 +19,11 @@ export function createSurfaceTokens({ mode, app, ramps }) {
 	}
 
 	const targets = MODE_TONE_TARGETS[mode]
-	const fgCandidates = getTextCandidates(ramps.neutral, mode)
+	const fgCandidates = createForegroundCandidates({
+		mode,
+		primaryRamp: ramps.neutral,
+		fallbackRamp: ramps.neutral
+	})
 	const borderCandidates = [
 		getRampColor(ramps.neutral, mode === MODE_LIGHT ? 40 : 30),
 		getRampColor(ramps.neutral, mode === MODE_LIGHT ? 50 : 40),
