@@ -200,13 +200,16 @@ function orderWithSelectedFirst(candidates, selected) {
 }
 
 export function createRoleComposition({ mode, axis, app, surface, roleRamps, neutralRamp }) {
+	const primaryReferences = [app.bg, surface.bg]
+	const secondaryReferences = [app.bg, surface.bg]
+	const accentReferences = [app.bg, surface.bg]
 	const primaryEntries = createCandidateEntries({
 		mode,
 		axis,
 		role: ROLE_KEYS[0],
 		roleRamp: roleRamps.primary,
 		neutralRamp,
-		references: [app.bg, surface.bg],
+		references: primaryReferences,
 		minimumDifference: SEMANTIC_SEPARATION_TARGETS.rolePeer
 	})
 	const secondaryEntries = createCandidateEntries({
@@ -215,7 +218,7 @@ export function createRoleComposition({ mode, axis, app, surface, roleRamps, neu
 		role: ROLE_KEYS[1],
 		roleRamp: roleRamps.secondary,
 		neutralRamp,
-		references: [app.bg, surface.bg],
+		references: secondaryReferences,
 		minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 	})
 	const accentEntries = createCandidateEntries({
@@ -224,7 +227,7 @@ export function createRoleComposition({ mode, axis, app, surface, roleRamps, neu
 		role: ROLE_KEYS[2],
 		roleRamp: roleRamps.accent,
 		neutralRamp,
-		references: [app.bg, surface.bg],
+		references: accentReferences,
 		minimumDifference: SEMANTIC_SEPARATION_TARGETS.accentPeer
 	})
 
@@ -259,6 +262,33 @@ export function createRoleComposition({ mode, axis, app, surface, roleRamps, neu
 				primaryEntries.map(entry => entry.color),
 				bestComposition.primary.color
 			),
+			softBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[0],
+				roleRamp: roleRamps.primary,
+				treatment: "soft",
+				references: primaryReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.rolePeer
+			}),
+			outlineBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[0],
+				roleRamp: roleRamps.primary,
+				treatment: "outline",
+				references: primaryReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.rolePeer
+			}),
+			ghostBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[0],
+				roleRamp: roleRamps.primary,
+				treatment: "ghost",
+				references: primaryReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.rolePeer
+			}),
 			foregroundCandidates: bestComposition.primary.foregroundCandidates,
 			axisPresence: bestComposition.primary.axisPresence,
 			chroma: bestComposition.primary.chroma,
@@ -270,6 +300,33 @@ export function createRoleComposition({ mode, axis, app, surface, roleRamps, neu
 				secondaryEntries.map(entry => entry.color),
 				bestComposition.secondary.color
 			),
+			softBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[1],
+				roleRamp: roleRamps.secondary,
+				treatment: "soft",
+				references: secondaryReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
+			}),
+			outlineBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[1],
+				roleRamp: roleRamps.secondary,
+				treatment: "outline",
+				references: secondaryReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
+			}),
+			ghostBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[1],
+				roleRamp: roleRamps.secondary,
+				treatment: "ghost",
+				references: secondaryReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
+			}),
 			foregroundCandidates: bestComposition.secondary.foregroundCandidates,
 			axisPresence: bestComposition.secondary.axisPresence,
 			chroma: bestComposition.secondary.chroma,
@@ -281,6 +338,33 @@ export function createRoleComposition({ mode, axis, app, surface, roleRamps, neu
 				accentEntries.map(entry => entry.color),
 				bestComposition.accent.color
 			),
+			softBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[2],
+				roleRamp: roleRamps.accent,
+				treatment: "soft",
+				references: accentReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.accentPeer
+			}),
+			outlineBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[2],
+				roleRamp: roleRamps.accent,
+				treatment: "outline",
+				references: accentReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.accentPeer
+			}),
+			ghostBackgroundCandidates: createRoleToneCandidates({
+				mode,
+				axis,
+				role: ROLE_KEYS[2],
+				roleRamp: roleRamps.accent,
+				treatment: "ghost",
+				references: accentReferences,
+				minimumDifference: SEMANTIC_SEPARATION_TARGETS.accentPeer
+			}),
 			foregroundCandidates: bestComposition.accent.foregroundCandidates,
 			axisPresence: bestComposition.accent.axisPresence,
 			chroma: bestComposition.accent.chroma,

@@ -10,34 +10,16 @@ import { SEMANTIC_SEPARATION_TARGETS } from "../recipes/semanticSeparation.js"
 import { createRoleToneCandidates, createRoleStateCandidates } from "../roles/createRoleCandidates.js"
 import { createRoleComposition } from "../roles/createRoleComposition.js"
 
-const ROLE_TONE_TARGETS = {
+const ROLE_BORDER_TONE_TARGETS = {
 	[MODE_LIGHT]: {
-		solid: [45, 50, 55],
-		solidHover: [40, 45, 50],
-		solidActive: [35, 40, 45],
 		solidBorder: [35, 40, 45],
-		solidChild: [90, 92, 95],
-		soft: [95, 92, 90],
-		softHover: [92, 90, 88],
-		softActive: [90, 88, 85],
 		softBorder: [70, 75, 80],
-		outlineBorder: [45, 50, 55],
-		outlineHover: [95, 92, 90],
-		outlineActive: [92, 90, 88]
+		outlineBorder: [45, 50, 55]
 	},
 	[MODE_DARK]: {
-		solid: [65, 70, 75],
-		solidHover: [70, 75, 80],
-		solidActive: [75, 80, 85],
 		solidBorder: [75, 80, 85],
-		solidChild: [20, 25, 30],
-		soft: [12, 16, 20],
-		softHover: [16, 20, 25],
-		softActive: [20, 25, 30],
 		softBorder: [35, 40, 45],
-		outlineBorder: [60, 65, 70],
-		outlineHover: [10, 12, 16],
-		outlineActive: [16, 20, 25]
+		outlineBorder: [60, 65, 70]
 	}
 }
 
@@ -257,7 +239,7 @@ function createRoleRecipe({
 		throw new TypeError(`Unknown role: ${role}`)
 	}
 
-	const targets = ROLE_TONE_TARGETS[mode]
+	const targets = ROLE_BORDER_TONE_TARGETS[mode]
 	const solidMinimumDifference =
 		role === "accent" ? SEMANTIC_SEPARATION_TARGETS.accentPeer : SEMANTIC_SEPARATION_TARGETS.rolePeer
 
@@ -282,6 +264,7 @@ function createRoleRecipe({
 			neutralRamp,
 			app,
 			axis,
+			composition,
 			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
@@ -293,6 +276,7 @@ function createRoleRecipe({
 			mode,
 			role,
 			axis,
+			composition,
 			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
@@ -304,10 +288,51 @@ function createRoleRecipe({
 			mode,
 			role,
 			axis,
+			composition,
 			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		})
 	}
+}
+
+function getComposedStateCandidates({
+	mode,
+	axis,
+	role,
+	roleRamp,
+	baseColor,
+	baseTone,
+	state,
+	separationReferences,
+	minimumDifference
+}) {
+	return createRoleStateCandidates({
+		mode,
+		axis,
+		role,
+		roleRamp,
+		baseColor,
+		baseTone,
+		state,
+		references: separationReferences,
+		minimumDifference
+	})
+}
+
+function getComposedTreatmentCandidates(composition, treatment, fallbackCandidates) {
+	if (treatment === "soft" && composition?.softBackgroundCandidates) {
+		return composition.softBackgroundCandidates
+	}
+
+	if (treatment === "outline" && composition?.outlineBackgroundCandidates) {
+		return composition.outlineBackgroundCandidates
+	}
+
+	if (treatment === "ghost" && composition?.ghostBackgroundCandidates) {
+		return composition.ghostBackgroundCandidates
+	}
+
+	return fallbackCandidates
 }
 
 function createSolidTreatment({
@@ -346,7 +371,7 @@ function createSolidTreatment({
 		preferredBg: solidBackgroundCandidates[0]
 	})
 	const solidTone = getToneForColor(roleRamp, solidPair.bg)
-	const solidChildCandidates = createRoleStateCandidates({
+	const solidChildCandidates = getComposedStateCandidates({
 		mode,
 		axis,
 		role,
@@ -354,7 +379,7 @@ function createSolidTreatment({
 		baseColor: solidPair.bg,
 		baseTone: solidTone,
 		state: "child",
-		references: separationReferences,
+		separationReferences,
 		minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 	})
 	const solidChildTone = getToneForCandidateColor(roleRamp, solidChildCandidates[0], axis.backgroundTone)
@@ -363,7 +388,7 @@ function createSolidTreatment({
 		bg: solidPair.bg,
 		fgCandidates: [solidPair.fg, ...roleFgCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.solidBorder),
-		hoverBgCandidates: createRoleStateCandidates({
+		hoverBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -371,10 +396,10 @@ function createSolidTreatment({
 			baseColor: solidPair.bg,
 			baseTone: solidTone,
 			state: "hover",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference
 		}),
-		activeBgCandidates: createRoleStateCandidates({
+		activeBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -382,11 +407,11 @@ function createSolidTreatment({
 			baseColor: solidPair.bg,
 			baseTone: solidTone,
 			state: "active",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference
 		}),
 		childBgCandidates: solidChildCandidates,
-		childHoverBgCandidates: createRoleStateCandidates({
+		childHoverBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -394,10 +419,10 @@ function createSolidTreatment({
 			baseColor: solidChildCandidates[0],
 			baseTone: solidChildTone,
 			state: "childHover",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
-		childActiveBgCandidates: createRoleStateCandidates({
+		childActiveBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -405,7 +430,7 @@ function createSolidTreatment({
 			baseColor: solidChildCandidates[0],
 			baseTone: solidChildTone,
 			state: "childActive",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
@@ -421,6 +446,7 @@ function createSoftTreatment({
 	neutralRamp,
 	app,
 	axis,
+	composition,
 	separationReferences,
 	minimumDifference
 }) {
@@ -429,7 +455,7 @@ function createSoftTreatment({
 		primaryRamp: roleRamp,
 		fallbackRamp: neutralRamp
 	})
-	const softBackgroundCandidates = createRoleToneCandidates({
+	const fallbackSoftBackgroundCandidates = createRoleToneCandidates({
 		mode,
 		axis,
 		role,
@@ -438,6 +464,7 @@ function createSoftTreatment({
 		references: separationReferences,
 		minimumDifference
 	})
+	const softBackgroundCandidates = getComposedTreatmentCandidates(composition, "soft", fallbackSoftBackgroundCandidates)
 	const softPair = pickReadablePair({
 		backgroundCandidates: softBackgroundCandidates,
 		foregroundCandidates: roleFgCandidates,
@@ -445,7 +472,7 @@ function createSoftTreatment({
 		preferredBg: softBackgroundCandidates[0]
 	})
 	const softTone = getToneForColor(roleRamp, softPair.bg)
-	const softChildCandidates = createRoleStateCandidates({
+	const softChildCandidates = getComposedStateCandidates({
 		mode,
 		axis,
 		role,
@@ -453,7 +480,7 @@ function createSoftTreatment({
 		baseColor: softPair.bg,
 		baseTone: softTone,
 		state: "child",
-		references: separationReferences,
+		separationReferences,
 		minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 	})
 	const softChildTone = getToneForCandidateColor(roleRamp, softChildCandidates[0], axis.backgroundTone)
@@ -462,7 +489,7 @@ function createSoftTreatment({
 		bg: softPair.bg,
 		fgCandidates: [softPair.fg, ...roleFgCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.softBorder),
-		hoverBgCandidates: createRoleStateCandidates({
+		hoverBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -470,10 +497,10 @@ function createSoftTreatment({
 			baseColor: softPair.bg,
 			baseTone: softTone,
 			state: "hover",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
-		activeBgCandidates: createRoleStateCandidates({
+		activeBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -481,11 +508,11 @@ function createSoftTreatment({
 			baseColor: softPair.bg,
 			baseTone: softTone,
 			state: "active",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
 		childBgCandidates: softChildCandidates,
-		childHoverBgCandidates: createRoleStateCandidates({
+		childHoverBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -493,10 +520,10 @@ function createSoftTreatment({
 			baseColor: softChildCandidates[0],
 			baseTone: softChildTone,
 			state: "childHover",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
-		childActiveBgCandidates: createRoleStateCandidates({
+		childActiveBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -504,7 +531,7 @@ function createSoftTreatment({
 			baseColor: softChildCandidates[0],
 			baseTone: softChildTone,
 			state: "childActive",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
 		}),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
@@ -520,6 +547,7 @@ function createOutlineTreatment({
 	neutralRamp,
 	surface,
 	axis,
+	composition,
 	separationReferences,
 	minimumDifference
 }) {
@@ -533,7 +561,7 @@ function createOutlineTreatment({
 		foregroundCandidates,
 		minimumContrastRatio: CONTRAST_TARGETS.roleText
 	})
-	const outlineHoverCandidates = createRoleToneCandidates({
+	const fallbackOutlineHoverCandidates = createRoleToneCandidates({
 		mode,
 		axis,
 		role,
@@ -542,6 +570,7 @@ function createOutlineTreatment({
 		references: separationReferences,
 		minimumDifference
 	})
+	const outlineHoverCandidates = getComposedTreatmentCandidates(composition, "outline", fallbackOutlineHoverCandidates)
 	const outlineHoverTone = getToneForCandidateColor(roleRamp, outlineHoverCandidates[0], axis.backgroundTone)
 
 	return createInteractiveRecipe({
@@ -549,7 +578,7 @@ function createOutlineTreatment({
 		fgCandidates: [outlinePair.fg, ...foregroundCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.outlineBorder),
 		hoverBgCandidates: outlineHoverCandidates,
-		activeBgCandidates: createRoleStateCandidates({
+		activeBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -557,7 +586,7 @@ function createOutlineTreatment({
 			baseColor: outlineHoverCandidates[0],
 			baseTone: outlineHoverTone,
 			state: "active",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference
 		}),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
@@ -573,6 +602,7 @@ function createGhostTreatment({
 	neutralRamp,
 	surface,
 	axis,
+	composition,
 	separationReferences,
 	minimumDifference
 }) {
@@ -586,7 +616,7 @@ function createGhostTreatment({
 		foregroundCandidates,
 		minimumContrastRatio: CONTRAST_TARGETS.roleText
 	})
-	const ghostHoverCandidates = createRoleToneCandidates({
+	const fallbackGhostHoverCandidates = createRoleToneCandidates({
 		mode,
 		axis,
 		role,
@@ -595,6 +625,7 @@ function createGhostTreatment({
 		references: separationReferences,
 		minimumDifference
 	})
+	const ghostHoverCandidates = getComposedTreatmentCandidates(composition, "ghost", fallbackGhostHoverCandidates)
 	const ghostHoverTone = getToneForCandidateColor(roleRamp, ghostHoverCandidates[0], axis.backgroundTone)
 
 	return createInteractiveRecipe({
@@ -602,7 +633,7 @@ function createGhostTreatment({
 		fgCandidates: [ghostPair.fg, ...foregroundCandidates],
 		borderCandidates: getRoleToneColors(neutralRamp, targets.outlineBorder),
 		hoverBgCandidates: ghostHoverCandidates,
-		activeBgCandidates: createRoleStateCandidates({
+		activeBgCandidates: getComposedStateCandidates({
 			mode,
 			axis,
 			role,
@@ -610,7 +641,7 @@ function createGhostTreatment({
 			baseColor: ghostHoverCandidates[0],
 			baseTone: ghostHoverTone,
 			state: "active",
-			references: separationReferences,
+			separationReferences,
 			minimumDifference
 		}),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
