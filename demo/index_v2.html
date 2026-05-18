@@ -1,0 +1,1376 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ChromaCraft - Immersive Color Palette Studio</title>
+		<!-- Tailwind CSS -->
+		<script src="https://cdn.tailwindcss.com"></script>
+		<!-- Google Fonts: Inter -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+			rel="stylesheet" />
+		<!-- Font Awesome Icons -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+		<style>
+			:root {
+				/* Initial colors matching state */
+				--color-text: #1e293b;
+				--color-bg: #f8fafc;
+				--color-primary: #6366f1;
+				--color-secondary: #10b981;
+				--color-accent: #f59e0b;
+
+				--color-text-rgb: 30, 41, 59;
+				--color-bg-rgb: 248, 250, 252;
+				--color-primary-rgb: 99, 102, 241;
+				--color-secondary-rgb: 16, 185, 129;
+				--color-accent-rgb: 245, 158, 11;
+			}
+
+			body {
+				font-family: "Inter", sans-serif;
+				background-color: var(--color-bg);
+				color: var(--color-text);
+				transition:
+					background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+					color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			/* Responsive glass styling that dynamically shifts with selected colors */
+			.dynamic-glass {
+				background-color: rgba(var(--color-bg-rgb), 0.75);
+				backdrop-filter: blur(16px);
+				-webkit-backdrop-filter: blur(16px);
+				border: 1px solid rgba(var(--color-text-rgb), 0.12);
+			}
+
+			.dynamic-glass-hover:hover {
+				background-color: rgba(var(--color-bg-rgb), 0.9);
+				border-color: rgba(var(--color-text-rgb), 0.25);
+			}
+
+			/* Seamless layout transitions for adjacent blocks */
+			.color-card-transition {
+				transition:
+					background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+					color 0.2s ease,
+					flex-grow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+					transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			/* Custom hue slider track */
+			.hue-slider::-webkit-slider-runnable-track {
+				background: linear-gradient(
+					to right,
+					#ff0000 0%,
+					#ffff00 17%,
+					#00ff00 33%,
+					#00ffff 50%,
+					#0000ff 67%,
+					#ff00ff 83%,
+					#ff0000 100%
+				);
+				border-radius: 9999px;
+				height: 10px;
+			}
+			.hue-slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 18px;
+				height: 18px;
+				border-radius: 50%;
+				background: white;
+				border: 3px solid var(--color-text);
+				cursor: pointer;
+				margin-top: -4px;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+				transition: border-color 0.2s;
+			}
+
+			/* Standard custom range styling */
+			.custom-range {
+				-webkit-appearance: none;
+				width: 100%;
+				height: 10px;
+				border-radius: 9999px;
+				outline: none;
+			}
+			.custom-range::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 18px;
+				height: 18px;
+				border-radius: 50%;
+				background: white;
+				border: 3px solid var(--color-text);
+				cursor: pointer;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+				transition: border-color 0.2s;
+			}
+
+			/* Custom Scrollbars */
+			::-webkit-scrollbar {
+				width: 10px;
+				height: 10px;
+			}
+			::-webkit-scrollbar-track {
+				background: rgba(var(--color-text-rgb), 0.05);
+			}
+			::-webkit-scrollbar-thumb {
+				background: rgba(var(--color-text-rgb), 0.2);
+				border-radius: 9999px;
+			}
+			::-webkit-scrollbar-thumb:hover {
+				background: rgba(var(--color-text-rgb), 0.35);
+			}
+		</style>
+	</head>
+	<body class="min-h-screen flex flex-col antialiased pb-16">
+		<header class="dynamic-glass border-b py-4 px-6 sticky top-0 z-40 shadow-sm transition-colors duration-300">
+			<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+				<div class="flex items-center gap-3">
+					<div
+						class="h-10 w-10 rounded-xl flex items-center justify-center text-white shadow-md transition-all transform hover:rotate-12"
+						style="background: var(--color-primary)">
+						<i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+					</div>
+					<div>
+						<h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
+							ChromaCraft Studio
+							<span
+								class="text-xs font-semibold px-2 py-0.5 rounded-full border"
+								style="
+									background: rgba(var(--color-primary-rgb), 0.1);
+									border-color: rgba(var(--color-primary-rgb), 0.2);
+									color: var(--color-primary);
+								"
+								>v3.0</span
+							>
+						</h1>
+						<p class="text-xs opacity-70">The entire site is your live color preview canvas.</p>
+					</div>
+				</div>
+
+				<!-- Quick Options / Generate Bar -->
+				<div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+					<div
+						class="flex items-center gap-2 bg-black/5 p-1 rounded-xl border"
+						style="border-color: rgba(var(--color-text-rgb), 0.1)">
+						<span class="text-xs font-bold px-2.5 opacity-75">Scheme:</span>
+						<select
+							id="schemeSelect"
+							class="bg-white text-xs font-bold py-1.5 px-3 rounded-lg border outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer text-slate-800">
+							<option value="random">Pure Randomize</option>
+							<option value="monochromatic">Monochromatic Spark</option>
+							<option value="analogous" selected>Analogous Blend</option>
+							<option value="complementary">Complementary Contrast</option>
+							<option value="triadic">Triadic Harmony</option>
+							<option value="sunset">Sunset Glow</option>
+							<option value="forest">Nordic Forest</option>
+						</select>
+					</div>
+
+					<button
+						id="btnGenerate"
+						class="text-white font-bold py-2.5 px-5 rounded-xl text-xs shadow-md flex items-center gap-2 transition-all transform active:scale-95 hover:brightness-110"
+						style="background-color: var(--color-primary)">
+						<i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+					</button>
+
+					<button
+						id="toggleThemeMode"
+						class="font-bold py-2.5 px-4 rounded-xl text-xs border flex items-center gap-2 transition-all"
+						style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.1)"
+						title="Swap Text/Background to Toggle Dark/Light Mode">
+						<i class="fa-solid fa-circle-half-stroke"></i> Contrast Shift
+					</button>
+
+					<button
+						id="btnReset"
+						class="font-bold py-2.5 px-4 rounded-xl text-xs border flex items-center gap-2 transition-all"
+						style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.1)"
+						title="Reset Locks and Palette">
+						<i class="fa-solid fa-rotate-left"></i>
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<main class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">
+			<!-- Large Unsquished Palette Section -->
+			<section class="flex flex-col gap-4">
+				<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+					<div>
+						<h2 class="text-2xl font-black tracking-tight uppercase">Master Color Strip</h2>
+						<p class="text-sm opacity-70">Click any color column to reveal the advanced fine-tuning dashboard.</p>
+					</div>
+					<div class="flex items-center gap-2">
+						<button
+							id="btnLockAll"
+							class="text-xs font-bold bg-black/5 hover:bg-black/10 border py-1.5 px-3.5 rounded-lg transition"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
+							Lock All
+						</button>
+						<button
+							id="btnUnlockAll"
+							class="text-xs font-bold bg-black/5 hover:bg-black/10 border py-1.5 px-3.5 rounded-lg transition"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
+							Unlock All
+						</button>
+					</div>
+				</div>
+
+				<!-- Majestic 5-Color Continuous Adjacent Strip -->
+				<div
+					class="flex flex-col md:flex-row rounded-2xl border overflow-hidden shadow-xl h-[450px] md:h-[260px] w-full"
+					style="border-color: rgba(var(--color-text-rgb), 0.15)"
+					id="palette-strip">
+					<!-- SLOT: TEXT COLOR -->
+					<div
+						data-color-type="text"
+						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
+						<div class="flex flex-col gap-1">
+							<span class="text-xs font-black tracking-widest uppercase opacity-75">Text</span>
+							<h3 id="hex-text" class="text-xl md:text-2xl font-black tracking-mono uppercase">#1E293B</h3>
+						</div>
+
+						<div
+							class="flex items-center justify-between pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)"
+							id="divider-text">
+							<button
+								id="lock-text"
+								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
+								data-locked="false">
+								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
+							</button>
+							<div class="flex items-center gap-3">
+								<button
+									data-copy-id="hex-text"
+									class="opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-target="text">
+									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLOT: BACKGROUND COLOR -->
+					<div
+						data-color-type="background"
+						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
+						<div class="flex flex-col gap-1">
+							<span class="text-xs font-black tracking-widest uppercase opacity-75">Background</span>
+							<h3 id="hex-background" class="text-xl md:text-2xl font-black tracking-mono uppercase">#F8FAFC</h3>
+						</div>
+
+						<div
+							class="flex items-center justify-between pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)"
+							id="divider-background">
+							<button
+								id="lock-background"
+								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
+								data-locked="false">
+								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
+							</button>
+							<div class="flex items-center gap-3">
+								<button
+									data-copy-id="hex-background"
+									class="opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-target="background">
+									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLOT: PRIMARY COLOR -->
+					<div
+						data-color-type="primary"
+						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
+						<div class="flex flex-col gap-1">
+							<span class="text-xs font-black tracking-widest uppercase opacity-75">Primary</span>
+							<h3 id="hex-primary" class="text-xl md:text-2xl font-black tracking-mono uppercase">#6366F1</h3>
+						</div>
+
+						<div
+							class="flex items-center justify-between pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)"
+							id="divider-primary">
+							<button
+								id="lock-primary"
+								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
+								data-locked="false">
+								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
+							</button>
+							<div class="flex items-center gap-3">
+								<button
+									data-copy-id="hex-primary"
+									class="opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-target="primary">
+									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLOT: SECONDARY COLOR -->
+					<div
+						data-color-type="secondary"
+						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
+						<div class="flex flex-col gap-1">
+							<span class="text-xs font-black tracking-widest uppercase opacity-75">Secondary</span>
+							<h3 id="hex-secondary" class="text-xl md:text-2xl font-black tracking-mono uppercase">#10B981</h3>
+						</div>
+
+						<div
+							class="flex items-center justify-between pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)"
+							id="divider-secondary">
+							<button
+								id="lock-secondary"
+								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
+								data-locked="false">
+								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
+							</button>
+							<div class="flex items-center gap-3">
+								<button
+									data-copy-id="hex-secondary"
+									class="opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-target="secondary">
+									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLOT: ACCENT COLOR -->
+					<div
+						data-color-type="accent"
+						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
+						<div class="flex flex-col gap-1">
+							<span class="text-xs font-black tracking-widest uppercase opacity-75">Accent</span>
+							<h3 id="hex-accent" class="text-xl md:text-2xl font-black tracking-mono uppercase">#F59E0B</h3>
+						</div>
+
+						<div
+							class="flex items-center justify-between pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)"
+							id="divider-accent">
+							<button
+								id="lock-accent"
+								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
+								data-locked="false">
+								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
+							</button>
+							<div class="flex items-center gap-3">
+								<button
+									data-copy-id="hex-accent"
+									class="opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-target="accent">
+									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+				<!-- Left Editors Workspace Column (7/12 cols) -->
+				<div class="lg:col-span-7 flex flex-col gap-8">
+					<!-- Advanced Tune Panel (Collapsible/Dynamic) -->
+					<div id="pickerPanel" class="dynamic-glass rounded-2xl p-6 shadow-md transition-all duration-300 hidden">
+						<div
+							class="flex items-center justify-between mb-6 pb-3 border-b"
+							style="border-color: rgba(var(--color-text-rgb), 0.12)">
+							<div class="flex items-center gap-3">
+								<span id="pickerActiveIndicator" class="w-6 h-6 rounded-lg border shadow-sm"></span>
+								<h4 class="font-extrabold text-base">
+									Fine-Tune Color:
+									<span id="pickerTitle" class="capitalize" style="color: var(--color-primary)">Text</span>
+								</h4>
+							</div>
+							<button id="btnClosePicker" class="opacity-60 hover:opacity-100 transition">
+								<i class="fa-solid fa-xmark text-lg"></i>
+							</button>
+						</div>
+
+						<div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+							<!-- Left Sliders Control -->
+							<div class="md:col-span-7 flex flex-col gap-5">
+								<!-- Hue -->
+								<div>
+									<div class="flex justify-between text-xs font-extrabold opacity-75 mb-1.5">
+										<span>Hue (H)</span>
+										<span id="hueVal">180°</span>
+									</div>
+									<input
+										type="range"
+										id="sliderHue"
+										min="0"
+										max="360"
+										value="180"
+										class="hue-slider w-full cursor-pointer" />
+								</div>
+
+								<!-- Saturation -->
+								<div>
+									<div class="flex justify-between text-xs font-extrabold opacity-75 mb-1.5">
+										<span>Saturation (S)</span>
+										<span id="satVal">50%</span>
+									</div>
+									<input
+										type="range"
+										id="sliderSat"
+										min="0"
+										max="100"
+										value="50"
+										class="custom-range w-full cursor-pointer" />
+								</div>
+
+								<!-- Lightness -->
+								<div>
+									<div class="flex justify-between text-xs font-extrabold opacity-75 mb-1.5">
+										<span>Lightness (L)</span>
+										<span id="lightVal">50%</span>
+									</div>
+									<input
+										type="range"
+										id="sliderLight"
+										min="0"
+										max="100"
+										value="50"
+										class="custom-range w-full cursor-pointer" />
+								</div>
+							</div>
+
+							<!-- Right Custom Manual inputs and Swatches -->
+							<div
+								class="md:col-span-5 flex flex-col justify-between border-t md:border-t-0 md:border-l md:pl-6 gap-6"
+								style="border-color: rgba(var(--color-text-rgb), 0.12)">
+								<!-- Hex Direct Field -->
+								<div>
+									<label class="block text-[11px] font-black uppercase tracking-wider opacity-60 mb-2"
+										>Direct HEX Code</label
+									>
+									<div class="relative">
+										<span class="absolute left-3.5 top-2.5 opacity-50 font-bold text-sm">#</span>
+										<input
+											type="text"
+											id="manualHexInput"
+											maxlength="6"
+											class="w-full bg-black/5 border rounded-xl pl-8 pr-4 py-2 text-sm font-mono font-bold uppercase outline-none focus:ring-2 focus:ring-indigo-500 transition"
+											style="border-color: rgba(var(--color-text-rgb), 0.15)" />
+									</div>
+									<p id="hexErrorMsg" class="text-[10px] text-red-500 mt-1.5 hidden">
+										<i class="fa-solid fa-circle-exclamation"></i> Invalid HEX value format.
+									</p>
+								</div>
+
+								<!-- Fast Presets Swatches -->
+								<div>
+									<label class="block text-[11px] font-black uppercase tracking-wider opacity-60 mb-2"
+										>Chroma Presets</label
+									>
+									<div class="grid grid-cols-6 gap-2" id="quickSwatches">
+										<!-- Embedded Dynamically -->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Live Elements Showcase (Dynamic Proofing of the active colors) -->
+					<div class="dynamic-glass rounded-2xl p-6 shadow-md transition-colors duration-300">
+						<div class="mb-6">
+							<h3 class="text-sm font-black uppercase tracking-widest opacity-60">Interactive Showcase</h3>
+							<p class="text-xs opacity-70">
+								How components naturally compile styled under your dynamic palette setup.
+							</p>
+						</div>
+
+						<!-- Sandbox component strip -->
+						<div
+							class="flex flex-col gap-6 p-6 rounded-xl border transition-colors duration-300"
+							style="
+								background-color: var(--color-bg);
+								color: var(--color-text);
+								border-color: rgba(var(--color-text-rgb), 0.12);
+							">
+							<!-- Navigation element -->
+							<div
+								class="flex items-center justify-between pb-4 border-b"
+								style="border-color: rgba(var(--color-text-rgb), 0.15)">
+								<div class="flex items-center gap-2 font-black text-sm tracking-wider uppercase">
+									<span class="w-3 h-3 rounded-full" style="background-color: var(--color-primary)"></span>
+									Horizon UI
+								</div>
+								<div class="flex items-center gap-3 text-[11px] font-bold">
+									<span class="opacity-80">Products</span>
+									<span class="opacity-80">Insights</span>
+									<button
+										class="py-1 px-2.5 rounded text-[10px] font-black uppercase tracking-wider transition hover:opacity-90"
+										style="background-color: var(--color-primary); color: var(--color-bg)">
+										Get Started
+									</button>
+								</div>
+							</div>
+
+							<!-- Mini Hero Segment -->
+							<div class="flex flex-col gap-2.5 py-2">
+								<span
+									class="text-[9px] font-black tracking-widest uppercase self-start px-2 py-0.5 rounded"
+									style="background-color: rgba(var(--color-primary-rgb), 0.15); color: var(--color-primary)"
+									>Sandbox System</span
+								>
+								<h4 class="text-xl font-extrabold tracking-tight leading-tight">Create rapid modular solutions.</h4>
+								<p class="text-xs opacity-80 leading-relaxed max-w-md">
+									Our workspace compiles theme elements synchronously. Check out the contrast values below to see if the
+									colors pass standards.
+								</p>
+							</div>
+
+							<!-- Button Showcases -->
+							<div class="flex flex-wrap items-center gap-3">
+								<button
+									class="py-2.5 px-4 rounded-lg text-xs font-extrabold uppercase tracking-wide flex items-center gap-2 shadow-sm hover:brightness-110 transition"
+									style="background-color: var(--color-primary); color: var(--color-bg)">
+									<i class="fa-solid fa-cloud-arrow-up"></i> Primary Callout
+								</button>
+								<button
+									class="py-2.5 px-4 rounded-lg text-xs font-extrabold uppercase tracking-wide flex items-center gap-2 border hover:bg-black/5 transition"
+									style="border-color: var(--color-secondary); color: var(--color-secondary)">
+									Secondary Action
+								</button>
+							</div>
+
+							<!-- Dynamic Alert Box styled via ACCENT color -->
+							<div
+								class="p-4 rounded-xl flex gap-3 text-xs"
+								style="
+									background-color: rgba(var(--color-accent-rgb), 0.12);
+									border-left: 4px solid var(--color-accent);
+								">
+								<span class="text-sm mt-0.5" style="color: var(--color-accent)"
+									><i class="fa-solid fa-triangle-exclamation"></i
+								></span>
+								<div>
+									<h5
+										class="font-extrabold uppercase text-[10px] tracking-wider mb-0.5"
+										style="color: var(--color-accent)">
+										Design Guidelines Warning
+									</h5>
+									<p class="opacity-85 text-[11px] leading-relaxed">
+										Ensure you evaluate secondary contrasting tokens to meet modern AAA access guidelines.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Right Code & WCAG Statistics Column (5/12 cols) -->
+				<div class="lg:col-span-5 flex flex-col gap-8">
+					<!-- Expanded Accessibility Suite (WCAG 2.1 Pass metrics) -->
+					<div class="dynamic-glass rounded-2xl p-6 shadow-md transition-colors duration-300">
+						<div class="mb-5">
+							<h3 class="text-sm font-black uppercase tracking-widest opacity-60">WCAG 2.1 Contrast Suite</h3>
+							<p class="text-xs opacity-70">
+								Spacious evaluation of all foreground layers calculated against the Background.
+							</p>
+						</div>
+
+						<div class="flex flex-col gap-4" id="wcag-analysis-container">
+							<!-- Row: Text vs BG -->
+							<div
+								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
+								style="border-color: rgba(var(--color-text-rgb), 0.12)">
+								<div class="flex flex-col gap-1">
+									<span class="text-xs font-black tracking-wider uppercase">Text Contrast</span>
+									<span class="text-[10px] opacity-60">Calculates reading clarity of primary copy block.</span>
+								</div>
+								<div class="text-right">
+									<span id="val-text-bg" class="text-lg font-black tracking-tight block">11.4:1</span>
+									<span
+										id="badge-text-bg"
+										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
+										>Pass AAA</span
+									>
+								</div>
+							</div>
+
+							<!-- Row: Primary vs BG -->
+							<div
+								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
+								style="border-color: rgba(var(--color-text-rgb), 0.12)">
+								<div class="flex flex-col gap-1">
+									<span class="text-xs font-black tracking-wider uppercase">Primary Contrast</span>
+									<span class="text-[10px] opacity-60">Button labels, components, and heavy titles.</span>
+								</div>
+								<div class="text-right">
+									<span id="val-primary-bg" class="text-lg font-black tracking-tight block">4.2:1</span>
+									<span
+										id="badge-primary-bg"
+										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
+										>Pass AA</span
+									>
+								</div>
+							</div>
+
+							<!-- Row: Secondary vs BG -->
+							<div
+								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
+								style="border-color: rgba(var(--color-text-rgb), 0.12)">
+								<div class="flex flex-col gap-1">
+									<span class="text-xs font-black tracking-wider uppercase">Secondary Contrast</span>
+									<span class="text-[10px] opacity-60">Subheaders, badges, and alternative elements.</span>
+								</div>
+								<div class="text-right">
+									<span id="val-secondary-bg" class="text-lg font-black tracking-tight block">3.1:1</span>
+									<span
+										id="badge-secondary-bg"
+										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
+										>Pass AA</span
+									>
+								</div>
+							</div>
+
+							<!-- Row: Accent vs BG -->
+							<div
+								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
+								style="border-color: rgba(var(--color-text-rgb), 0.12)">
+								<div class="flex flex-col gap-1">
+									<span class="text-xs font-black tracking-wider uppercase">Accent Contrast</span>
+									<span class="text-[10px] opacity-60">Highlit items, indicators, and side alerts.</span>
+								</div>
+								<div class="text-right">
+									<span id="val-accent-bg" class="text-lg font-black tracking-tight block">4.5:1</span>
+									<span
+										id="badge-accent-bg"
+										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
+										>Pass AA</span
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Export Framework Code Configuration Panel -->
+					<div class="dynamic-glass rounded-2xl p-6 shadow-md transition-colors duration-300">
+						<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+							<div>
+								<h3 class="text-sm font-black uppercase tracking-widest opacity-60">Export Configurations</h3>
+								<p class="text-xs opacity-70">Saves your exact palette styles.</p>
+							</div>
+							<div
+								class="flex gap-1 bg-black/5 p-0.5 rounded-lg border"
+								style="border-color: rgba(var(--color-text-rgb), 0.12)">
+								<button
+									class="export-tab-btn active text-[10px] font-black px-2.5 py-1.5 rounded-md bg-white text-slate-800 shadow-sm transition"
+									data-format="css">
+									CSS
+								</button>
+								<button
+									class="export-tab-btn text-[10px] font-bold px-2.5 py-1.5 rounded-md opacity-70 hover:opacity-100 transition"
+									data-format="tailwind">
+									TAILWIND
+								</button>
+								<button
+									class="export-tab-btn text-[10px] font-bold px-2.5 py-1.5 rounded-md opacity-70 hover:opacity-100 transition"
+									data-format="json">
+									JSON
+								</button>
+							</div>
+						</div>
+
+						<div class="relative">
+							<pre
+								class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono overflow-x-auto max-h-48 shadow-inner"
+								id="codeBlock">
+/* Variable values */</pre
+							>
+							<button
+								id="btnCopyCode"
+								class="absolute top-2.5 right-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white py-1.5 px-3 rounded-lg text-[11px] border border-slate-700 flex items-center gap-1.5 transition-all">
+								<i class="fa-regular fa-copy"></i> Copy Code
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<!-- Success Toast Notifications -->
+		<div
+			id="toast"
+			class="fixed bottom-6 right-6 bg-slate-900 text-white py-3 px-5 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-semibold border border-slate-700 translate-y-24 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+			<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+			<span id="toastMsg">Action completed successfully.</span>
+		</div>
+
+		<script>
+			// --- Global State configuration ---
+			const state = {
+				colors: {
+					text: "#1E293B",
+					background: "#F8FAFC",
+					primary: "#6366F1",
+					secondary: "#10B981",
+					accent: "#F59E0B"
+				},
+				locks: {
+					text: false,
+					background: false,
+					primary: false,
+					secondary: false,
+					accent: false
+				},
+				activePicker: null,
+				activeFormat: "css"
+			}
+
+			const presetSwatches = [
+				"#1E293B",
+				"#F8FAFC",
+				"#6366F1",
+				"#10B981",
+				"#F59E0B",
+				"#EF4444",
+				"#EC4899",
+				"#8B5CF6",
+				"#3B82F6",
+				"#06B6D4",
+				"#14B8A6",
+				"#84CC16",
+				"#EAB308",
+				"#F97316",
+				"#78716C",
+				"#475569",
+				"#090D16",
+				"#F1F5F9"
+			]
+
+			// --- Color conversion helpers ---
+			function hexToRgb(hex) {
+				let clean = hex.replace("#", "")
+				if (clean.length === 3) {
+					clean = clean
+						.split("")
+						.map(char => char + char)
+						.join("")
+				}
+				const num = parseInt(clean, 16)
+				return {
+					r: (num >> 16) & 255,
+					g: (num >> 8) & 255,
+					b: num & 255
+				}
+			}
+
+			function rgbToHex(r, g, b) {
+				return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()
+			}
+
+			function rgbToHsl(r, g, b) {
+				r /= 255
+				g /= 255
+				b /= 255
+				const max = Math.max(r, g, b),
+					min = Math.min(r, g, b)
+				let h,
+					s,
+					l = (max + min) / 2
+
+				if (max === min) {
+					h = s = 0
+				} else {
+					const d = max - min
+					s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+					switch (max) {
+						case r:
+							h = (g - b) / d + (g < b ? 6 : 0)
+							break
+						case g:
+							h = (b - r) / d + 2
+							break
+						case b:
+							h = (r - g) / d + 4
+							break
+					}
+					h /= 6
+				}
+
+				return {
+					h: Math.round(h * 360),
+					s: Math.round(s * 100),
+					l: Math.round(l * 100)
+				}
+			}
+
+			function hslToRgb(h, s, l) {
+				h /= 360
+				s /= 100
+				l /= 100
+				let r, g, b
+
+				if (s === 0) {
+					r = g = b = l
+				} else {
+					const hue2rgb = (p, q, t) => {
+						if (t < 0) t += 1
+						if (t > 1) t -= 1
+						if (t < 1 / 6) return p + (q - p) * 6 * t
+						if (t < 1 / 2) return q
+						if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+						return p
+					}
+
+					const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+					const p = 2 * l - q
+					r = hue2rgb(p, q, h + 1 / 3)
+					g = hue2rgb(p, q, h)
+					b = hue2rgb(p, q, h - 1 / 3)
+				}
+
+				return {
+					r: Math.round(r * 255),
+					g: Math.round(g * 255),
+					b: Math.round(b * 255)
+				}
+			}
+
+			function hexToHsl(hex) {
+				const rgb = hexToRgb(hex)
+				return rgbToHsl(rgb.r, rgb.g, rgb.b)
+			}
+
+			function hslToHex(h, s, l) {
+				const rgb = hslToRgb(h, s, l)
+				return rgbToHex(rgb.r, rgb.g, rgb.b)
+			}
+
+			// Evaluate visual contrast lightness (YIQ) for optimal text/UI color choice on cards
+			function getContrastYIQ(hex) {
+				const rgb = hexToRgb(hex)
+				const yiq = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000
+				return yiq >= 142 ? "light" : "dark"
+			}
+
+			// Relative luminance helper for WCAG scores
+			function relativeLuminance(r, g, b) {
+				const a = [r, g, b].map(function (v) {
+					v /= 255
+					return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+				})
+				return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
+			}
+
+			// Calculate contrast ratio between two hex strings
+			function calculateContrast(hex1, hex2) {
+				const rgb1 = hexToRgb(hex1)
+				const rgb2 = hexToRgb(hex2)
+				const l1 = relativeLuminance(rgb1.r, rgb1.g, rgb1.b) + 0.05
+				const l2 = relativeLuminance(rgb2.r, rgb2.g, rgb2.b) + 0.05
+				return (Math.max(l1, l2) / Math.min(l1, l2)).toFixed(1)
+			}
+
+			function isValidHex(hex) {
+				return /^#[0-9A-F]{6}$/i.test(hex)
+			}
+
+			// --- STREAMING_CHUNK: Processing Palette creation and mathematical offsets ---
+			function generateRandomColor() {
+				const h = Math.floor(Math.random() * 361)
+				const s = Math.floor(Math.random() * 41) + 50
+				const l = Math.floor(Math.random() * 31) + 35
+				return hslToHex(h, s, l)
+			}
+
+			function updateColorsAndSync(newColors) {
+				for (const key in state.colors) {
+					if (!state.locks[key] && newColors[key]) {
+						state.colors[key] = newColors[key]
+					}
+				}
+				renderApp()
+			}
+
+			function createPalette() {
+				const scheme = document.getElementById("schemeSelect").value
+				const seedColorHex = state.locks.primary ? state.colors.primary : generateRandomColor()
+				const seedHsl = hexToHsl(seedColorHex)
+
+				let tempColors = {}
+
+				switch (scheme) {
+					case "monochromatic":
+						tempColors.text = hslToHex(seedHsl.h, Math.min(15, seedHsl.s), 15)
+						tempColors.background = hslToHex(seedHsl.h, Math.min(10, seedHsl.s), 97)
+						tempColors.primary = seedColorHex
+						tempColors.secondary = hslToHex(seedHsl.h, Math.max(0, seedHsl.s - 25), Math.min(100, seedHsl.l + 15))
+						tempColors.accent = hslToHex(seedHsl.h, Math.max(0, seedHsl.s - 40), Math.min(100, seedHsl.l + 30))
+						break
+
+					case "complementary":
+						const compHue = (seedHsl.h + 180) % 360
+						tempColors.text = hslToHex(seedHsl.h, 15, 12)
+						tempColors.background = hslToHex(seedHsl.h, 10, 98)
+						tempColors.primary = seedColorHex
+						tempColors.secondary = hslToHex(compHue, seedHsl.s, seedHsl.l)
+						tempColors.accent = hslToHex((seedHsl.h + 30) % 360, seedHsl.s + 10, 50)
+						break
+
+					case "triadic":
+						const tHue1 = (seedHsl.h + 120) % 360
+						const tHue2 = (seedHsl.h + 240) % 360
+						tempColors.text = hslToHex(seedHsl.h, 15, 12)
+						tempColors.background = hslToHex(seedHsl.h, 5, 98)
+						tempColors.primary = seedColorHex
+						tempColors.secondary = hslToHex(tHue1, seedHsl.s, seedHsl.l)
+						tempColors.accent = hslToHex(tHue2, seedHsl.s + 10, 50)
+						break
+
+					case "sunset":
+						tempColors.text = "#1E1212"
+						tempColors.background = "#FDF6F6"
+						tempColors.primary = "#F43F5E"
+						tempColors.secondary = "#F97316"
+						tempColors.accent = "#EAB308"
+						break
+
+					case "forest":
+						tempColors.text = "#0F171A"
+						tempColors.background = "#F4F7F6"
+						tempColors.primary = "#0F766E"
+						tempColors.secondary = "#15803D"
+						tempColors.accent = "#D97706"
+						break
+
+					case "analogous":
+					default:
+						const offset1 = (seedHsl.h + 30) % 360
+						const offset2 = (seedHsl.h - 30 + 360) % 360
+						tempColors.text = hslToHex(seedHsl.h, 20, 15)
+						tempColors.background = hslToHex(seedHsl.h, 10, 97)
+						tempColors.primary = seedColorHex
+						tempColors.secondary = hslToHex(offset1, seedHsl.s, seedHsl.l)
+						tempColors.accent = hslToHex(offset2, seedHsl.s + 15, 55)
+						break
+
+					case "random":
+						tempColors.text = hslToHex(
+							Math.floor(Math.random() * 361),
+							10 + Math.floor(Math.random() * 15),
+							10 + Math.floor(Math.random() * 15)
+						)
+						tempColors.background = hslToHex(
+							Math.floor(Math.random() * 361),
+							5 + Math.floor(Math.random() * 10),
+							92 + Math.floor(Math.random() * 7)
+						)
+						tempColors.primary = generateRandomColor()
+						tempColors.secondary = generateRandomColor()
+						tempColors.accent = generateRandomColor()
+						break
+				}
+
+				updateColorsAndSync(tempColors)
+			}
+
+			// --- STREAMING_CHUNK: App Rendering loop & custom property synchronization ---
+			function renderApp() {
+				// Write Custom CSS variables directly to Document root so entire site changes
+				const root = document.documentElement
+
+				for (const key in state.colors) {
+					const hexVal = state.colors[key]
+
+					// Set core hex variables
+					root.style.setProperty(`--color-${key}`, hexVal)
+
+					// Set helper RGB values for smooth transparency computations
+					const rgb = hexToRgb(hexVal)
+					root.style.setProperty(`--color-${key}-rgb`, `${rgb.r}, ${rgb.g}, ${rgb.b}`)
+
+					// Sync continuous adjacent strip
+					const card = document.querySelector(`[data-color-type="${key}"]`)
+					const hexLabel = document.getElementById(`hex-${key}`)
+					const lockBtn = document.getElementById(`lock-${key}`)
+					const divider = document.getElementById(`divider-${key}`)
+
+					card.style.backgroundColor = hexVal
+					hexLabel.textContent = hexVal.toUpperCase()
+
+					// Automatically switch text and icons depending on swatch brightness
+					const contrastMode = getContrastYIQ(hexVal)
+					const fgColor = contrastMode === "light" ? "#0f172a" : "#ffffff"
+					const borderColor = contrastMode === "light" ? "rgba(15, 23, 42, 0.15)" : "rgba(255, 255, 255, 0.2)"
+
+					card.style.color = fgColor
+					if (divider) divider.style.borderColor = borderColor
+
+					// Configure lock icons
+					if (state.locks[key]) {
+						lockBtn.innerHTML = `<i class="fa-solid fa-lock text-sm"></i> <span class="lock-label text-[11px] font-extrabold uppercase">Locked</span>`
+						card.classList.add("z-10", "ring-4", "ring-indigo-500/50")
+					} else {
+						lockBtn.innerHTML = `<i class="fa-solid fa-lock-open text-xs opacity-60"></i> <span class="lock-label text-[11px] opacity-70">Unlock</span>`
+						card.classList.remove("z-10", "ring-4", "ring-indigo-500/50")
+					}
+				}
+
+				// Fire accessibility calculator calculations
+				calculateAccessibilityWCAG()
+
+				// Refresh Picker Panel status if currently open
+				if (state.activePicker) {
+					updatePickerSlidersUI()
+				}
+
+				// Sync framework export structures
+				updateCodeExportBlock()
+			}
+
+			// --- STREAMING_CHUNK: Computing dynamic WCAG standards for all input fields ---
+			function calculateAccessibilityWCAG() {
+				const bg = state.colors.background
+
+				const metrics = [
+					{ key: "text", targetName: "Text" },
+					{ key: "primary", targetName: "Primary" },
+					{ key: "secondary", targetName: "Secondary" },
+					{ key: "accent", targetName: "Accent" }
+				]
+
+				metrics.forEach(item => {
+					const fgHex = state.colors[item.key]
+					const ratio = calculateContrast(fgHex, bg)
+
+					const ratioLabel = document.getElementById(`val-${item.key}-bg`)
+					const badge = document.getElementById(`badge-${item.key}-bg`)
+
+					ratioLabel.textContent = `${ratio}:1`
+
+					// WCAG 2.1 Criteria evaluation
+					if (ratio >= 7.0) {
+						badge.textContent = "Pass AAA"
+						badge.className =
+							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
+					} else if (ratio >= 4.5) {
+						badge.textContent = "Pass AA"
+						badge.className =
+							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-teal-500/10 border-teal-500/30 text-teal-500"
+					} else if (ratio >= 3.0) {
+						badge.textContent = "Pass Large UI"
+						badge.className =
+							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-amber-500/10 border-amber-500/30 text-amber-500"
+					} else {
+						badge.textContent = "Fail Standard"
+						badge.className =
+							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-red-500/10 border-red-500/30 text-red-500"
+					}
+				})
+			}
+
+			function updateCodeExportBlock() {
+				const block = document.getElementById("codeBlock")
+				if (state.activeFormat === "css") {
+					block.textContent = `/* CSS Variable Framework Integration */
+:root {
+  --color-text: ${state.colors.text};
+  --color-bg: ${state.colors.background};
+  --color-primary: ${state.colors.primary};
+  --color-secondary: ${state.colors.secondary};
+  --color-accent: ${state.colors.accent};
+}`
+				} else if (state.activeFormat === "tailwind") {
+					block.textContent = `// tailwind.config.js - Custom Theme Setup
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        text: '${state.colors.text}',
+        background: '${state.colors.background}',
+        primary: '${state.colors.primary}',
+        secondary: '${state.colors.secondary}',
+        accent: '${state.colors.accent}',
+      }
+    }
+  }
+}`
+				} else {
+					block.textContent = JSON.stringify(state.colors, null, 2)
+				}
+			}
+
+			// --- STREAMING_CHUNK: Managing Slider Controls and Picker Actions ---
+			function openCustomColorPicker(colorType) {
+				state.activePicker = colorType
+
+				// Uncollapse Panel
+				const panel = document.getElementById("pickerPanel")
+				panel.classList.remove("hidden")
+
+				// Adjust label headers
+				document.getElementById("pickerTitle").textContent = colorType
+				const activeInd = document.getElementById("pickerActiveIndicator")
+				activeInd.style.backgroundColor = state.colors[colorType]
+
+				// Re-sync slider positions
+				updatePickerSlidersUI()
+
+				// Scroll to control dashboard on mobile Viewports
+				panel.scrollIntoView({ behavior: "smooth", block: "nearest" })
+			}
+
+			function updatePickerSlidersUI() {
+				if (!state.activePicker) return
+
+				const currentHex = state.colors[state.activePicker]
+				const hsl = hexToHsl(currentHex)
+
+				// Set Slider values
+				document.getElementById("sliderHue").value = hsl.h
+				document.getElementById("sliderSat").value = hsl.s
+				document.getElementById("sliderLight").value = hsl.l
+
+				// Set numerical text
+				document.getElementById("hueVal").textContent = `${hsl.h}°`
+				document.getElementById("satVal").textContent = `${hsl.s}%`
+				document.getElementById("lightVal").textContent = `${hsl.l}%`
+
+				// Sync Manual Input
+				document.getElementById("manualHexInput").value = currentHex.replace("#", "").toUpperCase()
+				document.getElementById("hexErrorMsg").classList.add("hidden")
+
+				// Style sliding tracks with dynamic gradient visual cues
+				const satSlider = document.getElementById("sliderSat")
+				const lightSlider = document.getElementById("sliderLight")
+
+				satSlider.style.background = `linear-gradient(to right, ${hslToHex(hsl.h, 0, hsl.l)}, ${hslToHex(hsl.h, 100, hsl.l)})`
+				lightSlider.style.background = `linear-gradient(to right, #000000 0%, ${hslToHex(hsl.h, hsl.s, 50)} 50%, #ffffff 100%)`
+
+				document.getElementById("pickerActiveIndicator").style.backgroundColor = currentHex
+			}
+
+			function handleSliderInteraction() {
+				const h = parseInt(document.getElementById("sliderHue").value)
+				const s = parseInt(document.getElementById("sliderSat").value)
+				const l = parseInt(document.getElementById("sliderLight").value)
+
+				const newHex = hslToHex(h, s, l)
+				state.colors[state.activePicker] = newHex
+
+				renderApp()
+			}
+
+			function initQuickSwatches() {
+				const container = document.getElementById("quickSwatches")
+				container.innerHTML = ""
+				presetSwatches.forEach(hex => {
+					const btn = document.createElement("button")
+					btn.className =
+						"w-full aspect-square rounded-lg border border-black/10 shadow-sm transition transform active:scale-95 hover:scale-110 hover:z-10"
+					btn.style.backgroundColor = hex
+					btn.title = hex
+					btn.addEventListener("click", e => {
+						e.preventDefault()
+						if (state.activePicker) {
+							state.colors[state.activePicker] = hex
+							renderApp()
+						}
+					})
+					container.appendChild(btn)
+				})
+			}
+
+			// --- Clipboard Copy mechanisms ---
+			function triggerToast(message) {
+				const toast = document.getElementById("toast")
+				const toastMsg = document.getElementById("toastMsg")
+				toastMsg.textContent = message
+
+				toast.classList.remove("translate-y-24", "opacity-0")
+				toast.classList.add("translate-y-0", "opacity-100")
+
+				setTimeout(() => {
+					toast.classList.remove("translate-y-0", "opacity-100")
+					toast.classList.add("translate-y-24", "opacity-0")
+				}, 2500)
+			}
+
+			function copyToClipboard(textToCopy) {
+				const textArea = document.createElement("textarea")
+				textArea.value = textToCopy
+				textArea.style.position = "fixed"
+				document.body.appendChild(textArea)
+				textArea.focus()
+				textArea.select()
+				try {
+					document.execCommand("copy")
+					triggerToast(`Copied content successfully!`)
+				} catch (err) {
+					console.error("Copy fallback failed", err)
+				}
+				document.body.removeChild(textArea)
+			}
+
+			// --- STREAMING_CHUNK: Initializing Event Listeners on Load ---
+			function initEventListeners() {
+				document.getElementById("btnGenerate").addEventListener("click", createPalette)
+
+				document.getElementById("btnReset").addEventListener("click", () => {
+					for (const key in state.locks) {
+						state.locks[key] = false
+					}
+					state.colors = {
+						text: "#1E293B",
+						background: "#F8FAFC",
+						primary: "#6366F1",
+						secondary: "#10B981",
+						accent: "#F59E0B"
+					}
+					renderApp()
+					triggerToast("Locks and palette reset to default configurations.")
+				})
+
+				document.getElementById("btnLockAll").addEventListener("click", () => {
+					for (const key in state.locks) state.locks[key] = true
+					renderApp()
+				})
+				document.getElementById("btnUnlockAll").addEventListener("click", () => {
+					for (const key in state.locks) state.locks[key] = false
+					renderApp()
+				})
+
+				document.getElementById("sliderHue").addEventListener("input", handleSliderInteraction)
+				document.getElementById("sliderSat").addEventListener("input", handleSliderInteraction)
+				document.getElementById("sliderLight").addEventListener("input", handleSliderInteraction)
+
+				document.getElementById("manualHexInput").addEventListener("input", e => {
+					let val = e.target.value.trim()
+					if (!val.startsWith("#")) val = "#" + val
+
+					if (isValidHex(val)) {
+						document.getElementById("hexErrorMsg").classList.add("hidden")
+						state.colors[state.activePicker] = val
+						renderApp()
+					} else {
+						document.getElementById("hexErrorMsg").classList.remove("hidden")
+					}
+				})
+
+				document.querySelectorAll(".lock-btn").forEach(btn => {
+					btn.addEventListener("click", e => {
+						e.stopPropagation()
+						const colorId = btn.id.split("-")[1]
+						state.locks[colorId] = !state.locks[colorId]
+						renderApp()
+					})
+				})
+
+				document.querySelectorAll(".tune-btn").forEach(btn => {
+					btn.addEventListener("click", e => {
+						e.stopPropagation()
+						const target = btn.getAttribute("data-target")
+						openCustomColorPicker(target)
+					})
+				})
+
+				document.querySelectorAll("[data-color-type]").forEach(card => {
+					card.addEventListener("click", e => {
+						if (e.target.closest(".lock-btn") || e.target.closest("button[data-copy-id]")) return
+						const type = card.getAttribute("data-color-type")
+						openCustomColorPicker(type)
+					})
+				})
+
+				document.querySelectorAll("button[data-copy-id]").forEach(btn => {
+					btn.addEventListener("click", e => {
+						e.stopPropagation()
+						const targetId = btn.getAttribute("data-copy-id")
+						const text = document.getElementById(targetId).textContent
+						copyToClipboard(text)
+					})
+				})
+
+				document.getElementById("btnClosePicker").addEventListener("click", () => {
+					document.getElementById("pickerPanel").classList.add("hidden")
+					state.activePicker = null
+				})
+
+				document.querySelectorAll(".export-tab-btn").forEach(btn => {
+					btn.addEventListener("click", () => {
+						document.querySelectorAll(".export-tab-btn").forEach(b => {
+							b.classList.remove("active", "bg-white", "text-slate-800", "shadow-sm")
+							b.classList.add("opacity-70", "hover:opacity-100")
+						})
+
+						btn.classList.add("active", "bg-white", "text-slate-800", "shadow-sm")
+						btn.classList.remove("opacity-70", "hover:opacity-100")
+
+						state.activeFormat = btn.getAttribute("data-format")
+						updateCodeExportBlock()
+					})
+				})
+
+				document.getElementById("btnCopyCode").addEventListener("click", () => {
+					const blockContent = document.getElementById("codeBlock").textContent
+					copyToClipboard(blockContent)
+				})
+
+				// Swap Contrast Mode function: Instantly swaps background and text tokens
+				document.getElementById("toggleThemeMode").addEventListener("click", () => {
+					const tempText = state.colors.text
+					state.colors.text = state.colors.background
+					state.colors.background = tempText
+
+					// Keep lock status mapped dynamically
+					const tempLock = state.locks.text
+					state.locks.text = state.locks.background
+					state.locks.background = tempLock
+
+					renderApp()
+					triggerToast("Swapped text and background layers.")
+				})
+			}
+
+			window.onload = function () {
+				initEventListeners()
+				initQuickSwatches()
+				renderApp()
+			}
+		</script>
+	</body>
+</html>
