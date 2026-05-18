@@ -57,14 +57,10 @@ if (!fs.existsSync(demoPath)) {
 	process.exit(1)
 }
 
-const viteProcess = spawn(
-	"node_modules/.bin/vite",
-	["--host", "0.0.0.0", "--open", `/${demoPath}`],
-	{
-		shell: true,
-		stdio: "inherit"
-	}
-)
+const viteProcess = spawn("node_modules/.bin/vite", ["--host", "0.0.0.0", "--open", `/${demoPath}`], {
+	shell: true,
+	stdio: "inherit"
+})
 
 function forwardSignal(signal) {
 	if (!viteProcess.killed) {
