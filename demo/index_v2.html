@@ -748,6 +748,7 @@
 					secondary: false,
 					accent: false
 				},
+				generatedPalette: null,
 				activePicker: null,
 				activeFormat: "css"
 			}
@@ -901,18 +902,43 @@
 				return /^#[0-9A-F]{6}$/i.test(hex)
 			}
 
-			function updateColorsAndSync(newColors) {
-				for (const key in state.colors) {
-					if (!state.locks[key] && newColors[key]) {
-						state.colors[key] = newColors[key]
+			function getCurrentGeneratedColors() {
+				return state.generatedPalette ? state.generatedPalette[state.mode] : null
+			}
+
+			function applyGeneratedPalette(generatedPalette) {
+				const previousPalette = state.generatedPalette
+				state.generatedPalette = {
+					light: { ...generatedPalette.light },
+					dark: { ...generatedPalette.dark }
+				}
+
+				if (previousPalette) {
+					for (const key in state.locks) {
+						if (!state.locks[key]) {
+							continue
+						}
+
+						state.generatedPalette.light[key] = previousPalette.light[key]
+						state.generatedPalette.dark[key] = previousPalette.dark[key]
 					}
 				}
+
+				state.colors = { ...getCurrentGeneratedColors() }
 				renderApp()
+			}
+
+			function setCurrentColorValue(key, hex) {
+				state.colors[key] = hex
+
+				if (state.generatedPalette) {
+					state.generatedPalette[state.mode][key] = hex
+				}
 			}
 
 			function generateLibraryPalette() {
 				const generatedColors = palette({ mode: state.mode, seeds: state.colors })
-				updateColorsAndSync(generatedColors)
+				applyGeneratedPalette(generatedColors)
 			}
 
 			// --- STREAMING_CHUNK: App Rendering loop & custom property synchronization ---
@@ -1103,7 +1129,7 @@ module.exports = {
 				const l = parseInt(document.getElementById("sliderLight").value)
 
 				const newHex = hslToHex(h, s, l)
-				state.colors[state.activePicker] = newHex
+				setCurrentColorValue(state.activePicker, newHex)
 
 				renderApp()
 			}
@@ -1120,7 +1146,7 @@ module.exports = {
 					btn.addEventListener("click", e => {
 						e.preventDefault()
 						if (state.activePicker) {
-							state.colors[state.activePicker] = hex
+							setCurrentColorValue(state.activePicker, hex)
 							renderApp()
 						}
 					})
@@ -1168,7 +1194,8 @@ module.exports = {
 						state.locks[key] = false
 					}
 					state.mode = "light"
-					state.colors = palette({ mode: state.mode, seeds: state.colors })
+					state.generatedPalette = palette({ mode: state.mode, seeds: state.colors })
+					state.colors = { ...state.generatedPalette.light }
 					renderApp()
 					triggerToast("Locks and palette reset to default configurations.")
 				})
@@ -1192,7 +1219,7 @@ module.exports = {
 
 					if (isValidHex(val)) {
 						document.getElementById("hexErrorMsg").classList.add("hidden")
-						state.colors[state.activePicker] = val
+						setCurrentColorValue(state.activePicker, val)
 						renderApp()
 					} else {
 						document.getElementById("hexErrorMsg").classList.remove("hidden")
@@ -1260,16 +1287,21 @@ module.exports = {
 
 				document.getElementById("toggleThemeMode").addEventListener("click", () => {
 					state.mode = state.mode === "light" ? "dark" : "light"
-					const generatedColors = palette({ mode: state.mode, seeds: state.colors })
-					updateColorsAndSync(generatedColors)
-					triggerToast(`Generated ${state.mode} mode palette.`)
+					state.colors = { ...state.generatedPalette[state.mode] }
+					renderApp()
+					triggerToast(
+						state.mode === "light"
+							? "Switched to generated light mode palette."
+							: "Switched to generated dark mode palette."
+					)
 				})
 			}
 
 			document.addEventListener("DOMContentLoaded", () => {
 				initEventListeners()
 				initQuickSwatches()
-				state.colors = palette({ mode: state.mode, seeds: state.colors })
+				state.generatedPalette = palette({ mode: state.mode, seeds: state.colors })
+				state.colors = { ...state.generatedPalette[state.mode] }
 				renderApp()
 			})
 		</script>

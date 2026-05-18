@@ -1,9 +1,30 @@
+const ROLE_RANGES = {
+	light: {
+		text: { l: [0.1, 0.26], c: [0.004, 0.03] },
+		background: { l: [0.9, 0.985], c: [0.004, 0.03] },
+		primary: { l: [0.34, 0.7], c: [0.06, 0.25] },
+		secondary: { l: [0.36, 0.8], c: [0.025, 0.19] },
+		accent: { l: [0.4, 0.86], c: [0.05, 0.27] }
+	},
+	dark: {
+		text: { l: [0.78, 0.96], c: [0.004, 0.03] },
+		background: { l: [0.055, 0.22], c: [0.004, 0.035] },
+		primary: { l: [0.48, 0.86], c: [0.05, 0.23] },
+		secondary: { l: [0.42, 0.84], c: [0.025, 0.18] },
+		accent: { l: [0.48, 0.9], c: [0.05, 0.25] }
+	}
+}
+
 function randomFloat(min, max) {
 	return min + Math.random() * (max - min)
 }
 
 function randomHue() {
 	return randomFloat(0, 360)
+}
+
+function clamp(value, min, max) {
+	return Math.min(max, Math.max(min, value))
 }
 
 function oklchToOklab({ l, c, h }) {
@@ -40,7 +61,7 @@ function encodeSrgbChannel(channel) {
 }
 
 function channelToHex(channel) {
-	const clamped = Math.min(1, Math.max(0, channel))
+	const clamped = clamp(channel, 0, 1)
 	const byte = Math.round(clamped * 255)
 
 	return byte.toString(16).padStart(2, "0")
@@ -107,42 +128,47 @@ function oklabDistance(colorA, colorB) {
 	return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
 }
 
+function inverseWithinRange(value, sourceMin, sourceMax, targetMin, targetMax) {
+	const normalized = clamp((value - sourceMin) / (sourceMax - sourceMin), 0, 1)
+	const inverted = 1 - normalized
+
+	return targetMin + inverted * (targetMax - targetMin)
+}
+
+function projectWithinRange(value, sourceMin, sourceMax, targetMin, targetMax) {
+	const normalized = clamp((value - sourceMin) / (sourceMax - sourceMin), 0, 1)
+
+	return targetMin + normalized * (targetMax - targetMin)
+}
+
 function sampleRole(mode, role, primaryHue) {
-	if (role === "primary") {
-		return mode === "light"
-			? { l: randomFloat(0.34, 0.7), c: randomFloat(0.06, 0.25), h: randomHue() }
-			: { l: randomFloat(0.48, 0.86), c: randomFloat(0.05, 0.23), h: randomHue() }
-	}
+	const range = ROLE_RANGES[mode][role]
 
-	if (role === "text") {
-		return mode === "light"
-			? { l: randomFloat(0.1, 0.26), c: randomFloat(0.004, 0.03), h: primaryHue }
-			: { l: randomFloat(0.78, 0.96), c: randomFloat(0.004, 0.03), h: primaryHue }
+	return {
+		l: randomFloat(range.l[0], range.l[1]),
+		c: randomFloat(range.c[0], range.c[1]),
+		h: role === "text" || role === "background" ? primaryHue : randomHue()
 	}
-
-	if (role === "background") {
-		return mode === "light"
-			? { l: randomFloat(0.9, 0.985), c: randomFloat(0.004, 0.03), h: primaryHue }
-			: { l: randomFloat(0.055, 0.22), c: randomFloat(0.004, 0.035), h: primaryHue }
-	}
-
-	if (role === "secondary") {
-		return mode === "light"
-			? { l: randomFloat(0.36, 0.8), c: randomFloat(0.025, 0.19), h: randomHue() }
-			: { l: randomFloat(0.42, 0.84), c: randomFloat(0.025, 0.18), h: randomHue() }
-	}
-
-	if (role === "accent") {
-		return mode === "light"
-			? { l: randomFloat(0.4, 0.86), c: randomFloat(0.05, 0.27), h: randomHue() }
-			: { l: randomFloat(0.48, 0.9), c: randomFloat(0.05, 0.25), h: randomHue() }
-	}
-
-	throw new RangeError("Unknown role.")
 }
 
 function mapSampledRole(sampled) {
 	const mapped = gamutMapOklch(sampled)
+
+	return {
+		oklch: mapped.oklch,
+		hex: mapped.hex
+	}
+}
+
+function invertRole(sourceOklch, role, sourceMode, targetMode) {
+	const sourceRange = ROLE_RANGES[sourceMode][role]
+	const targetRange = ROLE_RANGES[targetMode][role]
+	const inverted = {
+		l: inverseWithinRange(sourceOklch.l, sourceRange.l[0], sourceRange.l[1], targetRange.l[0], targetRange.l[1]),
+		c: projectWithinRange(sourceOklch.c, sourceRange.c[0], sourceRange.c[1], targetRange.c[0], targetRange.c[1]),
+		h: sourceOklch.h
+	}
+	const mapped = gamutMapOklch(inverted)
 
 	return {
 		oklch: mapped.oklch,
@@ -186,6 +212,16 @@ function isRejectedCandidate(mode, candidate) {
 	return false
 }
 
+function toPublicPalette(candidate) {
+	return {
+		text: candidate.text.hex,
+		background: candidate.background.hex,
+		primary: candidate.primary.hex,
+		secondary: candidate.secondary.hex,
+		accent: candidate.accent.hex
+	}
+}
+
 export function palette(options = {}) {
 	const { mode, seeds } = options
 
@@ -199,26 +235,36 @@ export function palette(options = {}) {
 		throw new RangeError("palette mode must be light or dark.")
 	}
 
+	const oppositeMode = mode === "light" ? "dark" : "light"
+
 	for (let index = 0; index < 500; index += 1) {
 		const primarySample = sampleRole(mode, "primary")
-		const candidate = {
-			primary: mapSampledRole(primarySample),
+		const sampledCandidate = {
 			text: mapSampledRole(sampleRole(mode, "text", primarySample.h)),
 			background: mapSampledRole(sampleRole(mode, "background", primarySample.h)),
+			primary: mapSampledRole(primarySample),
 			secondary: mapSampledRole(sampleRole(mode, "secondary")),
 			accent: mapSampledRole(sampleRole(mode, "accent"))
 		}
+		const derivedCandidate = {
+			text: invertRole(sampledCandidate.text.oklch, "text", mode, oppositeMode),
+			background: invertRole(sampledCandidate.background.oklch, "background", mode, oppositeMode),
+			primary: invertRole(sampledCandidate.primary.oklch, "primary", mode, oppositeMode),
+			secondary: invertRole(sampledCandidate.secondary.oklch, "secondary", mode, oppositeMode),
+			accent: invertRole(sampledCandidate.accent.oklch, "accent", mode, oppositeMode)
+		}
+		const pairedCandidate =
+			mode === "light"
+				? { light: sampledCandidate, dark: derivedCandidate }
+				: { light: derivedCandidate, dark: sampledCandidate }
 
-		if (isRejectedCandidate(mode, candidate)) {
+		if (isRejectedCandidate("light", pairedCandidate.light) || isRejectedCandidate("dark", pairedCandidate.dark)) {
 			continue
 		}
 
 		return {
-			text: candidate.text.hex,
-			background: candidate.background.hex,
-			primary: candidate.primary.hex,
-			secondary: candidate.secondary.hex,
-			accent: candidate.accent.hex
+			light: toPublicPalette(pairedCandidate.light),
+			dark: toPublicPalette(pairedCandidate.dark)
 		}
 	}
 
