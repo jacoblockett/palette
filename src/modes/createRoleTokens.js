@@ -1,6 +1,7 @@
 import { MODE_LIGHT, MODE_DARK, ROLE_KEYS, GENERATED_ROLE_KEYS } from "../defaults.js"
 import { createRamp, getRampColor, getTextCandidates, TONE_STOPS } from "../ramps/createRamp.js"
 import { hexToOklch, oklchToHex, normalizeHue, clampChroma } from "../color/oklch.js"
+import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
 import { createInteractiveRecipe } from "../recipes/createInteractiveRecipe.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 
@@ -211,7 +212,7 @@ function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 			roleRamp,
 			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 2)
 		),
-		minimumFgContrast: 4.5,
+		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: app.bg
 	})
 }
@@ -232,7 +233,7 @@ function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 			roleRamp,
 			shiftToneStops(targets.softActive, getOppositeDirection(mode), 1)
 		),
-		minimumFgContrast: 4.5,
+		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: app.bg
 	})
 }
@@ -244,7 +245,7 @@ function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface 
 		borderCandidates: getRoleToneColors(roleRamp, targets.outlineBorder),
 		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
 		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
-		minimumFgContrast: 4.5,
+		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: surface.bg
 	})
 }
@@ -256,7 +257,7 @@ function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface })
 		borderCandidates: getRoleToneColors(neutralRamp, targets.outlineBorder),
 		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
 		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
-		minimumFgContrast: 4.5,
+		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: surface.bg
 	})
 }

@@ -7,7 +7,7 @@ export function linearizeContrastChannel(channel) {
 
 	const value = channel / 255
 
-	if (value <= 0.03928) {
+	if (value <= 0.04045) {
 		return value / 12.92
 	}
 

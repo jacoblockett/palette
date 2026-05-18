@@ -6,27 +6,13 @@ export function pickReadableCandidate(candidates, background, minimumContrastRat
 		throw new TypeError("Expected a non-empty candidates array")
 	}
 
-	let bestCandidate = candidates[0]
-	let bestContrast = contrastRatio(bestCandidate, background)
-
-	if (bestContrast >= minimumContrastRatio) {
-		return bestCandidate
-	}
-
-	for (const candidate of candidates.slice(1)) {
-		const candidateContrast = contrastRatio(candidate, background)
-
-		if (candidateContrast >= minimumContrastRatio) {
+	for (const candidate of candidates) {
+		if (contrastRatio(candidate, background) >= minimumContrastRatio) {
 			return candidate
 		}
-
-		if (candidateContrast > bestContrast) {
-			bestCandidate = candidate
-			bestContrast = candidateContrast
-		}
 	}
 
-	return bestCandidate
+	return solveReadableForeground(background, minimumContrastRatio)
 }
 
 export function pickVisibleCandidate(candidates, background, avoid = []) {
@@ -38,4 +24,19 @@ export function pickVisibleCandidate(candidates, background, avoid = []) {
 		from: background,
 		avoid: avoid.filter(Boolean)
 	})
+}
+
+function solveReadableForeground(background, minimumContrastRatio) {
+	const fallbackCandidates = ["#000000", "#ffffff"]
+
+	for (const candidate of fallbackCandidates) {
+		if (contrastRatio(candidate, background) >= minimumContrastRatio) {
+			return candidate
+		}
+	}
+
+	const blackContrast = contrastRatio("#000000", background)
+	const whiteContrast = contrastRatio("#ffffff", background)
+
+	return blackContrast >= whiteContrast ? "#000000" : "#ffffff"
 }

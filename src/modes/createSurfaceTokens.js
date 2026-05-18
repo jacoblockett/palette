@@ -1,5 +1,6 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
 import { getRampColor, getTextCandidates, TONE_STOPS } from "../ramps/createRamp.js"
+import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 import { MODE_TONE_TARGETS } from "./toneTargets.js"
 
@@ -90,6 +91,7 @@ function createSurfaceRecipe({ mode, surfaceTone, appTone, app, ramps, fgCandida
 			getRampColor(ramps.base, shiftTone(childTone, oppositeDirection, 2)),
 			getRampColor(ramps.base, shiftTone(childTone, oppositeDirection, 3))
 		],
+		minimumFgContrast: CONTRAST_TARGETS.bodyText,
 		parentBg: app.bg
 	})
 }

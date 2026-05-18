@@ -1,4 +1,5 @@
-import { pickReadableCandidate, pickVisibleCandidate } from "./selectCandidates.js"
+import { createStateRecipe } from "./createStateRecipe.js"
+import { pickVisibleCandidate } from "./selectCandidates.js"
 
 export function createInteractiveRecipe({
 	bg,
@@ -9,25 +10,34 @@ export function createInteractiveRecipe({
 	minimumFgContrast = 4.5,
 	parentBg
 }) {
-	const fg = pickReadableCandidate(fgCandidates, bg, minimumFgContrast)
-	const border = pickVisibleCandidate(borderCandidates, bg, [parentBg])
+	const base = createStateRecipe({
+		bg,
+		fgCandidates,
+		borderCandidates,
+		minimumFgContrast,
+		parentBg
+	})
 	const hoverBg = pickVisibleCandidate(hoverBgCandidates, bg, [parentBg])
-	const hover = {
+	const hover = createStateRecipe({
 		bg: hoverBg,
-		fg: pickReadableCandidate(fgCandidates, hoverBg, minimumFgContrast),
-		border: pickVisibleCandidate(borderCandidates, hoverBg, [bg])
-	}
+		fgCandidates,
+		borderCandidates,
+		minimumFgContrast,
+		parentBg: base.bg
+	})
 	const activeBg = pickVisibleCandidate(activeBgCandidates, bg, [hover.bg, parentBg])
-	const active = {
+	const active = createStateRecipe({
 		bg: activeBg,
-		fg: pickReadableCandidate(fgCandidates, activeBg, minimumFgContrast),
-		border: pickVisibleCandidate(borderCandidates, activeBg, [bg, hover.bg])
-	}
+		fgCandidates,
+		borderCandidates,
+		minimumFgContrast,
+		parentBg: hover.bg
+	})
 
 	return {
-		bg,
-		fg,
-		border,
+		bg: base.bg,
+		fg: base.fg,
+		border: base.border,
 		hover,
 		active
 	}
