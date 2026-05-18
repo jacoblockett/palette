@@ -277,12 +277,12 @@
                                 <div class="flex items-center justify-between p-3 rounded-xl border border-palette-border bg-palette-bg-card">
                                     <div class="flex items-center space-x-3">
                                         <div class="relative">
-                                            <input type="color" id="picker-bg" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('bg', this.value)">
-                                            <div id="preview-bg" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-bg"></div>
+                                            <input type="color" id="picker-background" class="absolute inset-0 opacity-0 w-8 h-8 cursor-pointer rounded-full" oninput="updateColorFromPicker('background', this.value)">
+                                            <div id="preview-background" class="w-8 h-8 rounded-full border border-palette-text/30 bg-palette-bg"></div>
                                         </div>
                                         <div>
                                             <span class="block text-xs font-semibold text-palette-text-muted">Background</span>
-                                            <span id="hex-bg" class="text-xs font-mono font-bold">#0e030b</span>
+                                            <span id="hex-background" class="text-xs font-mono font-bold">#0e030b</span>
                                         </div>
                                     </div>
                                     <span class="text-[10px] uppercase font-mono px-2 py-1 bg-palette-bg-alt rounded-md text-palette-text/70">Seed 2</span>
@@ -357,7 +357,7 @@
                             <pre class="mt-4 text-palette-text leading-relaxed">
 <span class="text-palette-accent">const</span> <span class="text-palette-primary">system</span> = Palette({
   text: <span class="text-palette-primary">"<span class="code-text">#f8e2f2</span>"</span>,
-  background: <span class="text-palette-primary">"<span class="code-bg">#0e030b</span>"</span>,
+  background: <span class="text-palette-primary">"<span class="code-background">#0e030b</span>"</span>,
   primary: <span class="text-palette-primary">"<span class="code-primary">#e48ec7</span>"</span>,
   secondary: <span class="text-palette-primary">"<span class="code-secondary">#81341f</span>"</span>,
   accent: <span class="text-palette-primary">"<span class="code-accent">#d28c41</span>"</span>,
@@ -370,7 +370,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
       colors: {
         palette: {
           text: system.colors.text,           <span class="text-palette-text-muted">// <span class="code-text">#f8e2f2</span></span>
-          background: system.colors.bg,       <span class="text-palette-text-muted">// <span class="code-bg">#0e030b</span></span>
+          background: system.colors.bg,       <span class="text-palette-text-muted">// <span class="code-background">#0e030b</span></span>
           primary: system.colors.primary,     <span class="text-palette-text-muted">// <span class="code-primary">#e48ec7</span></span>
           border: system.shades.border,       <span class="text-palette-text-muted">// generated auto opacity</span>
           card: system.shades.cardBg,         <span class="text-palette-text-muted">// generated contrast compliant</span>
@@ -676,7 +676,9 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                         &nbsp;&nbsp;seeds: {<br/>
                         &nbsp;&nbsp;&nbsp;&nbsp;text: <span class="text-palette-accent">"#f8e2f2"</span>,<br/>
                         &nbsp;&nbsp;&nbsp;&nbsp;background: <span class="text-palette-accent">"#0e030b"</span>,<br/>
-                        &nbsp;&nbsp;&nbsp;&nbsp;primary: <span class="text-palette-accent">"#e48ec7"</span><br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;primary: <span class="text-palette-accent">"#e48ec7"</span>,<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;secondary: <span class="text-palette-accent">"#81341f"</span>,<br/>
+                        &nbsp;&nbsp;&nbsp;&nbsp;accent: <span class="text-palette-accent">"#d28c41"</span><br/>
                         &nbsp;&nbsp;}<br/>
                         });<br/><br/>
 
@@ -768,7 +770,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 
         const currentPalette = {
             text: '#f8e2f2',
-            bg: '#0e030b',
+            background: '#0e030b',
             primary: '#e48ec7',
             secondary: '#81341f',
             accent: '#d28c41'
@@ -776,7 +778,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 
         const defaultSeeds = {
             text: '#f8e2f2',
-            bg: '#0e030b',
+            background: '#0e030b',
             primary: '#e48ec7',
             secondary: '#81341f',
             accent: '#d28c41'
@@ -830,13 +832,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
         function getGeneratedPalette() {
             return createPalette({
                 mode: isDarkMode ? "dark" : "light",
-                seeds: {
-                    primary: currentPalette.primary,
-                    secondary: currentPalette.secondary,
-                    accent: currentPalette.accent,
-                    neutral: currentPalette.text,
-                    base: currentPalette.bg
-                }
+                seeds: currentPalette
             });
         }
 
@@ -860,7 +856,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
         }
 
         function syncPickerUI() {
-            const keys = ['text', 'bg', 'primary', 'secondary', 'accent'];
+            const keys = ['text', 'background', 'primary', 'secondary', 'accent'];
 
             keys.forEach(key => {
                 const hexVal = currentPalette[key];
@@ -925,7 +921,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                 text: isDarkSeedMode
                     ? hslToHex(neutralHue, randomInRange(6, 18), randomInRange(88, 96))
                     : hslToHex(neutralHue, randomInRange(6, 18), randomInRange(8, 18)),
-                bg: isDarkSeedMode
+                background: isDarkSeedMode
                     ? hslToHex(baseHue, randomInRange(8, 18), randomInRange(5, 14))
                     : hslToHex(baseHue, randomInRange(6, 16), randomInRange(90, 97))
             };
@@ -935,7 +931,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             const nextPalette = createRandomSeedValues(isDarkMode ? 'dark' : 'light');
 
             currentPalette.text = nextPalette.text;
-            currentPalette.bg = nextPalette.bg;
+            currentPalette.background = nextPalette.background;
             currentPalette.primary = nextPalette.primary;
             currentPalette.secondary = nextPalette.secondary;
             currentPalette.accent = nextPalette.accent;
@@ -946,7 +942,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 
         function resetSeeds() {
             currentPalette.text = defaultSeeds.text;
-            currentPalette.bg = defaultSeeds.bg;
+            currentPalette.background = defaultSeeds.background;
             currentPalette.primary = defaultSeeds.primary;
             currentPalette.secondary = defaultSeeds.secondary;
             currentPalette.accent = defaultSeeds.accent;

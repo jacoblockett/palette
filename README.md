@@ -10,11 +10,11 @@ import { createPalette } from "palette"
 const palette = createPalette({
 	mode: "light",
 	seeds: {
+		text: "#475569",
+		background: "#94a3b8",
 		primary: "#4f46e5",
 		secondary: "#0f766e",
-		accent: "#d97706",
-		neutral: "#475569",
-		base: "#94a3b8"
+		accent: "#d97706"
 	}
 })
 ```
@@ -27,16 +27,16 @@ const palette = createPalette({
 const palette = createPalette({
 	mode: "dark",
 	seeds: {
+		text: "#475569",
+		background: "#94a3b8",
 		primary: "#4f46e5",
 		secondary: "#0f766e",
-		accent: "#d97706",
-		neutral: "#475569",
-		base: "#94a3b8"
+		accent: "#d97706"
 	}
 })
 ```
 
-- Every seed is required: `primary`, `secondary`, `accent`, `neutral`, and `base`.
+- Every seed is required: `text`, `background`, `primary`, `secondary`, and `accent`.
 - Missing input, missing `seeds`, or missing seed keys throw `TypeError`.
 - Accepted seed formats are `#rgb` and `#rrggbb`.
 - Output colors are normalized to lowercase `#rrggbb`.
@@ -48,9 +48,9 @@ const palette = createPalette({
 - `primary`: main brand or action color.
 - `secondary`: supporting brand or action color.
 - `accent`: highlight and focus-adjacent color.
-- `neutral`: structural color source for text, borders, and neutral UI.
-- `base`: environmental app and surface bias.
-- Public seeds are authoring inputs. The generator derives separate light and dark ramps internally from the same five required seeds.
+- `text`: semantic text seed that drives the internal neutral ramp for text, borders, and neutral UI.
+- `background`: semantic background seed that drives the internal base ramp for app and surface bias.
+- Public seeds are semantic authoring inputs. The generator derives internal neutral and surface ramp sources from `text` and `background`, then builds separate light and dark ramps from those internal seeds.
 
 `success`, `warning`, `danger`, and `info` are generated from the five required seed ramps. They are not accepted as public input seeds.
 
@@ -82,7 +82,7 @@ const palette = createPalette({
 }
 ```
 
-- `source` contains the normalized required seeds.
+- `source` contains the normalized public semantic seeds.
 - `current` points to the requested mode output.
 - `inverse` points to the opposite mode output.
 - Each mode contains `app`, `surfaces`, `roles`, and `ramps`.
@@ -151,7 +151,7 @@ Every role contains these treatments:
 }
 ```
 
-- `primary`, `secondary`, `accent`, and `neutral` derive from mode-specific ramps created from the required public seeds.
+- `primary`, `secondary`, `accent`, and `neutral` derive from mode-specific ramps created from the public semantic seeds and their internally derived neutral/base ramp sources.
 - `success`, `warning`, `danger`, and `info` are generated from transformed versions of required seed ramps.
 - No additional role seed input is accepted by the public API.
 
@@ -232,11 +232,11 @@ import { createPalette } from "palette"
 
 const palette = createPalette({
 	seeds: {
+		text: "#475569",
+		background: "#94a3b8",
 		primary: "#4f46e5",
 		secondary: "#0f766e",
-		accent: "#d97706",
-		neutral: "#475569",
-		base: "#94a3b8"
+		accent: "#d97706"
 	}
 })
 

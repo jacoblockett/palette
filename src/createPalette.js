@@ -5,8 +5,9 @@ import { createModeRamps } from "./ramps/createModeRamps.js"
 
 export function createPalette(input) {
 	const normalizedInput = normalizeInput(input)
-	const lightRamps = createModeRamps({ mode: MODE_LIGHT, seeds: normalizedInput.seeds })
-	const darkRamps = createModeRamps({ mode: MODE_DARK, seeds: normalizedInput.seeds })
+	const rampSeeds = toRampSeeds(normalizedInput.seeds)
+	const lightRamps = createModeRamps({ mode: MODE_LIGHT, seeds: rampSeeds })
+	const darkRamps = createModeRamps({ mode: MODE_DARK, seeds: rampSeeds })
 	const light = createMode({ mode: MODE_LIGHT, ramps: lightRamps })
 	const dark = createMode({ mode: MODE_DARK, ramps: darkRamps })
 	const modes = {
@@ -72,10 +73,20 @@ function normalizeSeeds(seeds) {
 	}
 
 	return {
+		text: normalizeHex(seeds.text),
+		background: normalizeHex(seeds.background),
 		primary: normalizeHex(seeds.primary),
 		secondary: normalizeHex(seeds.secondary),
-		accent: normalizeHex(seeds.accent),
-		neutral: normalizeHex(seeds.neutral),
-		base: normalizeHex(seeds.base)
+		accent: normalizeHex(seeds.accent)
+	}
+}
+
+function toRampSeeds(seeds) {
+	return {
+		primary: seeds.primary,
+		secondary: seeds.secondary,
+		accent: seeds.accent,
+		neutral: seeds.text,
+		base: seeds.background
 	}
 }
