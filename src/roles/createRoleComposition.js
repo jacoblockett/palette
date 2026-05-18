@@ -4,6 +4,7 @@ import { hexToOklch } from "../color/oklch.js"
 import { CONTRAST_TARGETS } from "../recipes/contrastTargets.js"
 import { SEMANTIC_SEPARATION_TARGETS } from "../recipes/semanticSeparation.js"
 import { createForegroundCandidates } from "../recipes/createForegroundCandidates.js"
+import { getAxisRoleAnchorTone } from "../axis/createTonalAxis.js"
 import { createRoleToneCandidates } from "./createRoleCandidates.js"
 
 const COMPOSITION_CANDIDATE_LIMIT = 7
@@ -37,12 +38,11 @@ function createRoleForegroundCandidates(mode, role, roleRamp, neutralRamp) {
 }
 
 function createRoleBackgroundCandidates(mode, axis, role, roleRamp, references, minimumDifference) {
-	void role
-
 	return limitCandidates(
 		createRoleToneCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			treatment: "solid",
 			references,
@@ -100,7 +100,14 @@ function createCandidateEntries({ mode, axis, role, roleRamp, neutralRamp, refer
 	}))
 }
 
-function scoreCandidateEntry(entry, role) {
+function scoreAnchorAlignment(entry, axis, role) {
+	const anchorTone = getAxisRoleAnchorTone({ axis, role })
+	const distance = Math.abs(entry.tone - anchorTone)
+
+	return Math.max(0, 12 - distance * 0.35)
+}
+
+function scoreCandidateEntry(entry, role, axis) {
 	let score = 0
 
 	if (entry.bestForegroundContrast >= CONTRAST_TARGETS.roleText) {
@@ -113,6 +120,10 @@ function scoreCandidateEntry(entry, role) {
 	score += entry.axisPresence * 10
 	score += entry.chroma * 26
 
+	if (axis) {
+		score += scoreAnchorAlignment(entry, axis, role)
+	}
+
 	if (role === "primary") {
 		return score * PRIMARY_WEIGHT
 	}
@@ -124,11 +135,11 @@ function scoreCandidateEntry(entry, role) {
 	return score * ACCENT_WEIGHT
 }
 
-function scoreComposition(primary, secondary, accent) {
+function scoreComposition(primary, secondary, accent, axis) {
 	let score =
-		scoreCandidateEntry(primary, "primary") +
-		scoreCandidateEntry(secondary, "secondary") +
-		scoreCandidateEntry(accent, "accent")
+		scoreCandidateEntry(primary, "primary", axis) +
+		scoreCandidateEntry(secondary, "secondary", axis) +
+		scoreCandidateEntry(accent, "accent", axis)
 
 	if (primary.axisPresence >= secondary.axisPresence) {
 		score += 14
@@ -227,7 +238,7 @@ export function createRoleComposition({ mode, axis, app, surface, roleRamps, neu
 	for (const primary of primaryEntries) {
 		for (const secondary of secondaryEntries) {
 			for (const accent of accentEntries) {
-				const score = scoreComposition(primary, secondary, accent)
+				const score = scoreComposition(primary, secondary, accent, axis)
 
 				if (score > bestScore) {
 					bestScore = score

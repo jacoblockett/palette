@@ -1,4 +1,5 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
+import { getAxisRoleAnchorTone } from "../axis/createTonalAxis.js"
 import { TONE_STOPS, getRampColor } from "../ramps/createRamp.js"
 import { perceptualDifference } from "../color/difference.js"
 
@@ -21,17 +22,14 @@ function getToneColorPairs(ramp, tones) {
 	}))
 }
 
-function getRoleToneWindow(mode, axis, treatment) {
+function getRoleToneWindow(mode, axis, role, treatment) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
 		throw new TypeError('Expected mode to be "light" or "dark"')
 	}
 
 	if (treatment === "solid") {
-		const midpoint = (axis.backgroundTone + axis.textTone) / 2
-		const center = midpoint + (axis.textTone - midpoint) * 0.18
-
 		return {
-			center: nearestToneStop(center),
+			center: nearestToneStop(getAxisRoleAnchorTone({ axis, role })),
 			radius: 32,
 			direction: axis.modeDirection
 		}
@@ -129,8 +127,16 @@ function shiftTone(tone, direction, steps) {
 	return TONE_STOPS[nextIndex]
 }
 
-export function createRoleToneCandidates({ mode, axis, roleRamp, treatment, references = [], minimumDifference = 0 }) {
-	const window = getRoleToneWindow(mode, axis, treatment)
+export function createRoleToneCandidates({
+	mode,
+	axis,
+	role,
+	roleRamp,
+	treatment,
+	references = [],
+	minimumDifference = 0
+}) {
+	const window = getRoleToneWindow(mode, axis, role, treatment)
 	const candidateTones = TONE_STOPS.filter(
 		tone => tone !== 0 && tone !== 100 && Math.abs(tone - window.center) <= window.radius
 	).sort((first, second) => compareCandidateTones(first, second, window.center, window.direction))
@@ -142,6 +148,7 @@ export function createRoleToneCandidates({ mode, axis, roleRamp, treatment, refe
 export function createRoleStateCandidates({
 	mode,
 	axis,
+	role,
 	roleRamp,
 	baseColor,
 	baseTone,
@@ -153,6 +160,7 @@ export function createRoleStateCandidates({
 		throw new TypeError('Expected mode to be "light" or "dark"')
 	}
 
+	void role
 	void baseColor
 
 	let targetTone

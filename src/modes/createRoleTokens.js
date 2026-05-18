@@ -264,6 +264,7 @@ function createRoleRecipe({
 	return {
 		solid: createSolidTreatment({
 			mode,
+			role,
 			targets,
 			roleRamp,
 			neutralRamp,
@@ -275,6 +276,7 @@ function createRoleRecipe({
 		}),
 		soft: createSoftTreatment({
 			mode,
+			role,
 			targets,
 			roleRamp,
 			neutralRamp,
@@ -289,6 +291,7 @@ function createRoleRecipe({
 			neutralRamp,
 			surface,
 			mode,
+			role,
 			axis,
 			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
@@ -299,6 +302,7 @@ function createRoleRecipe({
 			neutralRamp,
 			surface,
 			mode,
+			role,
 			axis,
 			separationReferences,
 			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
@@ -308,6 +312,7 @@ function createRoleRecipe({
 
 function createSolidTreatment({
 	mode,
+	role,
 	targets,
 	roleRamp,
 	neutralRamp,
@@ -327,6 +332,7 @@ function createSolidTreatment({
 		createRoleToneCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			treatment: "solid",
 			references: separationReferences,
@@ -343,6 +349,7 @@ function createSolidTreatment({
 	const solidChildCandidates = createRoleStateCandidates({
 		mode,
 		axis,
+		role,
 		roleRamp,
 		baseColor: solidPair.bg,
 		baseTone: solidTone,
@@ -359,6 +366,7 @@ function createSolidTreatment({
 		hoverBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: solidPair.bg,
 			baseTone: solidTone,
@@ -369,6 +377,7 @@ function createSolidTreatment({
 		activeBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: solidPair.bg,
 			baseTone: solidTone,
@@ -380,6 +389,7 @@ function createSolidTreatment({
 		childHoverBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: solidChildCandidates[0],
 			baseTone: solidChildTone,
@@ -390,6 +400,7 @@ function createSolidTreatment({
 		childActiveBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: solidChildCandidates[0],
 			baseTone: solidChildTone,
@@ -404,6 +415,7 @@ function createSolidTreatment({
 
 function createSoftTreatment({
 	mode,
+	role,
 	targets,
 	roleRamp,
 	neutralRamp,
@@ -420,6 +432,7 @@ function createSoftTreatment({
 	const softBackgroundCandidates = createRoleToneCandidates({
 		mode,
 		axis,
+		role,
 		roleRamp,
 		treatment: "soft",
 		references: separationReferences,
@@ -435,6 +448,7 @@ function createSoftTreatment({
 	const softChildCandidates = createRoleStateCandidates({
 		mode,
 		axis,
+		role,
 		roleRamp,
 		baseColor: softPair.bg,
 		baseTone: softTone,
@@ -451,6 +465,7 @@ function createSoftTreatment({
 		hoverBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: softPair.bg,
 			baseTone: softTone,
@@ -461,6 +476,7 @@ function createSoftTreatment({
 		activeBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: softPair.bg,
 			baseTone: softTone,
@@ -472,6 +488,7 @@ function createSoftTreatment({
 		childHoverBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: softChildCandidates[0],
 			baseTone: softChildTone,
@@ -482,6 +499,7 @@ function createSoftTreatment({
 		childActiveBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: softChildCandidates[0],
 			baseTone: softChildTone,
@@ -496,6 +514,7 @@ function createSoftTreatment({
 
 function createOutlineTreatment({
 	mode,
+	role,
 	targets,
 	roleRamp,
 	neutralRamp,
@@ -517,6 +536,7 @@ function createOutlineTreatment({
 	const outlineHoverCandidates = createRoleToneCandidates({
 		mode,
 		axis,
+		role,
 		roleRamp,
 		treatment: "outline",
 		references: separationReferences,
@@ -532,6 +552,7 @@ function createOutlineTreatment({
 		activeBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: outlineHoverCandidates[0],
 			baseTone: outlineHoverTone,
@@ -546,6 +567,7 @@ function createOutlineTreatment({
 
 function createGhostTreatment({
 	mode,
+	role,
 	targets,
 	roleRamp,
 	neutralRamp,
@@ -567,6 +589,7 @@ function createGhostTreatment({
 	const ghostHoverCandidates = createRoleToneCandidates({
 		mode,
 		axis,
+		role,
 		roleRamp,
 		treatment: "ghost",
 		references: separationReferences,
@@ -582,6 +605,7 @@ function createGhostTreatment({
 		activeBgCandidates: createRoleStateCandidates({
 			mode,
 			axis,
+			role,
 			roleRamp,
 			baseColor: ghostHoverCandidates[0],
 			baseTone: ghostHoverTone,

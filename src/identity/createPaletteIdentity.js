@@ -1,6 +1,11 @@
 import { MODE_DARK, MODE_LIGHT } from "../defaults.js"
 import { clampChroma, clampLightness, hexToOklch, normalizeHue, oklchToHex } from "../color/oklch.js"
-import { createModeTonalAxes, renderAxisColor } from "../axis/createTonalAxis.js"
+import {
+	createModeTonalAxes,
+	getAxisRoleAnchorTone,
+	getAxisRoleChromaScale,
+	renderAxisColor
+} from "../axis/createTonalAxis.js"
 
 const NEAR_NEUTRAL_CHROMA_THRESHOLD = 0.025
 const NEUTRAL_RAIL_MAX_CHROMA = 0.045
@@ -48,13 +53,12 @@ export function createModeRampSeeds({ mode, identity }) {
 		throw new TypeError('Expected mode to be "light" or "dark"')
 	}
 
-	const roleLightness = mode === MODE_LIGHT ? 0.56 : 0.68
 	const axis = identity.axes[mode]
 
 	return {
-		primary: renderIdentitySeed(identity.roles.primary, roleLightness),
-		secondary: renderIdentitySeed(identity.roles.secondary, roleLightness),
-		accent: renderIdentitySeed(identity.roles.accent, roleLightness),
+		primary: renderRoleAxisSeed({ axis, role: "primary", source: identity.roles.primary }),
+		secondary: renderRoleAxisSeed({ axis, role: "secondary", source: identity.roles.secondary }),
+		accent: renderRoleAxisSeed({ axis, role: "accent", source: identity.roles.accent }),
 		neutral: renderAxisColor({ tone: axis.textTone, source: identity.neutral, maxChroma: NEUTRAL_RAIL_MAX_CHROMA }),
 		base: renderAxisColor({ tone: axis.backgroundTone, source: identity.base, maxChroma: NEUTRAL_RAIL_MAX_CHROMA })
 	}
@@ -86,11 +90,14 @@ function createRoleIdentityColor(seed, role, recoveryHue) {
 	}
 }
 
-function renderIdentitySeed(color, lightness) {
+function renderRoleAxisSeed({ axis, role, source }) {
+	const anchorTone = getAxisRoleAnchorTone({ axis, role })
+	const chromaScale = getAxisRoleChromaScale({ axis, role })
+
 	return oklchToHex({
-		l: clampLightness(lightness),
-		c: clampChroma(color.c),
-		h: normalizeHue(color.h)
+		l: clampLightness(anchorTone / 100),
+		c: Math.min(ROLE_MAX_CHROMA, clampChroma(source.c * chromaScale)),
+		h: normalizeHue(source.h)
 	})
 }
 

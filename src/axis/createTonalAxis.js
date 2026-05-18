@@ -25,6 +25,48 @@ function getAxisCharacter(contrastSpan, neutralTint) {
 	return "balanced"
 }
 
+export function getAxisRoleAnchorTone({ axis, role }) {
+	const normalizedSpan = Math.min(1, Math.max(0, axis.contrastSpan / 100))
+	const basePresence = 0.62 + normalizedSpan * 0.18
+	let presence = basePresence
+
+	if (role === "secondary") {
+		presence = basePresence - 0.08
+	} else if (role === "accent") {
+		presence = basePresence + 0.06
+	} else if (role !== "primary") {
+		throw new TypeError('Expected role to be "primary", "secondary", or "accent"')
+	}
+
+	presence = Math.min(0.88, Math.max(0.42, presence))
+
+	const tone = axis.backgroundTone + (axis.textTone - axis.backgroundTone) * presence
+
+	return Math.min(100, Math.max(0, tone))
+}
+
+export function getAxisRoleChromaScale({ axis, role }) {
+	let scale = 1
+
+	if (role === "secondary") {
+		scale -= 0.16
+	} else if (role === "accent") {
+		scale += 0.08
+	} else if (role !== "primary") {
+		throw new TypeError('Expected role to be "primary", "secondary", or "accent"')
+	}
+
+	if (axis.axisCharacter === "soft") {
+		scale -= 0.08
+	} else if (axis.axisCharacter === "stark") {
+		scale += 0.04
+	} else if (axis.axisCharacter === "tinted") {
+		scale -= 0.04
+	}
+
+	return Math.min(1.14, Math.max(0.68, scale))
+}
+
 export function createTonalAxis({ mode, neutral, base }) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
 		throw new TypeError('Expected mode to be "light" or "dark"')
@@ -52,8 +94,7 @@ export function createTonalAxis({ mode, neutral, base }) {
 		)
 	)
 	const contrastSpan = toneDistance(textTone, backgroundTone)
-
-	return {
+	const axis = {
 		mode,
 		backgroundTone,
 		textTone,
@@ -66,6 +107,19 @@ export function createTonalAxis({ mode, neutral, base }) {
 		neutralTint: Math.max(textSource.c, backgroundSource.c),
 		axisCharacter: getAxisCharacter(contrastSpan, Math.max(textSource.c, backgroundSource.c))
 	}
+
+	axis.roleAnchorTones = {
+		primary: getAxisRoleAnchorTone({ axis, role: "primary" }),
+		secondary: getAxisRoleAnchorTone({ axis, role: "secondary" }),
+		accent: getAxisRoleAnchorTone({ axis, role: "accent" })
+	}
+	axis.roleChromaScales = {
+		primary: getAxisRoleChromaScale({ axis, role: "primary" }),
+		secondary: getAxisRoleChromaScale({ axis, role: "secondary" }),
+		accent: getAxisRoleChromaScale({ axis, role: "accent" })
+	}
+
+	return axis
 }
 
 export function createModeTonalAxes({ identity }) {
