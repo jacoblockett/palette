@@ -761,11 +761,11 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
         </div>
     </footer>
 
-    <script>
-        // Track mode context state
+    <script type="module">
+        import { createPalette } from "../src/index.js";
+
         let isDarkMode = true;
 
-        // Color Hex configurations
         const currentPalette = {
             text: '#f8e2f2',
             bg: '#0e030b',
@@ -774,7 +774,6 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             accent: '#d28c41'
         };
 
-        // Reset variables back to initial configurations requested
         const defaultSeeds = {
             text: '#f8e2f2',
             bg: '#0e030b',
@@ -783,74 +782,97 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             accent: '#d28c41'
         };
 
-        // Helper: Convert HEX code to raw RGB values
-        function hexToRgb(hex) {
-            let clean = hex.replace('#', '');
-            if (clean.length === 3) {
-                clean = clean.split('').map(char => char + char).join('');
-            }
-            const num = parseInt(clean, 16);
-            return {
-                r: (num >> 16) & 255,
-                g: (num >> 8) & 255,
-                b: num & 255
-            };
+        function wrapHue(value) {
+            return ((value % 360) + 360) % 360;
         }
 
-        // Apply visual CSS Variable updates straight onto :root elements based on current seeds
-        function updatePageColors() {
-            const root = document.documentElement;
+        function randomInRange(min, max) {
+            return min + Math.random() * (max - min);
+        }
 
-            // Set raw seeds
-            root.style.setProperty('--p-text', currentPalette.text);
-            root.style.setProperty('--p-bg', currentPalette.bg);
-            root.style.setProperty('--p-primary', currentPalette.primary);
-            root.style.setProperty('--p-secondary', currentPalette.secondary);
-            root.style.setProperty('--p-accent', currentPalette.accent);
+        function hslToHex(h, s, l) {
+            const hue = wrapHue(h);
+            const saturation = Math.max(0, Math.min(100, s)) / 100;
+            const lightness = Math.max(0, Math.min(100, l)) / 100;
+            const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+            const segment = hue / 60;
+            const x = chroma * (1 - Math.abs((segment % 2) - 1));
+            let red = 0;
+            let green = 0;
+            let blue = 0;
 
-            // Compute alpha shades
-            const textRGB = hexToRgb(currentPalette.text);
-            const primaryRGB = hexToRgb(currentPalette.primary);
-            const accentRGB = hexToRgb(currentPalette.accent);
-
-            // Dynamically set relative opacity definitions based on inputs
-            root.style.setProperty('--p-text-muted', `rgba(${textRGB.r}, ${textRGB.g}, ${textRGB.b}, 0.65)`);
-            root.style.setProperty('--p-border', `rgba(${textRGB.r}, ${textRGB.g}, ${textRGB.b}, 0.15)`);
-            root.style.setProperty('--p-primary-glow', `rgba(${primaryRGB.r}, ${primaryRGB.g}, ${primaryRGB.b}, 0.35)`);
-            root.style.setProperty('--p-accent-glow', `rgba(${accentRGB.r}, ${accentRGB.g}, ${accentRGB.b}, 0.25)`);
-
-            // Adapt structural cards depending on Ambient State context
-            if (isDarkMode) {
-                root.style.setProperty('--p-bg-card', 'rgba(255, 255, 255, 0.04)');
-                root.style.setProperty('--p-bg-alt', 'rgba(255, 255, 255, 0.08)');
+            if (segment >= 0 && segment < 1) {
+                red = chroma;
+                green = x;
+            } else if (segment < 2) {
+                red = x;
+                green = chroma;
+            } else if (segment < 3) {
+                green = chroma;
+                blue = x;
+            } else if (segment < 4) {
+                green = x;
+                blue = chroma;
+            } else if (segment < 5) {
+                red = x;
+                blue = chroma;
             } else {
-                root.style.setProperty('--p-bg-card', 'rgba(0, 0, 0, 0.03)');
-                root.style.setProperty('--p-bg-alt', 'rgba(0, 0, 0, 0.06)');
+                red = chroma;
+                blue = x;
             }
 
-            // Sync structural controller picker visual state outputs
+            const match = lightness - chroma / 2;
+            const toChannel = value => Math.round((value + match) * 255).toString(16).padStart(2, '0');
+
+            return `#${toChannel(red)}${toChannel(green)}${toChannel(blue)}`;
+        }
+
+        function getGeneratedPalette() {
+            return createPalette({
+                mode: isDarkMode ? "dark" : "light",
+                seeds: {
+                    primary: currentPalette.primary,
+                    secondary: currentPalette.secondary,
+                    accent: currentPalette.accent,
+                    neutral: currentPalette.text,
+                    base: currentPalette.bg
+                }
+            });
+        }
+
+        function updatePageColors() {
+            const root = document.documentElement;
+            const palette = getGeneratedPalette();
+
+            root.style.setProperty('--p-text', palette.current.app.fg);
+            root.style.setProperty('--p-bg', palette.current.app.bg);
+            root.style.setProperty('--p-primary', palette.current.roles.primary.solid.bg);
+            root.style.setProperty('--p-secondary', palette.current.roles.secondary.solid.bg);
+            root.style.setProperty('--p-accent', palette.current.roles.accent.solid.bg);
+            root.style.setProperty('--p-text-muted', palette.current.app.mutedFg);
+            root.style.setProperty('--p-bg-card', palette.current.surfaces.raised.bg);
+            root.style.setProperty('--p-bg-alt', palette.current.surfaces.base.bg);
+            root.style.setProperty('--p-border', palette.current.app.border);
+            root.style.setProperty('--p-primary-glow', palette.current.roles.primary.soft.bg);
+            root.style.setProperty('--p-accent-glow', palette.current.roles.accent.soft.bg);
+
             syncPickerUI();
         }
 
-        // Sync visual Hex text displays inside inputs sandbox
         function syncPickerUI() {
             const keys = ['text', 'bg', 'primary', 'secondary', 'accent'];
+
             keys.forEach(key => {
                 const hexVal = currentPalette[key];
-                
-                // Update label text elements inside controller inputs
                 const label = document.getElementById(`hex-${key}`);
                 if (label) label.textContent = hexVal.toLowerCase();
 
-                // Update input color selectors values
                 const picker = document.getElementById(`picker-${key}`);
                 if (picker) picker.value = hexVal;
 
-                // Update preview circle indicators
                 const preview = document.getElementById(`preview-${key}`);
                 if (preview) preview.style.backgroundColor = hexVal;
 
-                // Update structural code output panels text
                 const codeElements = document.querySelectorAll(`.code-${key}`);
                 codeElements.forEach(el => {
                     el.textContent = hexVal.toLowerCase();
@@ -858,29 +880,22 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             });
         }
 
-        // Handle direct interactions with single color picker controls
         function updateColorFromPicker(key, hexVal) {
             currentPalette[key] = hexVal;
             updatePageColors();
         }
 
-        // Toggles absolute visual dark / light mode parameters mapping seeds context
         function toggleTheme() {
             isDarkMode = !isDarkMode;
             const root = document.documentElement;
+            const themeToggleIcon = document.getElementById('themeToggleIcon');
 
-            // Invert layout role functions
-            const tempText = currentPalette.text;
-            currentPalette.text = currentPalette.bg;
-            currentPalette.bg = tempText;
-
-            // Update UI class systems
             if (isDarkMode) {
                 root.classList.add('dark');
-                document.getElementById('themeToggleIcon').setAttribute('data-lucide', 'sun');
+                themeToggleIcon?.setAttribute('data-lucide', 'sun');
             } else {
                 root.classList.remove('dark');
-                document.getElementById('themeToggleIcon').setAttribute('data-lucide', 'moon');
+                themeToggleIcon?.setAttribute('data-lucide', 'moon');
             }
 
             lucide.createIcons();
@@ -888,54 +903,56 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             triggerNotification(isDarkMode ? "Inverted to Dark Mode config" : "Inverted to Light Mode config");
         }
 
-        // Helper: Generate a random visual hex color
-        function generateRandomHex() {
-            const chars = '0123456789abcdef';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += chars[Math.floor(Math.random() * 16)];
-            }
-            return color;
+        function createRandomSeedValues() {
+            const anchorHue = randomInRange(0, 360);
+            const relatedDirection = Math.random() < 0.5 ? -1 : 1;
+            const relatedOffset = randomInRange(18, 42) * relatedDirection;
+            const contrastOffset = randomInRange(150, 210);
+            const neutralHue = wrapHue(anchorHue + randomInRange(-10, 10));
+            const baseHue = wrapHue(anchorHue + randomInRange(-12, 12));
+
+            return {
+                primary: hslToHex(anchorHue, randomInRange(60, 78), randomInRange(48, 62)),
+                secondary: hslToHex(anchorHue + relatedOffset, randomInRange(44, 64), randomInRange(40, 56)),
+                accent: hslToHex(anchorHue + contrastOffset, randomInRange(62, 82), randomInRange(48, 62)),
+                text: hslToHex(neutralHue, randomInRange(6, 18), randomInRange(88, 96)),
+                bg: hslToHex(baseHue, randomInRange(8, 18), randomInRange(5, 14))
+            };
         }
 
-        // Randomize all 5 color inputs
         function randomizePalette() {
-            currentPalette.text = generateRandomHex();
-            currentPalette.bg = generateRandomHex();
-            currentPalette.primary = generateRandomHex();
-            currentPalette.secondary = generateRandomHex();
-            currentPalette.accent = generateRandomHex();
+            const nextPalette = createRandomSeedValues();
 
-            // Ensure readability standard logic simulation (light text / dark bg context auto guard)
-            // If the background is too light and isDarkMode is on, slightly invert contextually
+            currentPalette.text = nextPalette.text;
+            currentPalette.bg = nextPalette.bg;
+            currentPalette.primary = nextPalette.primary;
+            currentPalette.secondary = nextPalette.secondary;
+            currentPalette.accent = nextPalette.accent;
+
             updatePageColors();
             triggerNotification("Dynamic Color Seeds Randomized!");
         }
 
-        // Reset elements back to user-defined start seeds
         function resetSeeds() {
             currentPalette.text = defaultSeeds.text;
             currentPalette.bg = defaultSeeds.bg;
             currentPalette.primary = defaultSeeds.primary;
             currentPalette.secondary = defaultSeeds.secondary;
             currentPalette.accent = defaultSeeds.accent;
-            
-            // Re-apply configurations
+
             updatePageColors();
             triggerNotification("Seeds restored to defaults.");
         }
 
-        // Trigger floating interactive notification
         let toastTimeout;
         function triggerNotification(msg) {
             const toast = document.getElementById('toastNotification');
             const toastMsg = document.getElementById('toastMessage');
-            
+
             toastMsg.textContent = msg;
-            
-            // clear prior transitions
+
             clearTimeout(toastTimeout);
-            
+
             toast.style.transform = 'translateY(0)';
             toast.style.opacity = '1';
 
@@ -945,20 +962,17 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             }, 3000);
         }
 
-        // Micro interactions: Art canvas parallax tilt
         const canvasContainer = document.querySelector('.art-canvas');
         const artCard = document.getElementById('artCard');
 
         if (canvasContainer && artCard) {
-            canvasContainer.addEventListener('mousemove', (e) => {
+            canvasContainer.addEventListener('mousemove', event => {
                 const rect = canvasContainer.getBoundingClientRect();
-                const x = e.clientX - rect.left; // x coordinate inside element
-                const y = e.clientY - rect.top;  // y coordinate inside element
-                
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                
-                const rotateX = ((centerY - y) / centerY) * 15; // Max rot degrees
+                const rotateX = ((centerY - y) / centerY) * 15;
                 const rotateY = ((x - centerX) / centerX) * 15;
 
                 artCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
@@ -969,8 +983,14 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             });
         }
 
-        // Run updates on initial loads
+        window.updateColorFromPicker = updateColorFromPicker;
+        window.toggleTheme = toggleTheme;
+        window.randomizePalette = randomizePalette;
+        window.resetSeeds = resetSeeds;
+        window.triggerNotification = triggerNotification;
+
         window.onload = function() {
+            document.documentElement.classList.add('dark');
             lucide.createIcons();
             updatePageColors();
         };
