@@ -50,6 +50,7 @@ const palette = createPalette({
 - `accent`: highlight and focus-adjacent color.
 - `neutral`: structural color source for text, borders, and neutral UI.
 - `base`: environmental app and surface bias.
+- Public seeds are authoring inputs. The generator derives separate light and dark ramps internally from the same five required seeds.
 
 `success`, `warning`, `danger`, and `info` are generated from the five required seed ramps. They are not accepted as public input seeds.
 
@@ -150,7 +151,7 @@ Every role contains these treatments:
 }
 ```
 
-- `primary`, `secondary`, `accent`, and `neutral` derive directly from the required seed ramps.
+- `primary`, `secondary`, `accent`, and `neutral` derive from mode-specific ramps created from the required public seeds.
 - `success`, `warning`, `danger`, and `info` are generated from transformed versions of required seed ramps.
 - No additional role seed input is accepted by the public API.
 

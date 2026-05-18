@@ -1,12 +1,6 @@
 import { MODE_LIGHT, MODE_DARK, ROLE_KEYS, GENERATED_ROLE_KEYS } from "../defaults.js"
-import {
-	createRamp,
-	getRampColor,
-	getSolidCandidates,
-	getSoftCandidates,
-	getTextCandidates
-} from "../ramps/createRamp.js"
-import { hexToOklch, oklchToHex, normalizeHue, clampChroma, clampLightness } from "../color/oklch.js"
+import { createRamp, getRampColor, getTextCandidates } from "../ramps/createRamp.js"
+import { hexToOklch, oklchToHex, normalizeHue, clampChroma } from "../color/oklch.js"
 import { createInteractiveRecipe } from "../recipes/createInteractiveRecipe.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 
@@ -29,7 +23,7 @@ export function createRoleTokens({ mode, app, surfaces, ramps }) {
 		}
 	}
 
-	const roleRamps = createAllRoleRamps(ramps)
+	const roleRamps = createAllRoleRamps(ramps, mode)
 	const surface = surfaces.base
 
 	return {
@@ -100,22 +94,22 @@ export function createRoleTokens({ mode, app, surfaces, ramps }) {
 	}
 }
 
-function createGeneratedRoleRamps(ramps) {
+function createGeneratedRoleRamps(ramps, mode) {
 	const derivedSeeds = Object.fromEntries(
 		GENERATED_ROLE_KEYS.map(role => {
 			if (role === "success") {
-				return [role, deriveSeedFromRamp(ramps.secondary, 90)]
+				return [role, deriveSeedFromRamp(ramps.secondary, 90, mode)]
 			}
 
 			if (role === "warning") {
-				return [role, deriveSeedFromRamp(ramps.accent, -35)]
+				return [role, deriveSeedFromRamp(ramps.accent, -35, mode)]
 			}
 
 			if (role === "danger") {
-				return [role, deriveSeedFromRamp(ramps.primary, 150)]
+				return [role, deriveSeedFromRamp(ramps.primary, 150, mode)]
 			}
 
-			return [role, deriveSeedFromRamp(ramps.secondary, 0)]
+			return [role, deriveSeedFromRamp(ramps.secondary, 0, mode)]
 		})
 	)
 
@@ -127,21 +121,21 @@ function createGeneratedRoleRamps(ramps) {
 	}
 }
 
-function deriveSeedFromRamp(ramp, hueShift) {
+function deriveSeedFromRamp(ramp, hueShift, mode) {
 	const source = {
 		...hexToOklch(ramp.seed),
 		...ramp.oklch
 	}
 
 	return oklchToHex({
-		l: Math.min(0.72, Math.max(0.45, clampLightness(source.l))),
+		l: mode === MODE_LIGHT ? 0.54 : 0.68,
 		c: Math.min(0.24, Math.max(0.08, clampChroma(source.c))),
 		h: normalizeHue(source.h + hueShift)
 	})
 }
 
-function createAllRoleRamps(ramps) {
-	const generatedRamps = createGeneratedRoleRamps(ramps)
+function createAllRoleRamps(ramps, mode) {
+	const generatedRamps = createGeneratedRoleRamps(ramps, mode)
 
 	return {
 		primary: ramps.primary,
@@ -169,7 +163,7 @@ function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app }) {
 }
 
 function createSolidTreatment({ mode, roleRamp, neutralRamp, app }) {
-	const solidCandidates = getSolidCandidates(roleRamp, mode)
+	const solidCandidates = getModeRoleStops(roleRamp, mode, [35, 40, 45, 50], [60, 65, 70, 75])
 
 	return createNestedInteractiveRecipe({
 		bg: solidCandidates[0],
@@ -186,7 +180,7 @@ function createSolidTreatment({ mode, roleRamp, neutralRamp, app }) {
 }
 
 function createSoftTreatment({ mode, roleRamp, neutralRamp, app }) {
-	const softCandidates = getSoftCandidates(roleRamp, mode)
+	const softCandidates = getModeRoleStops(roleRamp, mode, [92, 90, 85], [12, 16, 20])
 
 	return createNestedInteractiveRecipe({
 		bg: softCandidates[0],

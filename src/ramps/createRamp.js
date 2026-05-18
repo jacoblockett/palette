@@ -2,7 +2,7 @@ import { MODE_DARK, MODE_LIGHT } from "../defaults.js"
 import { normalizeHex } from "../color/normalize.js"
 import { hexToOklch, oklchToHex, clampLightness, clampChroma, normalizeHue } from "../color/oklch.js"
 
-export const RAMP_STOPS = [0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100]
+export const RAMP_STOPS = [0, 5, 10, 12, 16, 20, 30, 35, 40, 45, 50, 60, 65, 70, 75, 80, 85, 90, 92, 95, 100]
 
 export function createRamp(seed, options = {}) {
 	const normalizedSeed = normalizeHex(seed)
@@ -66,11 +66,11 @@ export function getDarkModeCandidates(ramp) {
 
 export function getSolidCandidates(ramp, mode) {
 	if (mode === MODE_LIGHT) {
-		return getRampCandidates(ramp, [40, 50, 60, 70])
+		return getRampCandidates(ramp, [35, 40, 45, 50])
 	}
 
 	if (mode === MODE_DARK) {
-		return getRampCandidates(ramp, [50, 60, 70, 80])
+		return getRampCandidates(ramp, [60, 65, 70, 75])
 	}
 
 	throw new TypeError('Expected mode to be "light" or "dark"')
@@ -78,11 +78,11 @@ export function getSolidCandidates(ramp, mode) {
 
 export function getSoftCandidates(ramp, mode) {
 	if (mode === MODE_LIGHT) {
-		return getRampCandidates(ramp, [95, 90, 80])
+		return getRampCandidates(ramp, [92, 90, 85])
 	}
 
 	if (mode === MODE_DARK) {
-		return getRampCandidates(ramp, [10, 20, 30])
+		return getRampCandidates(ramp, [12, 16, 20])
 	}
 
 	throw new TypeError('Expected mode to be "light" or "dark"')

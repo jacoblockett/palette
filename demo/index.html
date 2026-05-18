@@ -827,20 +827,16 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             return `#${toChannel(red)}${toChannel(green)}${toChannel(blue)}`;
         }
 
-        function getEngineSeeds() {
-            return {
-                primary: currentPalette.primary,
-                secondary: currentPalette.secondary,
-                accent: currentPalette.accent,
-                neutral: isDarkMode ? currentPalette.text : currentPalette.bg,
-                base: isDarkMode ? currentPalette.bg : currentPalette.text
-            };
-        }
-
         function getGeneratedPalette() {
             return createPalette({
                 mode: isDarkMode ? "dark" : "light",
-                seeds: getEngineSeeds()
+                seeds: {
+                    primary: currentPalette.primary,
+                    secondary: currentPalette.secondary,
+                    accent: currentPalette.accent,
+                    neutral: currentPalette.text,
+                    base: currentPalette.bg
+                }
             });
         }
 
@@ -917,9 +913,15 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             const isDarkSeedMode = mode === 'dark';
 
             return {
-                primary: hslToHex(anchorHue, randomInRange(60, 78), randomInRange(48, 62)),
-                secondary: hslToHex(anchorHue + relatedOffset, randomInRange(44, 64), randomInRange(40, 56)),
-                accent: hslToHex(anchorHue + contrastOffset, randomInRange(62, 82), randomInRange(48, 62)),
+                primary: isDarkSeedMode
+                    ? hslToHex(anchorHue, randomInRange(68, 86), randomInRange(56, 70))
+                    : hslToHex(anchorHue, randomInRange(52, 72), randomInRange(42, 56)),
+                secondary: isDarkSeedMode
+                    ? hslToHex(anchorHue + relatedOffset, randomInRange(52, 72), randomInRange(48, 62))
+                    : hslToHex(anchorHue + relatedOffset, randomInRange(40, 60), randomInRange(36, 50)),
+                accent: isDarkSeedMode
+                    ? hslToHex(anchorHue + contrastOffset, randomInRange(72, 90), randomInRange(58, 72))
+                    : hslToHex(anchorHue + contrastOffset, randomInRange(58, 78), randomInRange(44, 58)),
                 text: isDarkSeedMode
                     ? hslToHex(neutralHue, randomInRange(6, 18), randomInRange(88, 96))
                     : hslToHex(neutralHue, randomInRange(6, 18), randomInRange(8, 18)),
