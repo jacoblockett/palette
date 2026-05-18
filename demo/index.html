@@ -27,6 +27,8 @@
                             primary: 'var(--p-primary)',
                             secondary: 'var(--p-secondary)',
                             accent: 'var(--p-accent)',
+                            'selection-bg': 'var(--p-selection-bg)',
+                            'selection-fg': 'var(--p-selection-fg)',
                             'on-primary': 'var(--p-on-primary)',
                             'on-secondary': 'var(--p-on-secondary)',
                             'on-accent': 'var(--p-on-accent)',
@@ -36,6 +38,18 @@
                             'on-primary-soft': 'var(--p-on-primary-soft)',
                             'on-secondary-soft': 'var(--p-on-secondary-soft)',
                             'on-accent-soft': 'var(--p-on-accent-soft)',
+                            'primary-outline-bg': 'var(--p-primary-outline-bg)',
+                            'secondary-outline-bg': 'var(--p-secondary-outline-bg)',
+                            'accent-outline-bg': 'var(--p-accent-outline-bg)',
+                            'on-primary-outline': 'var(--p-on-primary-outline)',
+                            'on-secondary-outline': 'var(--p-on-secondary-outline)',
+                            'on-accent-outline': 'var(--p-on-accent-outline)',
+                            'primary-ghost-bg': 'var(--p-primary-ghost-bg)',
+                            'secondary-ghost-bg': 'var(--p-secondary-ghost-bg)',
+                            'accent-ghost-bg': 'var(--p-accent-ghost-bg)',
+                            'on-primary-ghost': 'var(--p-on-primary-ghost)',
+                            'on-secondary-ghost': 'var(--p-on-secondary-ghost)',
+                            'on-accent-ghost': 'var(--p-on-accent-ghost)',
                             'primary-border': 'var(--p-primary-border)',
                             'secondary-border': 'var(--p-secondary-border)',
                             'accent-border': 'var(--p-accent-border)',
@@ -77,6 +91,8 @@
             --p-primary: #e48ec7;
             --p-secondary: #81341f;
             --p-accent: #d28c41;
+            --p-selection-bg: #e48ec7;
+            --p-selection-fg: #14050f;
             --p-on-primary: #14050f;
             --p-on-secondary: #fff4ef;
             --p-on-accent: #1f1406;
@@ -86,6 +102,18 @@
             --p-on-primary-soft: #ffe8f6;
             --p-on-secondary-soft: #fff0ea;
             --p-on-accent-soft: #fff0db;
+            --p-primary-outline-bg: #2b1123;
+            --p-secondary-outline-bg: #331d18;
+            --p-accent-outline-bg: #3b2a17;
+            --p-on-primary-outline: #f5d0e6;
+            --p-on-secondary-outline: #ffe4db;
+            --p-on-accent-outline: #ffe6c4;
+            --p-primary-ghost-bg: #1a0a15;
+            --p-secondary-ghost-bg: #1b100d;
+            --p-accent-ghost-bg: #20160d;
+            --p-on-primary-ghost: #f8e2f2;
+            --p-on-secondary-ghost: #fff0ea;
+            --p-on-accent-ghost: #fff0db;
             --p-primary-border: #e48ec7;
             --p-secondary-border: #81341f;
             --p-accent-border: #d28c41;
@@ -118,15 +146,15 @@
         }
     </style>
 </head>
-<body class="bg-palette-bg text-palette-text font-sans transition-colors duration-500 selection:bg-palette-primary selection:text-palette-bg overflow-x-hidden min-h-screen">
+<body class="bg-palette-bg text-palette-text font-sans transition-colors duration-500 selection:bg-palette-selection-bg selection:text-palette-selection-fg overflow-x-hidden min-h-screen">
 
     <!-- Navigation -->
     <header class="sticky top-0 z-50 backdrop-blur-md border-b border-palette-border bg-palette-bg/80 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Logo -->
             <a href="#" class="flex items-center space-x-3 group">
-                <div class="relative w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-tr from-palette-primary to-palette-accent text-palette-bg shadow-neon transition-transform group-hover:scale-110 duration-300">
-                    <i data-lucide="palette" class="w-5 h-5 text-palette-bg"></i>
+                <div class="relative w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-tr from-palette-primary to-palette-accent text-palette-on-primary shadow-neon transition-transform group-hover:scale-110 duration-300">
+                    <i data-lucide="palette" class="w-5 h-5 text-palette-on-primary"></i>
                 </div>
                 <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-palette-text to-palette-primary bg-clip-text text-transparent">
                     Palette<span class="text-palette-accent">.js</span>
@@ -374,7 +402,9 @@
                         <!-- Randomization / Utilities Buttons -->
                         <div class="flex space-x-3">
                             <button onclick="randomizePalette()" class="flex-1 py-3 px-4 rounded-xl bg-palette-secondary text-palette-on-secondary hover:bg-opacity-90 font-bold flex items-center justify-center space-x-2 transition-all">
-                                <i data-lucide="sparkles" class="w-4 h-4 text-palette-on-secondary/80"></i>
+                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-palette-accent-soft text-palette-on-accent-soft">
+                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                </span>
                                 <span>Randomize Seeds</span>
                             </button>
                             <button onclick="resetSeeds()" class="p-3 rounded-xl border border-palette-border bg-palette-bg hover:bg-palette-bg-alt transition-colors" title="Reset Defaults">
@@ -397,6 +427,8 @@
   primary: <span class="text-palette-primary">"<span class="code-primary">#e48ec7</span>"</span>,
   secondary: <span class="text-palette-primary">"<span class="code-secondary">#81341f</span>"</span>,
   accent: <span class="text-palette-primary">"<span class="code-accent">#d28c41</span>"</span>,
+  border: <span class="text-palette-primary">"<span class="code-border">#483846</span>"</span>,
+  surface: <span class="text-palette-primary">"<span class="code-surface">#14050f</span>"</span>,
 };
 
 <span class="text-palette-text-muted">// Ready to export into styling libraries</span>
@@ -408,8 +440,8 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
           text: currentModeTokens.text,       <span class="text-palette-text-muted">// <span class="code-text">#f8e2f2</span></span>
           background: currentModeTokens.background, <span class="text-palette-text-muted">// <span class="code-background">#0e030b</span></span>
           primary: currentModeTokens.primary, <span class="text-palette-text-muted">// <span class="code-primary">#e48ec7</span></span>
-          border: system.shades.border,       <span class="text-palette-text-muted">// generated auto opacity</span>
-          card: system.shades.cardBg,         <span class="text-palette-text-muted">// generated contrast compliant</span>
+          border: currentModeTokens.border,   <span class="text-palette-text-muted">// <span class="code-border">#483846</span></span>
+          surface: currentModeTokens.surface, <span class="text-palette-text-muted">// <span class="code-surface">#14050f</span></span>
         }
       }
     }
@@ -470,7 +502,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 
             <!-- Feature 3 -->
             <div class="p-8 rounded-3xl border border-palette-border bg-palette-bg-card hover:border-palette-primary/50 transition-all duration-300 space-y-5 group">
-                <div class="w-12 h-12 flex items-center justify-center rounded-2xl bg-palette-text/15 text-palette-text group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 flex items-center justify-center rounded-2xl bg-palette-secondary-soft text-palette-on-secondary-soft group-hover:scale-110 transition-transform">
                     <i data-lucide="code-xml" class="w-6 h-6"></i>
                 </div>
                 <h3 class="text-xl font-bold">Framework Agnostic</h3>
@@ -517,19 +549,21 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                             <span class="text-sm">Workspace</span>
                         </div>
                         <nav class="space-y-2">
-                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-palette-bg-alt text-palette-text text-xs font-semibold">
-                                <i data-lucide="home" class="w-4 h-4 text-palette-primary"></i>
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-palette-primary-ghost-bg text-palette-on-primary-ghost text-xs font-semibold">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-palette-primary-soft text-palette-on-primary-soft">
+                                    <i data-lucide="home" class="w-4 h-4"></i>
+                                </span>
                                 <span>Main Overview</span>
                             </a>
-                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-text hover:bg-palette-bg-card rounded-xl text-xs font-semibold transition-all">
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-on-primary-ghost hover:bg-palette-primary-ghost-bg rounded-xl text-xs font-semibold transition-all">
                                 <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                                 <span>Analytics</span>
                             </a>
-                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-text hover:bg-palette-bg-card rounded-xl text-xs font-semibold transition-all">
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-on-primary-ghost hover:bg-palette-primary-ghost-bg rounded-xl text-xs font-semibold transition-all">
                                 <i data-lucide="folder" class="w-4 h-4"></i>
                                 <span>Projects</span>
                             </a>
-                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-text hover:bg-palette-bg-card rounded-xl text-xs font-semibold transition-all">
+                            <a href="#showcase" class="flex items-center space-x-3 px-3 py-2 text-palette-text-muted hover:text-palette-on-primary-ghost hover:bg-palette-primary-ghost-bg rounded-xl text-xs font-semibold transition-all">
                                 <i data-lucide="settings" class="w-4 h-4"></i>
                                 <span>Settings</span>
                             </a>
@@ -580,7 +614,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                                     <i data-lucide="activity" class="w-4 h-4 text-palette-primary"></i>
                                     <span>Engine Contrast Analytics</span>
                                 </h4>
-                                <span class="text-[10px] bg-palette-secondary text-palette-text py-0.5 px-2 rounded-full font-mono">Real-time</span>
+                                <span class="text-[10px] bg-palette-secondary text-palette-on-secondary py-0.5 px-2 rounded-full font-mono">Real-time</span>
                             </div>
                             
                             <!-- Dummy bar heights that change their backgrounds to showcase harmony -->
@@ -727,7 +761,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 
     <!-- Floating interactive toast dynamic notification (Never use alert!) -->
     <div id="toastNotification" class="fixed bottom-6 right-6 z-[100] p-4 rounded-2xl bg-palette-bg border border-palette-border shadow-2xl flex items-center space-x-3 translate-y-24 opacity-0 transition-all duration-300 max-w-sm">
-        <div class="p-2 rounded-lg bg-palette-primary text-palette-bg">
+        <div class="p-2 rounded-lg bg-palette-primary text-palette-on-primary">
             <i data-lucide="check-circle-2" class="w-5 h-5"></i>
         </div>
         <div>
@@ -742,8 +776,8 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                 <!-- Brand col -->
                 <div class="col-span-2 space-y-4">
                     <div class="flex items-center space-x-3">
-                        <div class="relative w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-tr from-palette-primary to-palette-accent text-palette-bg shadow-sm">
-                            <i data-lucide="palette" class="w-4 h-4 text-palette-bg"></i>
+                        <div class="relative w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-tr from-palette-primary to-palette-accent text-palette-on-primary shadow-sm">
+                            <i data-lucide="palette" class="w-4 h-4 text-palette-on-primary"></i>
                         </div>
                         <span class="text-xl font-bold tracking-tight text-palette-text">
                             Palette<span class="text-palette-accent">.js</span>
@@ -822,7 +856,9 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                 background: palette.current.app.bg,
                 primary: palette.current.roles.primary.solid.bg,
                 secondary: palette.current.roles.secondary.solid.bg,
-                accent: palette.current.roles.accent.solid.bg
+                accent: palette.current.roles.accent.solid.bg,
+                border: palette.current.app.border,
+                surface: palette.current.surfaces.base.bg
             };
         }
 
@@ -835,6 +871,8 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             root.style.setProperty('--p-primary', palette.current.roles.primary.solid.bg);
             root.style.setProperty('--p-secondary', palette.current.roles.secondary.solid.bg);
             root.style.setProperty('--p-accent', palette.current.roles.accent.solid.bg);
+            root.style.setProperty('--p-selection-bg', palette.current.app.selectionBg);
+            root.style.setProperty('--p-selection-fg', palette.current.app.selectionFg);
             root.style.setProperty('--p-on-primary', palette.current.roles.primary.solid.fg);
             root.style.setProperty('--p-on-secondary', palette.current.roles.secondary.solid.fg);
             root.style.setProperty('--p-on-accent', palette.current.roles.accent.solid.fg);
@@ -844,6 +882,18 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             root.style.setProperty('--p-on-primary-soft', palette.current.roles.primary.soft.fg);
             root.style.setProperty('--p-on-secondary-soft', palette.current.roles.secondary.soft.fg);
             root.style.setProperty('--p-on-accent-soft', palette.current.roles.accent.soft.fg);
+            root.style.setProperty('--p-primary-outline-bg', palette.current.roles.primary.outline.bg);
+            root.style.setProperty('--p-secondary-outline-bg', palette.current.roles.secondary.outline.bg);
+            root.style.setProperty('--p-accent-outline-bg', palette.current.roles.accent.outline.bg);
+            root.style.setProperty('--p-on-primary-outline', palette.current.roles.primary.outline.fg);
+            root.style.setProperty('--p-on-secondary-outline', palette.current.roles.secondary.outline.fg);
+            root.style.setProperty('--p-on-accent-outline', palette.current.roles.accent.outline.fg);
+            root.style.setProperty('--p-primary-ghost-bg', palette.current.roles.primary.ghost.bg);
+            root.style.setProperty('--p-secondary-ghost-bg', palette.current.roles.secondary.ghost.bg);
+            root.style.setProperty('--p-accent-ghost-bg', palette.current.roles.accent.ghost.bg);
+            root.style.setProperty('--p-on-primary-ghost', palette.current.roles.primary.ghost.fg);
+            root.style.setProperty('--p-on-secondary-ghost', palette.current.roles.secondary.ghost.fg);
+            root.style.setProperty('--p-on-accent-ghost', palette.current.roles.accent.ghost.fg);
             root.style.setProperty('--p-primary-border', palette.current.roles.primary.solid.border);
             root.style.setProperty('--p-secondary-border', palette.current.roles.secondary.solid.border);
             root.style.setProperty('--p-accent-border', palette.current.roles.accent.solid.border);
@@ -875,6 +925,14 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
                 const codeElements = document.querySelectorAll(`.code-${key}`);
                 codeElements.forEach(el => {
                     el.textContent = hexVal;
+                });
+            });
+
+            ['border', 'surface'].forEach(key => {
+                const resolvedValue = resolvedValues[key].toLowerCase();
+                const codeElements = document.querySelectorAll(`.code-${key}`);
+                codeElements.forEach(el => {
+                    el.textContent = resolvedValue;
                 });
             });
         }
