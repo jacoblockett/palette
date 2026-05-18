@@ -5,7 +5,9 @@ import { createForegroundCandidates } from "../recipes/createForegroundCandidate
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 import { MODE_TONE_TARGETS } from "./toneTargets.js"
 
-export function createSurfaceTokens({ mode, app, ramps }) {
+export function createSurfaceTokens({ mode, app, ramps, axis }) {
+	void axis
+
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
 		throw new TypeError('Expected mode to be "light" or "dark"')
 	}

@@ -5,7 +5,9 @@ import { createForegroundCandidates } from "../recipes/createForegroundCandidate
 import { MODE_TONE_TARGETS } from "./toneTargets.js"
 import { pickReadableCandidate, pickReadablePair, pickVisibleContrastCandidate } from "../recipes/selectCandidates.js"
 
-export function createAppTokens({ mode, ramps }) {
+export function createAppTokens({ mode, ramps, axis }) {
+	void axis
+
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
 		throw new TypeError('Expected mode to be "light" or "dark"')
 	}

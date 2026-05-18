@@ -14,8 +14,8 @@ export function createPalette(input) {
 	const darkRampSeeds = createModeRampSeeds({ mode: MODE_DARK, identity })
 	const lightRamps = createModeRamps({ mode: MODE_LIGHT, seeds: lightRampSeeds })
 	const darkRamps = createModeRamps({ mode: MODE_DARK, seeds: darkRampSeeds })
-	const light = createMode({ mode: MODE_LIGHT, ramps: lightRamps })
-	const dark = createMode({ mode: MODE_DARK, ramps: darkRamps })
+	const light = createMode({ mode: MODE_LIGHT, ramps: lightRamps, axis: identity.axes.light })
+	const dark = createMode({ mode: MODE_DARK, ramps: darkRamps, axis: identity.axes.dark })
 	const modes = {
 		light,
 		dark
