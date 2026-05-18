@@ -1,5 +1,6 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
 import { getRampColor, getTextCandidates } from "../ramps/createRamp.js"
+import { MODE_TONE_TARGETS } from "./toneTargets.js"
 import { pickReadableCandidate, pickVisibleCandidate } from "../recipes/selectCandidates.js"
 
 export function createAppTokens({ mode, ramps }) {
@@ -11,58 +12,15 @@ export function createAppTokens({ mode, ramps }) {
 		throw new TypeError("Expected base, neutral, and accent ramps")
 	}
 
-	if (mode === MODE_LIGHT) {
-		const bg = getRampColor(ramps.base, 95)
-		const fg = pickReadableCandidate(getTextCandidates(ramps.neutral, mode), bg, 7)
-		const mutedFg = pickReadableCandidate(
-			[getRampColor(ramps.neutral, 40), getRampColor(ramps.neutral, 50), getRampColor(ramps.neutral, 60)],
-			bg,
-			4.5
-		)
-		const subtleFg = pickReadableCandidate(
-			[getRampColor(ramps.neutral, 50), getRampColor(ramps.neutral, 60), getRampColor(ramps.neutral, 70)],
-			bg,
-			3
-		)
-		const border = pickVisibleCandidate([getRampColor(ramps.neutral, 80), getRampColor(ramps.neutral, 90)], bg)
-		const strongBorder = pickVisibleCandidate([getRampColor(ramps.neutral, 60), getRampColor(ramps.neutral, 70)], bg, [
-			border
-		])
-		const focusRing = pickVisibleCandidate([getRampColor(ramps.accent, 50)], bg, [border, strongBorder])
-		const selectionBg = getRampColor(ramps.accent, 80)
-		const selectionFg = pickReadableCandidate(getTextCandidates(ramps.neutral, mode), selectionBg, 4.5)
-
-		return {
-			bg,
-			fg,
-			mutedFg,
-			subtleFg,
-			border,
-			strongBorder,
-			focusRing,
-			selectionBg,
-			selectionFg
-		}
-	}
-
-	const bg = getRampColor(ramps.base, 5)
+	const targets = MODE_TONE_TARGETS[mode]
+	const bg = getRampColor(ramps.base, targets.appBg)
 	const fg = pickReadableCandidate(getTextCandidates(ramps.neutral, mode), bg, 7)
-	const mutedFg = pickReadableCandidate(
-		[getRampColor(ramps.neutral, 60), getRampColor(ramps.neutral, 70), getRampColor(ramps.neutral, 80)],
-		bg,
-		4.5
-	)
-	const subtleFg = pickReadableCandidate(
-		[getRampColor(ramps.neutral, 40), getRampColor(ramps.neutral, 50), getRampColor(ramps.neutral, 60)],
-		bg,
-		3
-	)
-	const border = pickVisibleCandidate([getRampColor(ramps.neutral, 20), getRampColor(ramps.neutral, 30)], bg)
-	const strongBorder = pickVisibleCandidate([getRampColor(ramps.neutral, 30), getRampColor(ramps.neutral, 40)], bg, [
-		border
-	])
-	const focusRing = pickVisibleCandidate([getRampColor(ramps.accent, 60)], bg, [border, strongBorder])
-	const selectionBg = getRampColor(ramps.accent, 30)
+	const mutedFg = pickReadableCandidate(getStopColors(ramps.neutral, targets.mutedFg), bg, 4.5)
+	const subtleFg = pickReadableCandidate(getStopColors(ramps.neutral, targets.subtleFg), bg, 3)
+	const border = pickVisibleCandidate(getStopColors(ramps.neutral, targets.border), bg)
+	const strongBorder = pickVisibleCandidate(getStopColors(ramps.neutral, targets.strongBorder), bg, [border])
+	const focusRing = pickVisibleCandidate(getStopColors(ramps.accent, targets.focusRing), bg, [border, strongBorder])
+	const selectionBg = getRampColor(ramps.accent, targets.selectionBg)
 	const selectionFg = pickReadableCandidate(getTextCandidates(ramps.neutral, mode), selectionBg, 4.5)
 
 	return {
@@ -76,4 +34,8 @@ export function createAppTokens({ mode, ramps }) {
 		selectionBg,
 		selectionFg
 	}
+}
+
+function getStopColors(ramp, stops) {
+	return stops.map(stop => getRampColor(ramp, stop))
 }

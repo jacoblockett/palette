@@ -1,13 +1,19 @@
 import { normalizeHex } from "./color/normalize.js"
 import { MODE_LIGHT, MODE_DARK, REQUIRED_SEED_KEYS } from "./defaults.js"
+import { createModeRampSeeds, createPaletteIdentity } from "./identity/createPaletteIdentity.js"
 import { createMode } from "./modes/createMode.js"
 import { createModeRamps } from "./ramps/createModeRamps.js"
 
 export function createPalette(input) {
 	const normalizedInput = normalizeInput(input)
-	const rampSeeds = toRampSeeds(normalizedInput.seeds)
-	const lightRamps = createModeRamps({ mode: MODE_LIGHT, seeds: rampSeeds })
-	const darkRamps = createModeRamps({ mode: MODE_DARK, seeds: rampSeeds })
+	const identity = createPaletteIdentity({
+		mode: normalizedInput.mode,
+		seeds: normalizedInput.seeds
+	})
+	const lightRampSeeds = createModeRampSeeds({ mode: MODE_LIGHT, identity })
+	const darkRampSeeds = createModeRampSeeds({ mode: MODE_DARK, identity })
+	const lightRamps = createModeRamps({ mode: MODE_LIGHT, seeds: lightRampSeeds })
+	const darkRamps = createModeRamps({ mode: MODE_DARK, seeds: darkRampSeeds })
 	const light = createMode({ mode: MODE_LIGHT, ramps: lightRamps })
 	const dark = createMode({ mode: MODE_DARK, ramps: darkRamps })
 	const modes = {
@@ -78,15 +84,5 @@ function normalizeSeeds(seeds) {
 		primary: normalizeHex(seeds.primary),
 		secondary: normalizeHex(seeds.secondary),
 		accent: normalizeHex(seeds.accent)
-	}
-}
-
-function toRampSeeds(seeds) {
-	return {
-		primary: seeds.primary,
-		secondary: seeds.secondary,
-		accent: seeds.accent,
-		neutral: seeds.text,
-		base: seeds.background
 	}
 }

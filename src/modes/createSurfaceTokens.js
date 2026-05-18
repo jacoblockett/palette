@@ -1,6 +1,7 @@
 import { MODE_LIGHT, MODE_DARK } from "../defaults.js"
-import { getRampColor, getTextCandidates } from "../ramps/createRamp.js"
+import { getRampColor, getTextCandidates, TONE_STOPS } from "../ramps/createRamp.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
+import { MODE_TONE_TARGETS } from "./toneTargets.js"
 
 export function createSurfaceTokens({ mode, app, ramps }) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
@@ -15,143 +16,100 @@ export function createSurfaceTokens({ mode, app, ramps }) {
 		throw new TypeError("Expected base and neutral ramps")
 	}
 
-	return mode === MODE_LIGHT ? createLightSurfaceTokens(app, ramps) : createDarkSurfaceTokens(app, ramps)
-}
-
-function createLightSurfaceTokens(app, ramps) {
-	const fgCandidates = getTextCandidates(ramps.neutral, MODE_LIGHT)
+	const targets = MODE_TONE_TARGETS[mode]
+	const fgCandidates = getTextCandidates(ramps.neutral, mode)
 	const borderCandidates = [
-		getRampColor(ramps.neutral, 40),
-		getRampColor(ramps.neutral, 50),
-		getRampColor(ramps.neutral, 60)
-	]
-	const hoverBgCandidates = [getRampColor(ramps.base, 90), getRampColor(ramps.base, 80), getRampColor(ramps.base, 70)]
-	const activeBgCandidates = [getRampColor(ramps.base, 80), getRampColor(ramps.base, 70), getRampColor(ramps.base, 60)]
-	const childBgCandidates = [getRampColor(ramps.base, 95), getRampColor(ramps.base, 90), getRampColor(ramps.base, 80)]
-	const childHoverBgCandidates = [
-		getRampColor(ramps.base, 90),
-		getRampColor(ramps.base, 80),
-		getRampColor(ramps.base, 70)
-	]
-	const childActiveBgCandidates = [
-		getRampColor(ramps.base, 80),
-		getRampColor(ramps.base, 70),
-		getRampColor(ramps.base, 60)
+		getRampColor(ramps.neutral, mode === MODE_LIGHT ? 40 : 30),
+		getRampColor(ramps.neutral, mode === MODE_LIGHT ? 50 : 40),
+		getRampColor(ramps.neutral, mode === MODE_LIGHT ? 60 : 50)
 	]
 
 	return {
-		base: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 90),
+		base: createSurfaceRecipe({
+			mode,
+			surfaceTone: targets.surfaceBase,
+			appTone: targets.appBg,
+			app,
+			ramps,
 			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
+			borderCandidates
 		}),
-		raised: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 95),
+		raised: createSurfaceRecipe({
+			mode,
+			surfaceTone: targets.surfaceRaised,
+			appTone: targets.appBg,
+			app,
+			ramps,
 			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
+			borderCandidates
 		}),
-		sunken: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 80),
+		sunken: createSurfaceRecipe({
+			mode,
+			surfaceTone: targets.surfaceSunken,
+			appTone: targets.appBg,
+			app,
+			ramps,
 			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
+			borderCandidates
 		}),
-		overlay: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 100),
+		overlay: createSurfaceRecipe({
+			mode,
+			surfaceTone: targets.surfaceOverlay,
+			appTone: targets.appBg,
+			app,
+			ramps,
 			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
+			borderCandidates
 		})
 	}
 }
 
-function createDarkSurfaceTokens(app, ramps) {
-	const fgCandidates = getTextCandidates(ramps.neutral, MODE_DARK)
-	const borderCandidates = [
-		getRampColor(ramps.neutral, 30),
-		getRampColor(ramps.neutral, 40),
-		getRampColor(ramps.neutral, 50)
-	]
-	const hoverBgCandidates = [getRampColor(ramps.base, 20), getRampColor(ramps.base, 30), getRampColor(ramps.base, 40)]
-	const activeBgCandidates = [getRampColor(ramps.base, 30), getRampColor(ramps.base, 40), getRampColor(ramps.base, 50)]
-	const childBgCandidates = [getRampColor(ramps.base, 20), getRampColor(ramps.base, 30), getRampColor(ramps.base, 40)]
-	const childHoverBgCandidates = [
-		getRampColor(ramps.base, 30),
-		getRampColor(ramps.base, 40),
-		getRampColor(ramps.base, 50)
-	]
-	const childActiveBgCandidates = [
-		getRampColor(ramps.base, 40),
-		getRampColor(ramps.base, 50),
-		getRampColor(ramps.base, 60)
-	]
+function createSurfaceRecipe({ mode, surfaceTone, appTone, app, ramps, fgCandidates, borderCandidates }) {
+	const oppositeDirection = mode === MODE_LIGHT ? -1 : 1
+	const childDirection = getDirectionAwayFromTone(surfaceTone, appTone, mode)
+	const childTone = shiftTone(surfaceTone, childDirection, 1)
 
-	return {
-		base: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 10),
-			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
-		}),
-		raised: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 20),
-			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
-		}),
-		sunken: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 5),
-			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
-		}),
-		overlay: createNestedInteractiveRecipe({
-			bg: getRampColor(ramps.base, 30),
-			fgCandidates,
-			borderCandidates,
-			hoverBgCandidates,
-			activeBgCandidates,
-			childBgCandidates,
-			childHoverBgCandidates,
-			childActiveBgCandidates,
-			parentBg: app.bg
-		})
+	return createNestedInteractiveRecipe({
+		bg: getRampColor(ramps.base, surfaceTone),
+		fgCandidates,
+		borderCandidates,
+		hoverBgCandidates: [
+			getRampColor(ramps.base, shiftTone(surfaceTone, oppositeDirection, 1)),
+			getRampColor(ramps.base, shiftTone(surfaceTone, oppositeDirection, 2))
+		],
+		activeBgCandidates: [
+			getRampColor(ramps.base, shiftTone(surfaceTone, oppositeDirection, 2)),
+			getRampColor(ramps.base, shiftTone(surfaceTone, oppositeDirection, 3))
+		],
+		childBgCandidates: [getRampColor(ramps.base, childTone)],
+		childHoverBgCandidates: [
+			getRampColor(ramps.base, shiftTone(childTone, oppositeDirection, 1)),
+			getRampColor(ramps.base, shiftTone(childTone, oppositeDirection, 2))
+		],
+		childActiveBgCandidates: [
+			getRampColor(ramps.base, shiftTone(childTone, oppositeDirection, 2)),
+			getRampColor(ramps.base, shiftTone(childTone, oppositeDirection, 3))
+		],
+		parentBg: app.bg
+	})
+}
+
+function getDirectionAwayFromTone(tone, parentTone, mode) {
+	if (tone === parentTone) {
+		return mode === MODE_LIGHT ? -1 : 1
 	}
+
+	return tone > parentTone ? 1 : -1
+}
+
+function shiftTone(tone, direction, steps) {
+	const index = TONE_STOPS.indexOf(tone)
+
+	if (index === -1) {
+		throw new TypeError("Expected a valid tone stop")
+	}
+
+	const nextIndex = Math.min(TONE_STOPS.length - 1, Math.max(0, index + direction * steps))
+
+	return TONE_STOPS[nextIndex]
 }

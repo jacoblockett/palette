@@ -1,8 +1,39 @@
 import { MODE_LIGHT, MODE_DARK, ROLE_KEYS, GENERATED_ROLE_KEYS } from "../defaults.js"
-import { createRamp, getRampColor, getTextCandidates } from "../ramps/createRamp.js"
+import { createRamp, getRampColor, getTextCandidates, TONE_STOPS } from "../ramps/createRamp.js"
 import { hexToOklch, oklchToHex, normalizeHue, clampChroma } from "../color/oklch.js"
 import { createInteractiveRecipe } from "../recipes/createInteractiveRecipe.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
+
+const ROLE_TONE_TARGETS = {
+	[MODE_LIGHT]: {
+		solid: [45, 50, 55],
+		solidHover: [40, 45, 50],
+		solidActive: [35, 40, 45],
+		solidBorder: [35, 40, 45],
+		solidChild: [90, 92, 95],
+		soft: [95, 92, 90],
+		softHover: [92, 90, 88],
+		softActive: [90, 88, 85],
+		softBorder: [70, 75, 80],
+		outlineBorder: [45, 50, 55],
+		outlineHover: [95, 92, 90],
+		outlineActive: [92, 90, 88]
+	},
+	[MODE_DARK]: {
+		solid: [65, 70, 75],
+		solidHover: [70, 75, 80],
+		solidActive: [75, 80, 85],
+		solidBorder: [75, 80, 85],
+		solidChild: [20, 25, 30],
+		soft: [12, 16, 20],
+		softHover: [16, 20, 25],
+		softActive: [20, 25, 30],
+		softBorder: [35, 40, 45],
+		outlineBorder: [60, 65, 70],
+		outlineHover: [10, 12, 16],
+		outlineActive: [16, 20, 25]
+	}
+}
 
 export function createRoleTokens({ mode, app, surfaces, ramps }) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
@@ -154,74 +185,102 @@ function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app }) {
 		throw new TypeError(`Unknown role: ${role}`)
 	}
 
+	const targets = ROLE_TONE_TARGETS[mode]
+
 	return {
-		solid: createSolidTreatment({ mode, roleRamp, neutralRamp, app }),
-		soft: createSoftTreatment({ mode, roleRamp, neutralRamp, app }),
-		outline: createOutlineTreatment({ mode, roleRamp, neutralRamp, surface }),
-		ghost: createGhostTreatment({ mode, roleRamp, neutralRamp, surface })
+		solid: createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }),
+		soft: createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }),
+		outline: createOutlineTreatment({ targets, roleRamp, neutralRamp, surface, mode }),
+		ghost: createGhostTreatment({ targets, roleRamp, neutralRamp, surface, mode })
 	}
 }
 
-function createSolidTreatment({ mode, roleRamp, neutralRamp, app }) {
-	const solidCandidates = getModeRoleStops(roleRamp, mode, [35, 40, 45, 50], [60, 65, 70, 75])
-
+function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 	return createNestedInteractiveRecipe({
-		bg: solidCandidates[0],
+		bg: getRoleToneColors(roleRamp, targets.solid)[0],
 		fgCandidates: [...getTextCandidates(neutralRamp, mode), ...getTextCandidates(roleRamp, mode)],
-		borderCandidates: getModeRoleStops(roleRamp, mode, [20, 30, 40, 50], [70, 80, 90, 95]),
-		hoverBgCandidates: getModeRoleStops(roleRamp, mode, [30, 40, 50, 60], [60, 70, 80, 90]),
-		activeBgCandidates: getModeRoleStops(roleRamp, mode, [20, 30, 40, 50], [70, 80, 90, 95]),
-		childBgCandidates: getModeRoleStops(roleRamp, mode, [70, 80, 90, 95], [20, 30, 40, 50]),
-		childHoverBgCandidates: getModeRoleStops(roleRamp, mode, [60, 70, 80, 90], [30, 40, 50, 60]),
-		childActiveBgCandidates: getModeRoleStops(roleRamp, mode, [50, 60, 70, 80], [40, 50, 60, 70]),
+		borderCandidates: getRoleToneColors(roleRamp, targets.solidBorder),
+		hoverBgCandidates: getRoleToneColors(roleRamp, targets.solidHover),
+		activeBgCandidates: getRoleToneColors(roleRamp, targets.solidActive),
+		childBgCandidates: getRoleToneColors(roleRamp, targets.solidChild),
+		childHoverBgCandidates: getRoleToneColors(
+			roleRamp,
+			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 1)
+		),
+		childActiveBgCandidates: getRoleToneColors(
+			roleRamp,
+			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 2)
+		),
 		minimumFgContrast: 4.5,
 		parentBg: app.bg
 	})
 }
 
-function createSoftTreatment({ mode, roleRamp, neutralRamp, app }) {
-	const softCandidates = getModeRoleStops(roleRamp, mode, [92, 90, 85], [12, 16, 20])
-
+function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 	return createNestedInteractiveRecipe({
-		bg: softCandidates[0],
+		bg: getRoleToneColors(roleRamp, targets.soft)[0],
 		fgCandidates: [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)],
-		borderCandidates: getModeRoleStops(roleRamp, mode, [60, 70, 80], [30, 40, 50]),
-		hoverBgCandidates: getModeRoleStops(roleRamp, mode, [90, 80, 70], [20, 30, 40]),
-		activeBgCandidates: getModeRoleStops(roleRamp, mode, [80, 70, 60], [30, 40, 50]),
-		childBgCandidates: getModeRoleStops(roleRamp, mode, [95, 90, 80], [20, 30, 40]),
-		childHoverBgCandidates: getModeRoleStops(roleRamp, mode, [90, 80, 70], [30, 40, 50]),
-		childActiveBgCandidates: getModeRoleStops(roleRamp, mode, [80, 70, 60], [40, 50, 60]),
+		borderCandidates: getRoleToneColors(roleRamp, targets.softBorder),
+		hoverBgCandidates: getRoleToneColors(roleRamp, targets.softHover),
+		activeBgCandidates: getRoleToneColors(roleRamp, targets.softActive),
+		childBgCandidates: getRoleToneColors(roleRamp, shiftToneStops(targets.soft, getOppositeDirection(mode), 1)),
+		childHoverBgCandidates: getRoleToneColors(
+			roleRamp,
+			shiftToneStops(targets.softHover, getOppositeDirection(mode), 1)
+		),
+		childActiveBgCandidates: getRoleToneColors(
+			roleRamp,
+			shiftToneStops(targets.softActive, getOppositeDirection(mode), 1)
+		),
 		minimumFgContrast: 4.5,
 		parentBg: app.bg
 	})
 }
 
-function createOutlineTreatment({ mode, roleRamp, neutralRamp, surface }) {
+function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
 	return createInteractiveRecipe({
 		bg: surface.bg,
 		fgCandidates: [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)],
-		borderCandidates: getModeRoleStops(roleRamp, mode, [40, 50, 60], [60, 70, 80]),
-		hoverBgCandidates: getModeRoleStops(roleRamp, mode, [95, 90, 80], [10, 20, 30]),
-		activeBgCandidates: getModeRoleStops(roleRamp, mode, [90, 80, 70], [20, 30, 40]),
+		borderCandidates: getRoleToneColors(roleRamp, targets.outlineBorder),
+		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
+		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
 		minimumFgContrast: 4.5,
 		parentBg: surface.bg
 	})
 }
 
-function createGhostTreatment({ mode, roleRamp, neutralRamp, surface }) {
+function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
 	return createInteractiveRecipe({
 		bg: surface.bg,
 		fgCandidates: [...getTextCandidates(roleRamp, mode), ...getTextCandidates(neutralRamp, mode)],
-		borderCandidates: getModeRoleStops(neutralRamp, mode, [90, 80, 70], [20, 30, 40]),
-		hoverBgCandidates: getModeRoleStops(roleRamp, mode, [95, 90, 80], [10, 20, 30]),
-		activeBgCandidates: getModeRoleStops(roleRamp, mode, [90, 80, 70], [20, 30, 40]),
+		borderCandidates: getRoleToneColors(neutralRamp, targets.outlineBorder),
+		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
+		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
 		minimumFgContrast: 4.5,
 		parentBg: surface.bg
 	})
 }
 
-function getModeRoleStops(ramp, mode, lightStops, darkStops) {
-	const stops = mode === MODE_LIGHT ? lightStops : darkStops
-
+function getRoleToneColors(ramp, stops) {
 	return stops.map(stop => getRampColor(ramp, stop))
+}
+
+function getOppositeDirection(mode) {
+	return mode === MODE_LIGHT ? -1 : 1
+}
+
+function shiftToneStops(stops, direction, steps) {
+	return stops.map(stop => shiftTone(stop, direction, steps))
+}
+
+function shiftTone(tone, direction, steps) {
+	const index = TONE_STOPS.indexOf(tone)
+
+	if (index === -1) {
+		throw new TypeError("Expected a valid tone stop")
+	}
+
+	const nextIndex = Math.min(TONE_STOPS.length - 1, Math.max(0, index + direction * steps))
+
+	return TONE_STOPS[nextIndex]
 }
