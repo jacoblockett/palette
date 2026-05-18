@@ -241,7 +241,10 @@
             <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
                 <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">The Seed Controller</h2>
                 <p class="text-palette-text-muted">
-                    Alter the five raw inputs below. Watch how the entire website updates its themes, contrasts, borders, shadows, and content states dynamically.
+                    Alter the five semantic source seeds below. Watch how the entire website updates its themes, contrasts, borders, shadows, and content states dynamically.
+                </p>
+                <p class="text-sm text-palette-text-muted">
+                    Random seed sets in this demo are generated directly by the library and then rendered through the library palette engine.
                 </p>
             </div>
 
@@ -764,70 +767,14 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
     </footer>
 
     <script type="module">
-        import { createPalette } from "../src/index.js";
+        import { createPalette, createRandomPaletteSeeds } from "../src/index.js";
 
         let isDarkMode = true;
+        const initialSeeds = createRandomPaletteSeeds({ mode: "dark" });
 
-        const currentPalette = {
-            text: '#f8e2f2',
-            background: '#0e030b',
-            primary: '#e48ec7',
-            secondary: '#81341f',
-            accent: '#d28c41'
-        };
+        const currentPalette = { ...initialSeeds };
 
-        const defaultSeeds = {
-            text: '#f8e2f2',
-            background: '#0e030b',
-            primary: '#e48ec7',
-            secondary: '#81341f',
-            accent: '#d28c41'
-        };
-
-        function wrapHue(value) {
-            return ((value % 360) + 360) % 360;
-        }
-
-        function randomInRange(min, max) {
-            return min + Math.random() * (max - min);
-        }
-
-        function hslToHex(h, s, l) {
-            const hue = wrapHue(h);
-            const saturation = Math.max(0, Math.min(100, s)) / 100;
-            const lightness = Math.max(0, Math.min(100, l)) / 100;
-            const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
-            const segment = hue / 60;
-            const x = chroma * (1 - Math.abs((segment % 2) - 1));
-            let red = 0;
-            let green = 0;
-            let blue = 0;
-
-            if (segment >= 0 && segment < 1) {
-                red = chroma;
-                green = x;
-            } else if (segment < 2) {
-                red = x;
-                green = chroma;
-            } else if (segment < 3) {
-                green = chroma;
-                blue = x;
-            } else if (segment < 4) {
-                green = x;
-                blue = chroma;
-            } else if (segment < 5) {
-                red = x;
-                blue = chroma;
-            } else {
-                red = chroma;
-                blue = x;
-            }
-
-            const match = lightness - chroma / 2;
-            const toChannel = value => Math.round((value + match) * 255).toString(16).padStart(2, '0');
-
-            return `#${toChannel(red)}${toChannel(green)}${toChannel(blue)}`;
-        }
+        const defaultSeeds = { ...initialSeeds };
 
         function getGeneratedPalette() {
             return createPalette({
@@ -899,36 +846,8 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             triggerNotification(isDarkMode ? "Inverted to Dark Mode config" : "Inverted to Light Mode config");
         }
 
-        function createRandomSeedValues(mode) {
-            const anchorHue = randomInRange(0, 360);
-            const relatedDirection = Math.random() < 0.5 ? -1 : 1;
-            const relatedOffset = randomInRange(18, 42) * relatedDirection;
-            const contrastOffset = randomInRange(150, 210);
-            const neutralHue = wrapHue(anchorHue + randomInRange(-10, 10));
-            const baseHue = wrapHue(anchorHue + randomInRange(-12, 12));
-            const isDarkSeedMode = mode === 'dark';
-
-            return {
-                primary: isDarkSeedMode
-                    ? hslToHex(anchorHue, randomInRange(68, 86), randomInRange(56, 70))
-                    : hslToHex(anchorHue, randomInRange(52, 72), randomInRange(42, 56)),
-                secondary: isDarkSeedMode
-                    ? hslToHex(anchorHue + relatedOffset, randomInRange(52, 72), randomInRange(48, 62))
-                    : hslToHex(anchorHue + relatedOffset, randomInRange(40, 60), randomInRange(36, 50)),
-                accent: isDarkSeedMode
-                    ? hslToHex(anchorHue + contrastOffset, randomInRange(72, 90), randomInRange(58, 72))
-                    : hslToHex(anchorHue + contrastOffset, randomInRange(58, 78), randomInRange(44, 58)),
-                text: isDarkSeedMode
-                    ? hslToHex(neutralHue, randomInRange(6, 18), randomInRange(88, 96))
-                    : hslToHex(neutralHue, randomInRange(6, 18), randomInRange(8, 18)),
-                background: isDarkSeedMode
-                    ? hslToHex(baseHue, randomInRange(8, 18), randomInRange(5, 14))
-                    : hslToHex(baseHue, randomInRange(6, 16), randomInRange(90, 97))
-            };
-        }
-
         function randomizePalette() {
-            const nextPalette = createRandomSeedValues(isDarkMode ? 'dark' : 'light');
+            const nextPalette = createRandomPaletteSeeds({ mode: isDarkMode ? 'dark' : 'light' });
 
             currentPalette.text = nextPalette.text;
             currentPalette.background = nextPalette.background;
