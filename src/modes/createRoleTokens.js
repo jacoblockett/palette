@@ -6,6 +6,7 @@ import { createForegroundCandidates } from "../recipes/createForegroundCandidate
 import { createInteractiveRecipe } from "../recipes/createInteractiveRecipe.js"
 import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiveRecipe.js"
 import { pickReadablePair } from "../recipes/selectCandidates.js"
+import { dedupeColors, orderSeparatedCandidates, SEMANTIC_SEPARATION_TARGETS } from "../recipes/semanticSeparation.js"
 
 const ROLE_TONE_TARGETS = {
 	[MODE_LIGHT]: {
@@ -59,72 +60,105 @@ export function createRoleTokens({ mode, app, surfaces, ramps }) {
 
 	const roleRamps = createAllRoleRamps(ramps, mode)
 	const surface = surfaces.base
+	const baseReferences = [app.bg, surface.bg]
+
+	const primary = createRoleRecipe({
+		mode,
+		role: "primary",
+		roleRamp: roleRamps.primary,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: baseReferences
+	})
+	const secondary = createRoleRecipe({
+		mode,
+		role: "secondary",
+		roleRamp: roleRamps.secondary,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [...baseReferences, primary.solid.bg]
+	})
+	const accent = createRoleRecipe({
+		mode,
+		role: "accent",
+		roleRamp: roleRamps.accent,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [...baseReferences, primary.solid.bg, secondary.solid.bg]
+	})
+	const neutral = createRoleRecipe({
+		mode,
+		role: "neutral",
+		roleRamp: roleRamps.neutral,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [...baseReferences, primary.solid.bg, secondary.solid.bg, accent.solid.bg]
+	})
+	const success = createRoleRecipe({
+		mode,
+		role: "success",
+		roleRamp: roleRamps.success,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [...baseReferences, primary.solid.bg, secondary.solid.bg, accent.solid.bg]
+	})
+	const warning = createRoleRecipe({
+		mode,
+		role: "warning",
+		roleRamp: roleRamps.warning,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [...baseReferences, primary.solid.bg, secondary.solid.bg, accent.solid.bg, success.solid.bg]
+	})
+	const danger = createRoleRecipe({
+		mode,
+		role: "danger",
+		roleRamp: roleRamps.danger,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [
+			...baseReferences,
+			primary.solid.bg,
+			secondary.solid.bg,
+			accent.solid.bg,
+			success.solid.bg,
+			warning.solid.bg
+		]
+	})
+	const info = createRoleRecipe({
+		mode,
+		role: "info",
+		roleRamp: roleRamps.info,
+		neutralRamp: roleRamps.neutral,
+		surface,
+		app,
+		separationReferences: [
+			...baseReferences,
+			primary.solid.bg,
+			secondary.solid.bg,
+			accent.solid.bg,
+			success.solid.bg,
+			warning.solid.bg,
+			danger.solid.bg
+		]
+	})
 
 	return {
-		primary: createRoleRecipe({
-			mode,
-			role: "primary",
-			roleRamp: roleRamps.primary,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		secondary: createRoleRecipe({
-			mode,
-			role: "secondary",
-			roleRamp: roleRamps.secondary,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		accent: createRoleRecipe({
-			mode,
-			role: "accent",
-			roleRamp: roleRamps.accent,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		neutral: createRoleRecipe({
-			mode,
-			role: "neutral",
-			roleRamp: roleRamps.neutral,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		success: createRoleRecipe({
-			mode,
-			role: "success",
-			roleRamp: roleRamps.success,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		warning: createRoleRecipe({
-			mode,
-			role: "warning",
-			roleRamp: roleRamps.warning,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		danger: createRoleRecipe({
-			mode,
-			role: "danger",
-			roleRamp: roleRamps.danger,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		}),
-		info: createRoleRecipe({
-			mode,
-			role: "info",
-			roleRamp: roleRamps.info,
-			neutralRamp: roleRamps.neutral,
-			surface,
-			app
-		})
+		primary,
+		secondary,
+		accent,
+		neutral,
+		success,
+		warning,
+		danger,
+		info
 	}
 }
 
@@ -183,28 +217,68 @@ function createAllRoleRamps(ramps, mode) {
 	}
 }
 
-function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app }) {
+function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app, separationReferences }) {
 	if (!ROLE_KEYS.includes(role)) {
 		throw new TypeError(`Unknown role: ${role}`)
 	}
 
 	const targets = ROLE_TONE_TARGETS[mode]
+	const solidMinimumDifference =
+		role === "accent" ? SEMANTIC_SEPARATION_TARGETS.accentPeer : SEMANTIC_SEPARATION_TARGETS.rolePeer
 
 	return {
-		solid: createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }),
-		soft: createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }),
-		outline: createOutlineTreatment({ targets, roleRamp, neutralRamp, surface, mode }),
-		ghost: createGhostTreatment({ targets, roleRamp, neutralRamp, surface, mode })
+		solid: createSolidTreatment({
+			mode,
+			targets,
+			roleRamp,
+			neutralRamp,
+			app,
+			separationReferences,
+			minimumDifference: solidMinimumDifference
+		}),
+		soft: createSoftTreatment({
+			mode,
+			targets,
+			roleRamp,
+			neutralRamp,
+			app,
+			separationReferences,
+			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
+		}),
+		outline: createOutlineTreatment({
+			targets,
+			roleRamp,
+			neutralRamp,
+			surface,
+			mode,
+			separationReferences,
+			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
+		}),
+		ghost: createGhostTreatment({
+			targets,
+			roleRamp,
+			neutralRamp,
+			surface,
+			mode,
+			separationReferences,
+			minimumDifference: SEMANTIC_SEPARATION_TARGETS.roleSurface
+		})
 	}
 }
 
-function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
+function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app, separationReferences, minimumDifference }) {
 	const roleFgCandidates = createForegroundCandidates({
 		mode,
 		primaryRamp: neutralRamp,
 		fallbackRamp: roleRamp
 	})
-	const solidBackgroundCandidates = getRoleToneColors(roleRamp, targets.solid)
+	const solidBackgroundCandidates = getSeparatedRoleBackgroundColors(
+		roleRamp,
+		targets.solid,
+		mode,
+		separationReferences,
+		minimumDifference
+	)
 	const solidPair = pickReadablePair({
 		backgroundCandidates: solidBackgroundCandidates,
 		foregroundCandidates: roleFgCandidates,
@@ -216,29 +290,59 @@ function createSolidTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 		bg: solidPair.bg,
 		fgCandidates: [solidPair.fg, ...roleFgCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.solidBorder),
-		hoverBgCandidates: getRoleToneColors(roleRamp, targets.solidHover),
-		activeBgCandidates: getRoleToneColors(roleRamp, targets.solidActive),
-		childBgCandidates: getRoleToneColors(roleRamp, targets.solidChild),
-		childHoverBgCandidates: getRoleToneColors(
+		hoverBgCandidates: getSeparatedRoleBackgroundColors(
 			roleRamp,
-			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 1)
+			targets.solidHover,
+			mode,
+			separationReferences,
+			minimumDifference
 		),
-		childActiveBgCandidates: getRoleToneColors(
+		activeBgCandidates: getSeparatedRoleBackgroundColors(
 			roleRamp,
-			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 2)
+			targets.solidActive,
+			mode,
+			separationReferences,
+			minimumDifference
+		),
+		childBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			targets.solidChild,
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
+		),
+		childHoverBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 1),
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
+		),
+		childActiveBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			shiftToneStops(targets.solidChild, getOppositeDirection(mode), 2),
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
 		),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: app.bg
 	})
 }
 
-function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
+function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app, separationReferences, minimumDifference }) {
 	const roleFgCandidates = createForegroundCandidates({
 		mode,
 		primaryRamp: roleRamp,
 		fallbackRamp: neutralRamp
 	})
-	const softBackgroundCandidates = getRoleToneColors(roleRamp, targets.soft)
+	const softBackgroundCandidates = getSeparatedRoleBackgroundColors(
+		roleRamp,
+		targets.soft,
+		mode,
+		separationReferences,
+		minimumDifference
+	)
 	const softPair = pickReadablePair({
 		backgroundCandidates: softBackgroundCandidates,
 		foregroundCandidates: roleFgCandidates,
@@ -250,23 +354,55 @@ function createSoftTreatment({ mode, targets, roleRamp, neutralRamp, app }) {
 		bg: softPair.bg,
 		fgCandidates: [softPair.fg, ...roleFgCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.softBorder),
-		hoverBgCandidates: getRoleToneColors(roleRamp, targets.softHover),
-		activeBgCandidates: getRoleToneColors(roleRamp, targets.softActive),
-		childBgCandidates: getRoleToneColors(roleRamp, shiftToneStops(targets.soft, getOppositeDirection(mode), 1)),
-		childHoverBgCandidates: getRoleToneColors(
+		hoverBgCandidates: getSeparatedRoleBackgroundColors(
 			roleRamp,
-			shiftToneStops(targets.softHover, getOppositeDirection(mode), 1)
+			targets.softHover,
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
 		),
-		childActiveBgCandidates: getRoleToneColors(
+		activeBgCandidates: getSeparatedRoleBackgroundColors(
 			roleRamp,
-			shiftToneStops(targets.softActive, getOppositeDirection(mode), 1)
+			targets.softActive,
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
+		),
+		childBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			shiftToneStops(targets.soft, getOppositeDirection(mode), 1),
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
+		),
+		childHoverBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			shiftToneStops(targets.softHover, getOppositeDirection(mode), 1),
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
+		),
+		childActiveBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			shiftToneStops(targets.softActive, getOppositeDirection(mode), 1),
+			mode,
+			separationReferences,
+			SEMANTIC_SEPARATION_TARGETS.roleSurface
 		),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: app.bg
 	})
 }
 
-function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
+function createOutlineTreatment({
+	mode,
+	targets,
+	roleRamp,
+	neutralRamp,
+	surface,
+	separationReferences,
+	minimumDifference
+}) {
 	const foregroundCandidates = createForegroundCandidates({
 		mode,
 		primaryRamp: roleRamp,
@@ -282,14 +418,34 @@ function createOutlineTreatment({ mode, targets, roleRamp, neutralRamp, surface 
 		bg: surface.bg,
 		fgCandidates: [outlinePair.fg, ...foregroundCandidates],
 		borderCandidates: getRoleToneColors(roleRamp, targets.outlineBorder),
-		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
-		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
+		hoverBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			targets.outlineHover,
+			mode,
+			separationReferences,
+			minimumDifference
+		),
+		activeBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			targets.outlineActive,
+			mode,
+			separationReferences,
+			minimumDifference
+		),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: surface.bg
 	})
 }
 
-function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface }) {
+function createGhostTreatment({
+	mode,
+	targets,
+	roleRamp,
+	neutralRamp,
+	surface,
+	separationReferences,
+	minimumDifference
+}) {
 	const foregroundCandidates = createForegroundCandidates({
 		mode,
 		primaryRamp: roleRamp,
@@ -305,8 +461,20 @@ function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface })
 		bg: surface.bg,
 		fgCandidates: [ghostPair.fg, ...foregroundCandidates],
 		borderCandidates: getRoleToneColors(neutralRamp, targets.outlineBorder),
-		hoverBgCandidates: getRoleToneColors(roleRamp, targets.outlineHover),
-		activeBgCandidates: getRoleToneColors(roleRamp, targets.outlineActive),
+		hoverBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			targets.outlineHover,
+			mode,
+			separationReferences,
+			minimumDifference
+		),
+		activeBgCandidates: getSeparatedRoleBackgroundColors(
+			roleRamp,
+			targets.outlineActive,
+			mode,
+			separationReferences,
+			minimumDifference
+		),
 		minimumFgContrast: CONTRAST_TARGETS.roleText,
 		parentBg: surface.bg
 	})
@@ -314,6 +482,36 @@ function createGhostTreatment({ mode, targets, roleRamp, neutralRamp, surface })
 
 function getRoleToneColors(ramp, stops) {
 	return stops.map(stop => getRampColor(ramp, stop))
+}
+
+function resolveRoleBackgroundStops(stops, mode) {
+	const resolvedStops = []
+
+	for (const stop of stops) {
+		if (mode === MODE_LIGHT && (stop === 50 || stop === 55)) {
+			resolvedStops.push(45, 60)
+			continue
+		}
+
+		if (mode === MODE_DARK && (stop === 50 || stop === 55)) {
+			resolvedStops.push(60, 45)
+			continue
+		}
+
+		resolvedStops.push(stop)
+	}
+
+	return dedupeColors(resolvedStops)
+}
+
+function getSeparatedRoleBackgroundColors(roleRamp, stops, mode, separationReferences, minimumDifference) {
+	const resolvedStops = resolveRoleBackgroundStops(stops, mode)
+	const colors = getRoleToneColors(roleRamp, resolvedStops)
+
+	return orderSeparatedCandidates(colors, {
+		references: separationReferences,
+		minimumDifference
+	})
 }
 
 function getOppositeDirection(mode) {
