@@ -22,6 +22,40 @@ function getToneColorPairs(ramp, tones) {
 	}))
 }
 
+function getFallbackRoleAnchorTone(axis, role) {
+	const axisSpan = axis.textTone - axis.backgroundTone
+
+	if (role === "neutral") {
+		return axis.backgroundTone + axisSpan * 0.5
+	}
+
+	if (role === "success") {
+		return axis.backgroundTone + axisSpan * 0.58
+	}
+
+	if (role === "warning") {
+		return axis.backgroundTone + axisSpan * 0.6
+	}
+
+	if (role === "danger") {
+		return axis.backgroundTone + axisSpan * 0.62
+	}
+
+	if (role === "info") {
+		return axis.backgroundTone + axisSpan * 0.56
+	}
+
+	return axis.backgroundTone + axisSpan * 0.58
+}
+
+function getRoleAnchorTone(axis, role) {
+	if (role === "primary" || role === "secondary" || role === "accent") {
+		return getAxisRoleAnchorTone({ axis, role })
+	}
+
+	return getFallbackRoleAnchorTone(axis, role)
+}
+
 function getRoleToneWindow(mode, axis, role, treatment) {
 	if (mode !== MODE_LIGHT && mode !== MODE_DARK) {
 		throw new TypeError('Expected mode to be "light" or "dark"')
@@ -29,7 +63,7 @@ function getRoleToneWindow(mode, axis, role, treatment) {
 
 	if (treatment === "solid") {
 		return {
-			center: nearestToneStop(getAxisRoleAnchorTone({ axis, role })),
+			center: nearestToneStop(getRoleAnchorTone(axis, role)),
 			radius: 32,
 			direction: axis.modeDirection
 		}
