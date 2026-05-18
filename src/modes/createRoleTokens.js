@@ -8,6 +8,7 @@ import { createNestedInteractiveRecipe } from "../recipes/createNestedInteractiv
 import { pickReadablePair } from "../recipes/selectCandidates.js"
 import { SEMANTIC_SEPARATION_TARGETS } from "../recipes/semanticSeparation.js"
 import { createRoleToneCandidates, createRoleStateCandidates } from "../roles/createRoleCandidates.js"
+import { createRoleComposition } from "../roles/createRoleComposition.js"
 
 const ROLE_TONE_TARGETS = {
 	[MODE_LIGHT]: {
@@ -66,6 +67,14 @@ export function createRoleTokens({ mode, app, surfaces, ramps, axis }) {
 	const roleRamps = createAllRoleRamps(ramps, mode)
 	const surface = surfaces.base
 	const baseReferences = [app.bg, surface.bg]
+	const coreComposition = createRoleComposition({
+		mode,
+		axis,
+		app,
+		surface,
+		roleRamps,
+		neutralRamp: roleRamps.neutral
+	})
 
 	const primary = createRoleRecipe({
 		mode,
@@ -75,6 +84,7 @@ export function createRoleTokens({ mode, app, surfaces, ramps, axis }) {
 		surface,
 		app,
 		axis,
+		composition: coreComposition.primary,
 		separationReferences: baseReferences
 	})
 	const secondary = createRoleRecipe({
@@ -85,6 +95,7 @@ export function createRoleTokens({ mode, app, surfaces, ramps, axis }) {
 		surface,
 		app,
 		axis,
+		composition: coreComposition.secondary,
 		separationReferences: [...baseReferences, primary.solid.bg]
 	})
 	const accent = createRoleRecipe({
@@ -95,6 +106,7 @@ export function createRoleTokens({ mode, app, surfaces, ramps, axis }) {
 		surface,
 		app,
 		axis,
+		composition: coreComposition.accent,
 		separationReferences: [...baseReferences, primary.solid.bg, secondary.solid.bg]
 	})
 	const neutral = createRoleRecipe({
@@ -230,7 +242,17 @@ function createAllRoleRamps(ramps, mode) {
 	}
 }
 
-function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app, axis, separationReferences }) {
+function createRoleRecipe({
+	mode,
+	role,
+	roleRamp,
+	neutralRamp,
+	surface,
+	app,
+	axis,
+	composition,
+	separationReferences
+}) {
 	if (!ROLE_KEYS.includes(role)) {
 		throw new TypeError(`Unknown role: ${role}`)
 	}
@@ -247,6 +269,7 @@ function createRoleRecipe({ mode, role, roleRamp, neutralRamp, surface, app, axi
 			neutralRamp,
 			app,
 			axis,
+			composition,
 			separationReferences,
 			minimumDifference: solidMinimumDifference
 		}),
@@ -290,6 +313,7 @@ function createSolidTreatment({
 	neutralRamp,
 	app,
 	axis,
+	composition,
 	separationReferences,
 	minimumDifference
 }) {
@@ -298,17 +322,20 @@ function createSolidTreatment({
 		primaryRamp: neutralRamp,
 		fallbackRamp: roleRamp
 	})
-	const solidBackgroundCandidates = createRoleToneCandidates({
-		mode,
-		axis,
-		roleRamp,
-		treatment: "solid",
-		references: separationReferences,
-		minimumDifference
-	})
+	const solidBackgroundCandidates =
+		composition?.solidBackgroundCandidates ??
+		createRoleToneCandidates({
+			mode,
+			axis,
+			roleRamp,
+			treatment: "solid",
+			references: separationReferences,
+			minimumDifference
+		})
+	const solidPairForegroundCandidates = composition?.foregroundCandidates ?? roleFgCandidates
 	const solidPair = pickReadablePair({
 		backgroundCandidates: solidBackgroundCandidates,
-		foregroundCandidates: roleFgCandidates,
+		foregroundCandidates: solidPairForegroundCandidates,
 		minimumContrastRatio: CONTRAST_TARGETS.roleText,
 		preferredBg: solidBackgroundCandidates[0]
 	})
