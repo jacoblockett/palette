@@ -827,16 +827,20 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             return `#${toChannel(red)}${toChannel(green)}${toChannel(blue)}`;
         }
 
+        function getEngineSeeds() {
+            return {
+                primary: currentPalette.primary,
+                secondary: currentPalette.secondary,
+                accent: currentPalette.accent,
+                neutral: isDarkMode ? currentPalette.text : currentPalette.bg,
+                base: isDarkMode ? currentPalette.bg : currentPalette.text
+            };
+        }
+
         function getGeneratedPalette() {
             return createPalette({
                 mode: isDarkMode ? "dark" : "light",
-                seeds: {
-                    primary: currentPalette.primary,
-                    secondary: currentPalette.secondary,
-                    accent: currentPalette.accent,
-                    neutral: currentPalette.text,
-                    base: currentPalette.bg
-                }
+                seeds: getEngineSeeds()
             });
         }
 
@@ -903,25 +907,30 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
             triggerNotification(isDarkMode ? "Inverted to Dark Mode config" : "Inverted to Light Mode config");
         }
 
-        function createRandomSeedValues() {
+        function createRandomSeedValues(mode) {
             const anchorHue = randomInRange(0, 360);
             const relatedDirection = Math.random() < 0.5 ? -1 : 1;
             const relatedOffset = randomInRange(18, 42) * relatedDirection;
             const contrastOffset = randomInRange(150, 210);
             const neutralHue = wrapHue(anchorHue + randomInRange(-10, 10));
             const baseHue = wrapHue(anchorHue + randomInRange(-12, 12));
+            const isDarkSeedMode = mode === 'dark';
 
             return {
                 primary: hslToHex(anchorHue, randomInRange(60, 78), randomInRange(48, 62)),
                 secondary: hslToHex(anchorHue + relatedOffset, randomInRange(44, 64), randomInRange(40, 56)),
                 accent: hslToHex(anchorHue + contrastOffset, randomInRange(62, 82), randomInRange(48, 62)),
-                text: hslToHex(neutralHue, randomInRange(6, 18), randomInRange(88, 96)),
-                bg: hslToHex(baseHue, randomInRange(8, 18), randomInRange(5, 14))
+                text: isDarkSeedMode
+                    ? hslToHex(neutralHue, randomInRange(6, 18), randomInRange(88, 96))
+                    : hslToHex(neutralHue, randomInRange(6, 18), randomInRange(8, 18)),
+                bg: isDarkSeedMode
+                    ? hslToHex(baseHue, randomInRange(8, 18), randomInRange(5, 14))
+                    : hslToHex(baseHue, randomInRange(6, 16), randomInRange(90, 97))
             };
         }
 
         function randomizePalette() {
-            const nextPalette = createRandomSeedValues();
+            const nextPalette = createRandomSeedValues(isDarkMode ? 'dark' : 'light');
 
             currentPalette.text = nextPalette.text;
             currentPalette.bg = nextPalette.bg;
