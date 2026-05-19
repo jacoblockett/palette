@@ -424,9 +424,10 @@ function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightne
 	let bestScore = Number.POSITIVE_INFINITY
 	let bestLightnessDistance = Number.POSITIVE_INFINITY
 	let bestChromaDistance = Number.POSITIVE_INFINITY
+	let low = minLightness
+	let high = maxLightness
 
-	for (let index = 0; index <= 400; index += 1) {
-		const lightness = minLightness + ((maxLightness - minLightness) * index) / 400
+	const evaluateCandidate = lightness => {
 		const candidate = gamutMapOklch({
 			l: lightness,
 			c: baseOklch.c,
@@ -445,6 +446,29 @@ function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightne
 			bestScore = score
 			bestLightnessDistance = lightnessDistance
 			bestChromaDistance = chromaDistance
+		}
+
+		return wcagContrast(candidate.oklch, backgroundOklch)
+	}
+
+	const minContrast = evaluateCandidate(minLightness)
+	const maxContrast = evaluateCandidate(maxLightness)
+	const contrastIncreasesWithLightness = maxContrast >= minContrast
+
+	for (let index = 0; index < 24; index += 1) {
+		const midpoint = (low + high) / 2
+		const midpointContrast = evaluateCandidate(midpoint)
+
+		if (midpointContrast < targetContrast) {
+			if (contrastIncreasesWithLightness) {
+				low = midpoint
+			} else {
+				high = midpoint
+			}
+		} else if (contrastIncreasesWithLightness) {
+			high = midpoint
+		} else {
+			low = midpoint
 		}
 	}
 
