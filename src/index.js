@@ -100,8 +100,16 @@ const MIN_CHROMA_BY_SCHEME = {
 }
 
 const WCAG_MINIMUM_CONTRAST = 4.5
-const CHROMATIC_SOFT_MINIMUM_CONTRAST = 1.5
-const CHROMATIC_ADAPTATION_CHROMA_MULTIPLIERS = [1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4]
+const CHROMATIC_REQUIRED_WCAG_CONTRAST = WCAG_MINIMUM_CONTRAST
+const CHROMATIC_ADAPTATION_CHROMA_MULTIPLIERS = [
+	0.75, 0.85, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5
+]
+const CHROMATIC_ADAPTATION_WEIGHTS = {
+	identity: 1,
+	contrast: 0.55,
+	chroma: 0.35,
+	lightness: 0.2
+}
 const SHADE_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 const SHADE_MINIMUM_CONTRAST = 1.05
 const SHADE_STRONG_CONTRAST_PROGRESS = 0.35
@@ -336,8 +344,32 @@ function wcagContrast(firstOklch, secondOklch) {
 	return Math.max(firstLuminance, secondLuminance) / Math.min(firstLuminance, secondLuminance)
 }
 
-function getMinimumChromaticContrast(activeWcag) {
-	return activeWcag ? WCAG_MINIMUM_CONTRAST : CHROMATIC_SOFT_MINIMUM_CONTRAST
+function getRequiredChromaticContrast(activeWcag) {
+	return activeWcag ? CHROMATIC_REQUIRED_WCAG_CONTRAST : null
+}
+
+function safeDivide(numerator, denominator) {
+	return denominator === 0 ? 0 : numerator / denominator
+}
+
+function logContrast(contrast) {
+	return Math.log(Math.max(1, contrast))
+}
+
+function calculateContrastRecoveryPenalty(candidateContrast, unchangedContrast, sourceContrast) {
+	if (sourceContrast <= unchangedContrast) {
+		return 0
+	}
+
+	const availableRecovery = logContrast(sourceContrast) - logContrast(unchangedContrast)
+	const candidateRecovery = logContrast(candidateContrast) - logContrast(unchangedContrast)
+	const recovered = clamp(safeDivide(candidateRecovery, availableRecovery), 0, 1)
+
+	return 1 - recovered
+}
+
+function normalizeMetric(value, maxValue) {
+	return clamp(safeDivide(value, maxValue), 0, 1)
 }
 
 function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightnessRange) {
@@ -694,25 +726,26 @@ function mapSampledRole(sampled) {
 	}
 }
 
-function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, minimumContrast) {
+function adaptChromaticRoleForMode(sourceOklch, sourceBackgroundOklch, targetBackgroundOklch, activeWcag) {
 	const mappedSource = gamutMapOklch(sourceOklch)
-
-	if (wcagContrast(mappedSource.oklch, targetBackgroundOklch) >= minimumContrast) {
-		return mappedSource
-	}
+	const sourceContrast = wcagContrast(mappedSource.oklch, sourceBackgroundOklch)
+	const unchangedContrast = wcagContrast(mappedSource.oklch, targetBackgroundOklch)
+	const requiredContrast = getRequiredChromaticContrast(activeWcag)
 
 	const sourceIsLighterThanBackground = mappedSource.oklch.l >= targetBackgroundOklch.l
 	const [minLightness, maxLightness] = sourceIsLighterThanBackground
-		? [mappedSource.oklch.l, 0.98]
-		: [0.02, mappedSource.oklch.l]
-	let bestPassingCandidate = null
-	let bestPassingIdentityDistance = Number.POSITIVE_INFINITY
-	let bestPassingChromaRetention = Number.NEGATIVE_INFINITY
-	let bestPassingLightnessDistance = Number.POSITIVE_INFINITY
-	let bestFailingCandidate = null
-	let bestFailingContrast = Number.NEGATIVE_INFINITY
-	let bestFailingIdentityDistance = Number.POSITIVE_INFINITY
-	let bestFailingChromaRetention = Number.NEGATIVE_INFINITY
+		? [targetBackgroundOklch.l, 0.98]
+		: [0.02, targetBackgroundOklch.l]
+	const candidateRecords = [
+		{
+			candidate: mappedSource,
+			candidateContrast: unchangedContrast,
+			identityDistance: 0,
+			chromaLoss: 0,
+			lightnessMovement: 0,
+			contrastPenalty: calculateContrastRecoveryPenalty(unchangedContrast, unchangedContrast, sourceContrast)
+		}
+	]
 
 	for (let index = 0; index <= 400; index += 1) {
 		const lightness = minLightness + ((maxLightness - minLightness) * index) / 400
@@ -723,45 +756,61 @@ function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, minimumCo
 				h: mappedSource.oklch.h
 			})
 			const candidateContrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
-			const candidateIdentityDistance = colorIdentityDistance(candidate.oklch, mappedSource.oklch)
-			const candidateChromaRetention = candidate.oklch.c / mappedSource.oklch.c
-			const lightnessDistance = Math.abs(candidate.oklch.l - mappedSource.oklch.l)
+			const identityDistance = colorIdentityDistance(candidate.oklch, mappedSource.oklch)
+			const chromaLoss = Math.max(0, mappedSource.oklch.c - candidate.oklch.c)
+			const lightnessMovement = Math.abs(candidate.oklch.l - mappedSource.oklch.l)
+			const contrastPenalty = calculateContrastRecoveryPenalty(candidateContrast, unchangedContrast, sourceContrast)
 
-			if (candidateContrast >= minimumContrast) {
-				if (
-					bestPassingCandidate === null ||
-					candidateIdentityDistance < bestPassingIdentityDistance ||
-					(candidateIdentityDistance === bestPassingIdentityDistance &&
-						candidateChromaRetention > bestPassingChromaRetention) ||
-					(candidateIdentityDistance === bestPassingIdentityDistance &&
-						candidateChromaRetention === bestPassingChromaRetention &&
-						lightnessDistance < bestPassingLightnessDistance)
-				) {
-					bestPassingCandidate = candidate
-					bestPassingIdentityDistance = candidateIdentityDistance
-					bestPassingChromaRetention = candidateChromaRetention
-					bestPassingLightnessDistance = lightnessDistance
-				}
-				continue
-			}
-
-			if (
-				bestFailingCandidate === null ||
-				candidateContrast > bestFailingContrast ||
-				(candidateContrast === bestFailingContrast && candidateIdentityDistance < bestFailingIdentityDistance) ||
-				(candidateContrast === bestFailingContrast &&
-					candidateIdentityDistance === bestFailingIdentityDistance &&
-					candidateChromaRetention > bestFailingChromaRetention)
-			) {
-				bestFailingCandidate = candidate
-				bestFailingContrast = candidateContrast
-				bestFailingIdentityDistance = candidateIdentityDistance
-				bestFailingChromaRetention = candidateChromaRetention
-			}
+			candidateRecords.push({
+				candidate,
+				candidateContrast,
+				identityDistance,
+				chromaLoss,
+				lightnessMovement,
+				contrastPenalty
+			})
 		}
 	}
 
-	return bestPassingCandidate ?? bestFailingCandidate
+	const maxIdentityDistance = Math.max(...candidateRecords.map(record => record.identityDistance))
+	const maxChromaLoss = Math.max(...candidateRecords.map(record => record.chromaLoss))
+	const maxLightnessMovement = Math.max(...candidateRecords.map(record => record.lightnessMovement))
+
+	for (const record of candidateRecords) {
+		const normalizedIdentity = normalizeMetric(record.identityDistance, maxIdentityDistance)
+		const normalizedChromaLoss = normalizeMetric(record.chromaLoss, maxChromaLoss)
+		const normalizedLightnessMovement = normalizeMetric(record.lightnessMovement, maxLightnessMovement)
+
+		record.score =
+			normalizedIdentity * CHROMATIC_ADAPTATION_WEIGHTS.identity +
+			record.contrastPenalty * CHROMATIC_ADAPTATION_WEIGHTS.contrast +
+			normalizedChromaLoss * CHROMATIC_ADAPTATION_WEIGHTS.chroma +
+			normalizedLightnessMovement * CHROMATIC_ADAPTATION_WEIGHTS.lightness
+	}
+
+	if (requiredContrast === null) {
+		return candidateRecords.reduce((bestRecord, record) => (record.score < bestRecord.score ? record : bestRecord))
+			.candidate
+	}
+
+	const passingRecords = candidateRecords.filter(record => record.candidateContrast >= requiredContrast)
+
+	if (passingRecords.length > 0) {
+		return passingRecords.reduce((bestRecord, record) => (record.score < bestRecord.score ? record : bestRecord))
+			.candidate
+	}
+
+	return candidateRecords.reduce((bestRecord, record) => {
+		if (record.candidateContrast > bestRecord.candidateContrast) {
+			return record
+		}
+
+		if (record.candidateContrast === bestRecord.candidateContrast && record.score < bestRecord.score) {
+			return record
+		}
+
+		return bestRecord
+	}).candidate
 }
 
 function deriveRoleForMode(
@@ -774,9 +823,7 @@ function deriveRoleForMode(
 	activeWcag
 ) {
 	if (isChromaticRole(role)) {
-		const minimumContrast = getMinimumChromaticContrast(activeWcag)
-
-		return adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, minimumContrast)
+		return adaptChromaticRoleForMode(sourceOklch, sourceBackgroundOklch, targetBackgroundOklch, activeWcag)
 	}
 
 	const sourceRange = ROLE_RANGES[sourceMode][role]
