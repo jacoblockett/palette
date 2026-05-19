@@ -54,7 +54,7 @@ const theme = palette({
 
 ## WCAG
 
-You can reject generated palettes that fail minimum contrast/accessibilty checks.
+You can reject generated palettes that fail minimum contrast/accessibility checks.
 
 ```js
 const theme = palette({ wcag: true })
