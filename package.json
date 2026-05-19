@@ -29,7 +29,10 @@
 		"palette",
 		"colors",
 		"UI",
-		"generator"
+		"generator",
+		"wcag",
+		"shades",
+		"theme"
 	],
 	"author": "Jacob Lockett",
 	"license": "MIT",
