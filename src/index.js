@@ -22,11 +22,21 @@ const SUPPORTED_SCHEMES = [
 	"complementary",
 	"split-complementary",
 	"triadic",
+	"compound",
+	"double-split-complementary",
+	"neutral-complementary",
 	"accented-neutral",
 	"achromatic",
 	"warm",
 	"cool",
-	"muted"
+	"muted",
+	"earth",
+	"pastel",
+	"neon",
+	"jewel",
+	"brand-status",
+	"enterprise",
+	"luxury"
 ]
 
 const DEFAULT_SCHEME = "random"
@@ -55,17 +65,54 @@ const MIN_CHROMA_BY_SCHEME = {
 		secondary: 0.01,
 		accent: 0.045
 	},
+	"neutral-complementary": {
+		primary: 0.035,
+		secondary: 0.012,
+		accent: 0.01
+	},
 	achromatic: {
 		primary: 0.002,
 		secondary: 0.002,
 		accent: 0.002
 	},
+	earth: {
+		primary: 0.025,
+		secondary: 0.018,
+		accent: 0.025
+	},
+	pastel: {
+		primary: 0.025,
+		secondary: 0.018,
+		accent: 0.025
+	},
+	neon: {
+		primary: 0.045,
+		secondary: 0.035,
+		accent: 0.045
+	},
+	jewel: {
+		primary: 0.04,
+		secondary: 0.03,
+		accent: 0.04
+	},
 	muted: {
 		primary: 0.025,
 		secondary: 0.012,
 		accent: 0.025
+	},
+	enterprise: {
+		primary: 0.03,
+		secondary: 0.018,
+		accent: 0.03
+	},
+	luxury: {
+		primary: 0.035,
+		secondary: 0.018,
+		accent: 0.035
 	}
 }
+
+const WCAG_MINIMUM_CONTRAST = 4.5
 
 function randomFloat(min, max) {
 	return min + Math.random() * (max - min)
@@ -120,6 +167,54 @@ function sampleWarmHue() {
 
 function sampleCoolHue() {
 	return randomFromRanges([[155, 285]])
+}
+
+function sampleEarthHue() {
+	return randomFromRanges([
+		[25, 55],
+		[65, 105],
+		[105, 145],
+		[330, 360]
+	])
+}
+
+function sampleJewelHue() {
+	return randomFromRanges([
+		[135, 165],
+		[210, 250],
+		[275, 315],
+		[335, 360],
+		[0, 12]
+	])
+}
+
+function sampleLuxuryHue() {
+	return randomFromRanges([
+		[32, 55],
+		[265, 310],
+		[335, 360],
+		[0, 8]
+	])
+}
+
+function sampleEnterpriseHue() {
+	return randomFromRanges([
+		[205, 245],
+		[180, 215],
+		[250, 275]
+	])
+}
+
+function sampleBrandStatusHue() {
+	return randomFromRanges([[205, 275]])
+}
+
+function sampleSuccessHue() {
+	return randomFromRanges([[135, 165]])
+}
+
+function sampleWarningHue() {
+	return randomFromRanges([[35, 75]])
 }
 
 function oklchToOklab({ l, c, h }) {
@@ -268,12 +363,19 @@ function sampleRole(mode, role, hue) {
 
 function sampleRoleWithChroma(mode, role, hue, chromaRange) {
 	const range = ROLE_RANGES[mode][role]
+	const clampedChromaRange = clampChromaRange(mode, role, chromaRange)
 
 	return {
 		l: randomFloat(range.l[0], range.l[1]),
-		c: randomFloat(chromaRange[0], chromaRange[1]),
+		c: randomFloat(clampedChromaRange[0], clampedChromaRange[1]),
 		h: hue
 	}
+}
+
+function clampChromaRange(mode, role, requestedRange) {
+	const roleChromaRange = ROLE_RANGES[mode][role].c
+
+	return [Math.max(roleChromaRange[0], requestedRange[0]), Math.min(roleChromaRange[1], requestedRange[1])]
 }
 
 function sampleChromaticRoles(mode, scheme) {
@@ -300,6 +402,17 @@ function sampleChromaticRoles(mode, scheme) {
 		const direction = randomSign()
 		secondaryHue = shiftHue(primaryHue, direction * 120)
 		accentHue = shiftHue(primaryHue, direction * 240)
+	} else if (scheme === "compound") {
+		const direction = randomSign()
+		secondaryHue = shiftHue(primaryHue, direction * randomFloat(150, 170))
+		accentHue = shiftHue(primaryHue, direction * randomFloat(24, 44))
+	} else if (scheme === "double-split-complementary") {
+		const direction = randomSign()
+		secondaryHue = shiftHue(primaryHue, direction * randomFloat(135, 155))
+		accentHue = shiftHue(primaryHue, direction * randomFloat(205, 225))
+	} else if (scheme === "neutral-complementary") {
+		secondaryHue = shiftHue(primaryHue, 180)
+		accentHue = shiftHue(primaryHue, randomFloat(-16, 16))
 	} else if (scheme === "accented-neutral") {
 		secondaryHue = shiftHue(primaryHue, randomFloat(-18, 18))
 		accentHue = randomHue()
@@ -314,6 +427,34 @@ function sampleChromaticRoles(mode, scheme) {
 		primaryHue = sampleCoolHue()
 		secondaryHue = sampleCoolHue()
 		accentHue = sampleCoolHue()
+	} else if (scheme === "earth") {
+		primaryHue = sampleEarthHue()
+		secondaryHue = sampleEarthHue()
+		accentHue = sampleEarthHue()
+	} else if (scheme === "pastel") {
+		primaryHue = randomHue()
+		secondaryHue = randomHue()
+		accentHue = randomHue()
+	} else if (scheme === "neon") {
+		primaryHue = randomHue()
+		secondaryHue = randomHue()
+		accentHue = randomHue()
+	} else if (scheme === "jewel") {
+		primaryHue = sampleJewelHue()
+		secondaryHue = sampleJewelHue()
+		accentHue = sampleJewelHue()
+	} else if (scheme === "brand-status") {
+		primaryHue = sampleBrandStatusHue()
+		secondaryHue = sampleSuccessHue()
+		accentHue = sampleWarningHue()
+	} else if (scheme === "enterprise") {
+		primaryHue = sampleEnterpriseHue()
+		secondaryHue = sampleEnterpriseHue()
+		accentHue = sampleEnterpriseHue()
+	} else if (scheme === "luxury") {
+		primaryHue = sampleLuxuryHue()
+		secondaryHue = sampleLuxuryHue()
+		accentHue = sampleLuxuryHue()
 	} else if (scheme === "muted") {
 		primaryHue = randomHue()
 		secondaryHue = randomHue()
@@ -333,6 +474,70 @@ function sampleChromaticRoles(mode, scheme) {
 			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.004, 0.018]),
 			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.004, 0.016]),
 			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.004, 0.02])
+		}
+	}
+
+	if (scheme === "neutral-complementary") {
+		return {
+			primary: sampleRole(mode, "primary", primaryHue),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.018, 0.095]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.012, 0.07])
+		}
+	}
+
+	if (scheme === "earth") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.035, 0.13]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.025, 0.105]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.04, 0.15])
+		}
+	}
+
+	if (scheme === "pastel") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.035, 0.12]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.025, 0.095]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.04, 0.13])
+		}
+	}
+
+	if (scheme === "neon") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.16, 0.3]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.12, 0.26]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.18, 0.32])
+		}
+	}
+
+	if (scheme === "jewel") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.09, 0.22]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.075, 0.19]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.1, 0.24])
+		}
+	}
+
+	if (scheme === "brand-status") {
+		return {
+			primary: sampleRole(mode, "primary", primaryHue),
+			secondary: sampleRole(mode, "secondary", secondaryHue),
+			accent: sampleRole(mode, "accent", accentHue)
+		}
+	}
+
+	if (scheme === "enterprise") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.045, 0.14]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.025, 0.095]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.04, 0.13])
+		}
+	}
+
+	if (scheme === "luxury") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.055, 0.17]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.025, 0.105]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.065, 0.19])
 		}
 	}
 
@@ -453,6 +658,15 @@ function isRejectedCandidate(mode, candidate, scheme) {
 	return false
 }
 
+function isWcagCompliantCandidate(candidate) {
+	return (
+		wcagContrast(candidate.text.oklch, candidate.background.oklch) >= WCAG_MINIMUM_CONTRAST &&
+		wcagContrast(candidate.primary.oklch, candidate.background.oklch) >= WCAG_MINIMUM_CONTRAST &&
+		wcagContrast(candidate.secondary.oklch, candidate.background.oklch) >= WCAG_MINIMUM_CONTRAST &&
+		wcagContrast(candidate.accent.oklch, candidate.background.oklch) >= WCAG_MINIMUM_CONTRAST
+	)
+}
+
 function toPublicPalette(candidate) {
 	return {
 		text: candidate.text.hex,
@@ -464,7 +678,7 @@ function toPublicPalette(candidate) {
 }
 
 export function palette(options = {}) {
-	const { mode, seeds, scheme } = options
+	const { mode, seeds, scheme, wcag } = options
 
 	void seeds
 
@@ -477,9 +691,10 @@ export function palette(options = {}) {
 	}
 
 	const activeScheme = normalizeScheme(scheme)
+	const activeWcag = Boolean(wcag)
 	const oppositeMode = mode === "light" ? "dark" : "light"
 
-	for (let index = 0; index < 500; index += 1) {
+	for (let index = 0; index < 2000; index += 1) {
 		const chromaticRoles = sampleChromaticRoles(mode, activeScheme)
 		const sampledCandidate = {
 			text: mapSampledRole(sampleRole(mode, "text", chromaticRoles.primary.h)),
@@ -538,6 +753,13 @@ export function palette(options = {}) {
 		if (
 			isRejectedCandidate("light", pairedCandidate.light, activeScheme) ||
 			isRejectedCandidate("dark", pairedCandidate.dark, activeScheme)
+		) {
+			continue
+		}
+
+		if (
+			activeWcag &&
+			(!isWcagCompliantCandidate(pairedCandidate.light) || !isWcagCompliantCandidate(pairedCandidate.dark))
 		) {
 			continue
 		}

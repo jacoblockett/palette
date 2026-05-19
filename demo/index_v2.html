@@ -169,13 +169,30 @@
 							<option value="complementary">Complementary</option>
 							<option value="split-complementary">Split Complementary</option>
 							<option value="triadic">Triadic</option>
+							<option value="compound">Compound</option>
+							<option value="double-split-complementary">Double Split Complementary</option>
+							<option value="neutral-complementary">Neutral Complementary</option>
 							<option value="accented-neutral">Accented Neutral</option>
 							<option value="achromatic">Achromatic</option>
 							<option value="warm">Warm</option>
 							<option value="cool">Cool</option>
 							<option value="muted">Muted</option>
+							<option value="earth">Earth</option>
+							<option value="pastel">Pastel</option>
+							<option value="neon">Neon</option>
+							<option value="jewel">Jewel</option>
+							<option value="brand-status">Brand Status</option>
+							<option value="enterprise">Enterprise</option>
+							<option value="luxury">Luxury</option>
 						</select>
 					</div>
+
+					<label
+						class="flex items-center gap-2 bg-black/5 p-2 rounded-xl border text-xs font-bold"
+						style="border-color: rgba(var(--color-text-rgb), 0.1)">
+						<input id="wcagToggle" type="checkbox" class="h-4 w-4 cursor-pointer" />
+						<span>WCAG Only</span>
+					</label>
 
 					<div
 						class="flex items-center gap-2 bg-black/5 p-1 rounded-xl border"
@@ -755,6 +772,7 @@
 			const state = {
 				mode: "light",
 				scheme: "random",
+				wcag: false,
 				colors: {
 					text: "#1E293B",
 					background: "#F8FAFC",
@@ -958,7 +976,12 @@
 			}
 
 			function generateLibraryPalette() {
-				const generatedColors = palette({ mode: state.mode, seeds: state.colors, scheme: state.scheme })
+				const generatedColors = palette({
+					mode: state.mode,
+					seeds: state.colors,
+					scheme: state.scheme,
+					wcag: state.wcag
+				})
 				applyGeneratedPalette(generatedColors)
 			}
 
@@ -1216,8 +1239,15 @@ module.exports = {
 					}
 					state.mode = "light"
 					state.scheme = "random"
+					state.wcag = false
 					document.getElementById("schemeSelect").value = state.scheme
-					state.generatedPalette = palette({ mode: state.mode, seeds: state.colors, scheme: state.scheme })
+					document.getElementById("wcagToggle").checked = state.wcag
+					state.generatedPalette = palette({
+						mode: state.mode,
+						seeds: state.colors,
+						scheme: state.scheme,
+						wcag: state.wcag
+					})
 					state.colors = { ...state.generatedPalette.light }
 					renderApp()
 					triggerToast("Locks and palette reset to default configurations.")
@@ -1313,6 +1343,11 @@ module.exports = {
 					generateLibraryPalette()
 				})
 
+				document.getElementById("wcagToggle").addEventListener("change", event => {
+					state.wcag = event.target.checked
+					generateLibraryPalette()
+				})
+
 				document.getElementById("toggleThemeMode").addEventListener("click", () => {
 					state.mode = state.mode === "light" ? "dark" : "light"
 					state.colors = { ...state.generatedPalette[state.mode] }
@@ -1328,7 +1363,12 @@ module.exports = {
 			document.addEventListener("DOMContentLoaded", () => {
 				initEventListeners()
 				initQuickSwatches()
-				state.generatedPalette = palette({ mode: state.mode, seeds: state.colors, scheme: state.scheme })
+				state.generatedPalette = palette({
+					mode: state.mode,
+					seeds: state.colors,
+					scheme: state.scheme,
+					wcag: state.wcag
+				})
 				state.colors = { ...state.generatedPalette[state.mode] }
 				renderApp()
 			})
