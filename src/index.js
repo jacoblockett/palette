@@ -41,19 +41,6 @@ const SUPPORTED_SCHEMES = [
 
 const DEFAULT_SCHEME = "random"
 
-const CHROMATIC_LIGHTNESS_SEARCH_RANGES = {
-	light: {
-		primary: [0.08, 0.88],
-		secondary: [0.08, 0.88],
-		accent: [0.08, 0.9]
-	},
-	dark: {
-		primary: [0.16, 0.96],
-		secondary: [0.14, 0.94],
-		accent: [0.16, 0.96]
-	}
-}
-
 const MIN_CHROMA_BY_SCHEME = {
 	default: {
 		primary: 0.045,
@@ -113,8 +100,10 @@ const MIN_CHROMA_BY_SCHEME = {
 }
 
 const WCAG_MINIMUM_CONTRAST = 4.5
+const CHROMATIC_SOFT_MINIMUM_CONTRAST = 2
 const SHADE_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 const SHADE_MINIMUM_CONTRAST = 1.05
+const SHADE_STRONG_CONTRAST_PROGRESS = 0.35
 
 function randomFloat(min, max) {
 	return min + Math.random() * (max - min)
@@ -336,18 +325,8 @@ function wcagContrast(firstOklch, secondOklch) {
 	return Math.max(firstLuminance, secondLuminance) / Math.min(firstLuminance, secondLuminance)
 }
 
-function getLightnessSearchRangeForShade(baseOklch, backgroundOklch, percent) {
-	const baseIsLighterThanBackground = baseOklch.l >= backgroundOklch.l
-
-	if (percent < 100) {
-		return baseIsLighterThanBackground ? [backgroundOklch.l, baseOklch.l] : [baseOklch.l, backgroundOklch.l]
-	}
-
-	if (percent > 100) {
-		return baseIsLighterThanBackground ? [baseOklch.l, 0.98] : [0.02, baseOklch.l]
-	}
-
-	return [baseOklch.l, baseOklch.l]
+function getMinimumChromaticContrast(activeWcag) {
+	return activeWcag ? WCAG_MINIMUM_CONTRAST : CHROMATIC_SOFT_MINIMUM_CONTRAST
 }
 
 function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightnessRange) {
@@ -383,8 +362,32 @@ function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightne
 	return bestCandidate
 }
 
+function getSoftShadeLightnessRange(baseOklch, backgroundOklch) {
+	return baseOklch.l >= backgroundOklch.l ? [backgroundOklch.l, baseOklch.l] : [baseOklch.l, backgroundOklch.l]
+}
+
+function getStrongShadeLightnessRange(baseOklch, backgroundOklch) {
+	return baseOklch.l >= backgroundOklch.l ? [baseOklch.l, 0.98] : [0.02, baseOklch.l]
+}
+
+function getStrongShadeTargetContrast(baseContrast) {
+	return baseContrast + (21 - baseContrast) * SHADE_STRONG_CONTRAST_PROGRESS
+}
+
 function generateRoleShadeScale(roleOklch, backgroundOklch) {
 	const baseContrast = wcagContrast(roleOklch, backgroundOklch)
+	const softAnchor = findColorByContrast(
+		roleOklch,
+		backgroundOklch,
+		SHADE_MINIMUM_CONTRAST,
+		getSoftShadeLightnessRange(roleOklch, backgroundOklch)
+	)
+	const strongAnchor = findColorByContrast(
+		roleOklch,
+		backgroundOklch,
+		getStrongShadeTargetContrast(baseContrast),
+		getStrongShadeLightnessRange(roleOklch, backgroundOklch)
+	)
 	const shades = {}
 
 	for (const percent of SHADE_STOPS) {
@@ -395,13 +398,13 @@ function generateRoleShadeScale(roleOklch, backgroundOklch) {
 			continue
 		}
 
-		const targetContrast =
+		const amount = percent < 100 ? (percent - 10) / 90 : (percent - 100) / 100
+		const interpolated =
 			percent < 100
-				? Math.max(SHADE_MINIMUM_CONTRAST, baseContrast * (percent / 100))
-				: Math.min(21, baseContrast * (percent / 100))
-		const lightnessRange = getLightnessSearchRangeForShade(roleOklch, backgroundOklch, percent)
+				? interpolateOklch(softAnchor.oklch, roleOklch, amount)
+				: interpolateOklch(roleOklch, strongAnchor.oklch, amount)
 
-		shades[key] = findColorByContrast(roleOklch, backgroundOklch, targetContrast, lightnessRange).hex
+		shades[key] = gamutMapOklch(interpolated).hex
 	}
 
 	return shades
@@ -409,6 +412,14 @@ function generateRoleShadeScale(roleOklch, backgroundOklch) {
 
 function interpolate(start, end, amount) {
 	return start + (end - start) * amount
+}
+
+function interpolateOklch(startOklch, endOklch, amount) {
+	return {
+		l: interpolate(startOklch.l, endOklch.l, amount),
+		c: interpolate(startOklch.c, endOklch.c, amount),
+		h: startOklch.h
+	}
 }
 
 function generateBackgroundShadeScale(backgroundOklch, mode) {
@@ -672,44 +683,75 @@ function mapSampledRole(sampled) {
 	}
 }
 
-function deriveChromaticRoleByContrast(sourceOklch, role, targetMode, sourceBackgroundOklch, targetBackgroundOklch) {
-	const sourceContrast = wcagContrast(sourceOklch, sourceBackgroundOklch)
-	const [minLightness, maxLightness] = CHROMATIC_LIGHTNESS_SEARCH_RANGES[targetMode][role]
-	let bestCandidate = null
-	let bestScore = Number.POSITIVE_INFINITY
-	let bestLightnessDistance = Number.POSITIVE_INFINITY
-	let bestChromaDistance = Number.POSITIVE_INFINITY
+function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, minimumContrast) {
+	const mappedSource = gamutMapOklch(sourceOklch)
+
+	if (wcagContrast(mappedSource.oklch, targetBackgroundOklch) >= minimumContrast) {
+		return mappedSource
+	}
+
+	const sourceIsLighterThanBackground = mappedSource.oklch.l >= targetBackgroundOklch.l
+	const [minLightness, maxLightness] = sourceIsLighterThanBackground
+		? [mappedSource.oklch.l, 0.98]
+		: [0.02, mappedSource.oklch.l]
+	let bestPassingCandidate = null
+	let bestPassingLightnessDistance = Number.POSITIVE_INFINITY
+	let bestPassingChromaDistance = Number.POSITIVE_INFINITY
+	let bestFailingCandidate = null
+	let bestFailingContrast = Number.NEGATIVE_INFINITY
+	let bestFailingLightnessDistance = Number.POSITIVE_INFINITY
 
 	for (let index = 0; index <= 400; index += 1) {
 		const lightness = minLightness + ((maxLightness - minLightness) * index) / 400
 		const candidate = gamutMapOklch({
 			l: lightness,
-			c: sourceOklch.c,
-			h: sourceOklch.h
+			c: mappedSource.oklch.c,
+			h: mappedSource.oklch.h
 		})
 		const candidateContrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
-		const score = Math.abs(candidateContrast - sourceContrast)
-		const lightnessDistance = Math.abs(candidate.oklch.l - sourceOklch.l)
-		const chromaDistance = Math.abs(candidate.oklch.c - sourceOklch.c)
+		const lightnessDistance = Math.abs(candidate.oklch.l - mappedSource.oklch.l)
+		const chromaDistance = Math.abs(candidate.oklch.c - mappedSource.oklch.c)
+
+		if (candidateContrast >= minimumContrast) {
+			if (
+				bestPassingCandidate === null ||
+				lightnessDistance < bestPassingLightnessDistance ||
+				(lightnessDistance === bestPassingLightnessDistance && chromaDistance < bestPassingChromaDistance)
+			) {
+				bestPassingCandidate = candidate
+				bestPassingLightnessDistance = lightnessDistance
+				bestPassingChromaDistance = chromaDistance
+			}
+			continue
+		}
 
 		if (
-			score < bestScore ||
-			(score === bestScore && lightnessDistance < bestLightnessDistance) ||
-			(score === bestScore && lightnessDistance === bestLightnessDistance && chromaDistance < bestChromaDistance)
+			bestFailingCandidate === null ||
+			candidateContrast > bestFailingContrast ||
+			(candidateContrast === bestFailingContrast && lightnessDistance < bestFailingLightnessDistance)
 		) {
-			bestCandidate = candidate
-			bestScore = score
-			bestLightnessDistance = lightnessDistance
-			bestChromaDistance = chromaDistance
+			bestFailingCandidate = candidate
+			bestFailingContrast = candidateContrast
+			bestFailingLightnessDistance = lightnessDistance
 		}
 	}
 
-	return bestCandidate
+	return bestPassingCandidate ?? bestFailingCandidate
 }
 
-function deriveRoleForMode(sourceOklch, role, sourceMode, targetMode, sourceBackgroundOklch, targetBackgroundOklch) {
+function deriveRoleForMode(
+	sourceOklch,
+	role,
+	sourceMode,
+	targetMode,
+	sourceBackgroundOklch,
+	targetBackgroundOklch,
+	activeWcag
+) {
 	if (isChromaticRole(role)) {
-		return deriveChromaticRoleByContrast(sourceOklch, role, targetMode, sourceBackgroundOklch, targetBackgroundOklch)
+		const minimumContrast = getMinimumChromaticContrast(activeWcag)
+
+		return adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, minimumContrast)
 	}
 
 	const sourceRange = ROLE_RANGES[sourceMode][role]
@@ -833,7 +875,8 @@ export function palette(options = {}) {
 				mode,
 				oppositeMode,
 				sampledCandidate.background.oklch,
-				null
+				null,
+				activeWcag
 			),
 			background: deriveRoleForMode(
 				sampledCandidate.background.oklch,
@@ -841,7 +884,8 @@ export function palette(options = {}) {
 				mode,
 				oppositeMode,
 				sampledCandidate.background.oklch,
-				null
+				null,
+				activeWcag
 			)
 		}
 		derivedCandidate.primary = deriveRoleForMode(
@@ -850,7 +894,8 @@ export function palette(options = {}) {
 			mode,
 			oppositeMode,
 			sampledCandidate.background.oklch,
-			derivedCandidate.background.oklch
+			derivedCandidate.background.oklch,
+			activeWcag
 		)
 		derivedCandidate.secondary = deriveRoleForMode(
 			sampledCandidate.secondary.oklch,
@@ -858,7 +903,8 @@ export function palette(options = {}) {
 			mode,
 			oppositeMode,
 			sampledCandidate.background.oklch,
-			derivedCandidate.background.oklch
+			derivedCandidate.background.oklch,
+			activeWcag
 		)
 		derivedCandidate.accent = deriveRoleForMode(
 			sampledCandidate.accent.oklch,
@@ -866,7 +912,8 @@ export function palette(options = {}) {
 			mode,
 			oppositeMode,
 			sampledCandidate.background.oklch,
-			derivedCandidate.background.oklch
+			derivedCandidate.background.oklch,
+			activeWcag
 		)
 		const pairedCandidate =
 			mode === "light"

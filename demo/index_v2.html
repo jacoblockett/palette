@@ -1058,11 +1058,13 @@
 			}
 
 			function openShadesModal(role) {
-				const shades = state.generatedPalette?.[state.mode]?.shades?.[role]
+				const paletteMode = state.generatedPalette?.[state.mode]
 
-				if (!shades) {
+				if (!paletteMode?.shades?.[role]) {
 					return
 				}
+
+				const shades = paletteMode.shades[role]
 
 				state.activeShadesRole = role
 
@@ -1072,40 +1074,41 @@
 				const modal = document.getElementById("shadesModal")
 				const roleLabel = role.charAt(0).toUpperCase() + role.slice(1)
 				const modeLabel = state.mode === "light" ? "Light Mode" : "Dark Mode"
-				const baseHex = state.generatedPalette[state.mode][role].toUpperCase()
+				const baseHex = paletteMode[role].toUpperCase()
 
 				title.textContent = `${roleLabel} Shades`
 				subtitle.textContent = `${modeLabel} - ${baseHex}`
 				grid.innerHTML = ""
+				;[...SHADE_STOPS]
+					.sort((first, second) => first - second)
+					.forEach(percent => {
+						const shadeHex = shades[String(percent)].toUpperCase()
+						const contrastMode = getContrastYIQ(shadeHex)
+						const foregroundColor = contrastMode === "light" ? "#0f172a" : "#ffffff"
+						const swatch = document.createElement("button")
 
-				SHADE_STOPS.forEach(percent => {
-					const shadeHex = shades[String(percent)].toUpperCase()
-					const contrastMode = getContrastYIQ(shadeHex)
-					const foregroundColor = contrastMode === "light" ? "#0f172a" : "#ffffff"
-					const swatch = document.createElement("button")
+						swatch.type = "button"
+						swatch.className =
+							"dynamic-glass w-full rounded-2xl p-3 text-left transition hover:-translate-y-1 hover:shadow-xl"
+						swatch.addEventListener("click", () => copyToClipboard(shadeHex))
 
-					swatch.type = "button"
-					swatch.className =
-						"dynamic-glass w-full rounded-2xl p-3 text-left transition hover:-translate-y-1 hover:shadow-xl"
-					swatch.addEventListener("click", () => copyToClipboard(shadeHex))
+						const block = document.createElement("div")
+						block.className = "h-28 rounded-xl p-3 flex flex-col justify-between"
+						block.style.backgroundColor = shadeHex
+						block.style.color = foregroundColor
 
-					const block = document.createElement("div")
-					block.className = "h-28 rounded-xl p-3 flex flex-col justify-between"
-					block.style.backgroundColor = shadeHex
-					block.style.color = foregroundColor
+						const percentLabel = document.createElement("span")
+						percentLabel.className = "text-xs font-black tracking-widest uppercase"
+						percentLabel.textContent = `${percent}%`
 
-					const percentLabel = document.createElement("span")
-					percentLabel.className = "text-xs font-black tracking-widest uppercase"
-					percentLabel.textContent = `${percent}%`
+						const hexLabel = document.createElement("span")
+						hexLabel.className = "text-sm font-bold tracking-wide"
+						hexLabel.textContent = shadeHex
 
-					const hexLabel = document.createElement("span")
-					hexLabel.className = "text-sm font-bold tracking-wide"
-					hexLabel.textContent = shadeHex
-
-					block.append(percentLabel, hexLabel)
-					swatch.appendChild(block)
-					grid.appendChild(swatch)
-				})
+						block.append(percentLabel, hexLabel)
+						swatch.appendChild(block)
+						grid.appendChild(swatch)
+					})
 
 				modal.classList.remove("hidden")
 				modal.classList.add("flex")
