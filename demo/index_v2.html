@@ -282,6 +282,11 @@
 									<i class="fa-regular fa-copy"></i>
 								</button>
 								<button
+									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-shades-target="text">
+									<i class="fa-solid fa-layer-group"></i> <span>Shades</span>
+								</button>
+								<button
 									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-target="text">
 									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
@@ -315,6 +320,11 @@
 									class="opacity-80 hover:opacity-100 p-1.5 transition"
 									title="Copy Hex Code">
 									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-shades-target="background">
+									<i class="fa-solid fa-layer-group"></i> <span>Shades</span>
 								</button>
 								<button
 									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
@@ -352,6 +362,11 @@
 									<i class="fa-regular fa-copy"></i>
 								</button>
 								<button
+									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-shades-target="primary">
+									<i class="fa-solid fa-layer-group"></i> <span>Shades</span>
+								</button>
+								<button
 									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-target="primary">
 									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
@@ -387,6 +402,11 @@
 									<i class="fa-regular fa-copy"></i>
 								</button>
 								<button
+									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-shades-target="secondary">
+									<i class="fa-solid fa-layer-group"></i> <span>Shades</span>
+								</button>
+								<button
 									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-target="secondary">
 									<i class="fa-solid fa-sliders"></i> <span>Tune</span>
@@ -420,6 +440,11 @@
 									class="opacity-80 hover:opacity-100 p-1.5 transition"
 									title="Copy Hex Code">
 									<i class="fa-regular fa-copy"></i>
+								</button>
+								<button
+									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
+									data-shades-target="accent">
+									<i class="fa-solid fa-layer-group"></i> <span>Shades</span>
 								</button>
 								<button
 									class="tune-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
@@ -765,8 +790,26 @@
 			<span id="toastMsg">Action completed successfully.</span>
 		</div>
 
+		<div id="shadesModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+			<div id="shadesModalBackdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+			<div class="dynamic-glass relative w-full max-w-5xl rounded-3xl p-6 shadow-2xl">
+				<div class="flex items-center justify-between gap-4">
+					<div>
+						<h3 id="shadesModalTitle" class="text-2xl font-black tracking-tight uppercase">Shades</h3>
+						<p id="shadesModalSubtitle" class="mt-2 text-sm opacity-70"></p>
+					</div>
+					<button id="btnCloseShadesModal" class="opacity-70 hover:opacity-100 transition">
+						<i class="fa-solid fa-xmark text-xl"></i>
+					</button>
+				</div>
+				<div id="shadesGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-5"></div>
+			</div>
+		</div>
+
 		<script type="module">
 			import { palette } from "/src/index.js"
+
+			const SHADE_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 
 			// --- Global State configuration ---
 			const state = {
@@ -789,6 +832,7 @@
 				},
 				generatedPalette: null,
 				activePicker: null,
+				activeShadesRole: null,
 				activeFormat: "css"
 			}
 
@@ -942,14 +986,26 @@
 			}
 
 			function getCurrentGeneratedColors() {
-				return state.generatedPalette ? state.generatedPalette[state.mode] : null
+				if (!state.generatedPalette) {
+					return null
+				}
+
+				const { text, background, primary, secondary, accent } = state.generatedPalette[state.mode]
+
+				return { text, background, primary, secondary, accent }
 			}
 
 			function applyGeneratedPalette(generatedPalette) {
 				const previousPalette = state.generatedPalette
 				state.generatedPalette = {
-					light: { ...generatedPalette.light },
-					dark: { ...generatedPalette.dark }
+					light: {
+						...generatedPalette.light,
+						shades: generatedPalette.light.shades ? { ...generatedPalette.light.shades } : undefined
+					},
+					dark: {
+						...generatedPalette.dark,
+						shades: generatedPalette.dark.shades ? { ...generatedPalette.dark.shades } : undefined
+					}
 				}
 
 				if (previousPalette) {
@@ -960,11 +1016,22 @@
 
 						state.generatedPalette.light[key] = previousPalette.light[key]
 						state.generatedPalette.dark[key] = previousPalette.dark[key]
+
+						if (previousPalette.light.shades?.[key] && state.generatedPalette.light.shades) {
+							state.generatedPalette.light.shades[key] = { ...previousPalette.light.shades[key] }
+						}
+
+						if (previousPalette.dark.shades?.[key] && state.generatedPalette.dark.shades) {
+							state.generatedPalette.dark.shades[key] = { ...previousPalette.dark.shades[key] }
+						}
 					}
 				}
 
 				state.colors = { ...getCurrentGeneratedColors() }
 				renderApp()
+				if (state.activeShadesRole) {
+					openShadesModal(state.activeShadesRole)
+				}
 			}
 
 			function setCurrentColorValue(key, hex) {
@@ -972,6 +1039,10 @@
 
 				if (state.generatedPalette) {
 					state.generatedPalette[state.mode][key] = hex
+
+					if (state.generatedPalette[state.mode].shades?.[key]) {
+						state.generatedPalette[state.mode].shades[key]["100"] = hex
+					}
 				}
 			}
 
@@ -980,9 +1051,71 @@
 					mode: state.mode,
 					seeds: state.colors,
 					scheme: state.scheme,
-					wcag: state.wcag
+					wcag: state.wcag,
+					shades: true
 				})
 				applyGeneratedPalette(generatedColors)
+			}
+
+			function openShadesModal(role) {
+				const shades = state.generatedPalette?.[state.mode]?.shades?.[role]
+
+				if (!shades) {
+					return
+				}
+
+				state.activeShadesRole = role
+
+				const title = document.getElementById("shadesModalTitle")
+				const subtitle = document.getElementById("shadesModalSubtitle")
+				const grid = document.getElementById("shadesGrid")
+				const modal = document.getElementById("shadesModal")
+				const roleLabel = role.charAt(0).toUpperCase() + role.slice(1)
+				const modeLabel = state.mode === "light" ? "Light Mode" : "Dark Mode"
+				const baseHex = state.generatedPalette[state.mode][role].toUpperCase()
+
+				title.textContent = `${roleLabel} Shades`
+				subtitle.textContent = `${modeLabel} - ${baseHex}`
+				grid.innerHTML = ""
+
+				SHADE_STOPS.forEach(percent => {
+					const shadeHex = shades[String(percent)].toUpperCase()
+					const contrastMode = getContrastYIQ(shadeHex)
+					const foregroundColor = contrastMode === "light" ? "#0f172a" : "#ffffff"
+					const swatch = document.createElement("button")
+
+					swatch.type = "button"
+					swatch.className =
+						"dynamic-glass w-full rounded-2xl p-3 text-left transition hover:-translate-y-1 hover:shadow-xl"
+					swatch.addEventListener("click", () => copyToClipboard(shadeHex))
+
+					const block = document.createElement("div")
+					block.className = "h-28 rounded-xl p-3 flex flex-col justify-between"
+					block.style.backgroundColor = shadeHex
+					block.style.color = foregroundColor
+
+					const percentLabel = document.createElement("span")
+					percentLabel.className = "text-xs font-black tracking-widest uppercase"
+					percentLabel.textContent = `${percent}%`
+
+					const hexLabel = document.createElement("span")
+					hexLabel.className = "text-sm font-bold tracking-wide"
+					hexLabel.textContent = shadeHex
+
+					block.append(percentLabel, hexLabel)
+					swatch.appendChild(block)
+					grid.appendChild(swatch)
+				})
+
+				modal.classList.remove("hidden")
+				modal.classList.add("flex")
+			}
+
+			function closeShadesModal() {
+				const modal = document.getElementById("shadesModal")
+				modal.classList.remove("flex")
+				modal.classList.add("hidden")
+				state.activeShadesRole = null
 			}
 
 			// --- STREAMING_CHUNK: App Rendering loop & custom property synchronization ---
@@ -1246,10 +1379,14 @@ module.exports = {
 						mode: state.mode,
 						seeds: state.colors,
 						scheme: state.scheme,
-						wcag: state.wcag
+						wcag: state.wcag,
+						shades: true
 					})
-					state.colors = { ...state.generatedPalette.light }
+					state.colors = { ...getCurrentGeneratedColors() }
 					renderApp()
+					if (state.activeShadesRole) {
+						openShadesModal(state.activeShadesRole)
+					}
 					triggerToast("Locks and palette reset to default configurations.")
 				})
 
@@ -1296,9 +1433,23 @@ module.exports = {
 					})
 				})
 
+				document.querySelectorAll(".shade-btn").forEach(btn => {
+					btn.addEventListener("click", e => {
+						e.stopPropagation()
+						const role = btn.getAttribute("data-shades-target")
+						openShadesModal(role)
+					})
+				})
+
 				document.querySelectorAll("[data-color-type]").forEach(card => {
 					card.addEventListener("click", e => {
-						if (e.target.closest(".lock-btn") || e.target.closest("button[data-copy-id]")) return
+						if (
+							e.target.closest(".lock-btn") ||
+							e.target.closest("button[data-copy-id]") ||
+							e.target.closest(".shade-btn")
+						) {
+							return
+						}
 						const type = card.getAttribute("data-color-type")
 						openCustomColorPicker(type)
 					})
@@ -1317,6 +1468,9 @@ module.exports = {
 					document.getElementById("pickerPanel").classList.add("hidden")
 					state.activePicker = null
 				})
+
+				document.getElementById("btnCloseShadesModal").addEventListener("click", closeShadesModal)
+				document.getElementById("shadesModalBackdrop").addEventListener("click", closeShadesModal)
 
 				document.querySelectorAll(".export-tab-btn").forEach(btn => {
 					btn.addEventListener("click", () => {
@@ -1350,8 +1504,11 @@ module.exports = {
 
 				document.getElementById("toggleThemeMode").addEventListener("click", () => {
 					state.mode = state.mode === "light" ? "dark" : "light"
-					state.colors = { ...state.generatedPalette[state.mode] }
+					state.colors = { ...getCurrentGeneratedColors() }
 					renderApp()
+					if (state.activeShadesRole) {
+						openShadesModal(state.activeShadesRole)
+					}
 					triggerToast(
 						state.mode === "light"
 							? "Switched to generated light mode palette."
@@ -1367,9 +1524,10 @@ module.exports = {
 					mode: state.mode,
 					seeds: state.colors,
 					scheme: state.scheme,
-					wcag: state.wcag
+					wcag: state.wcag,
+					shades: true
 				})
-				state.colors = { ...state.generatedPalette[state.mode] }
+				state.colors = { ...getCurrentGeneratedColors() }
 				renderApp()
 			})
 		</script>
