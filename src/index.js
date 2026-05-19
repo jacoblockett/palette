@@ -100,7 +100,8 @@ const MIN_CHROMA_BY_SCHEME = {
 }
 
 const WCAG_MINIMUM_CONTRAST = 4.5
-const CHROMATIC_SOFT_MINIMUM_CONTRAST = 2
+const CHROMATIC_SOFT_MINIMUM_CONTRAST = 1.5
+const CHROMATIC_ADAPTATION_CHROMA_MULTIPLIERS = [1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4]
 const SHADE_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 const SHADE_MINIMUM_CONTRAST = 1.05
 const SHADE_STRONG_CONTRAST_PROGRESS = 0.35
@@ -305,6 +306,16 @@ function oklabDistance(colorA, colorB) {
 	const deltaL = first.l - second.l
 	const deltaA = first.a - second.a
 	const deltaB = first.b - second.b
+
+	return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
+}
+
+function colorIdentityDistance(candidateOklch, sourceOklch) {
+	const candidateOklab = oklchToOklab(candidateOklch)
+	const sourceOklab = oklchToOklab(sourceOklch)
+	const deltaL = candidateOklab.l - sourceOklab.l
+	const deltaA = candidateOklab.a - sourceOklab.a
+	const deltaB = candidateOklab.b - sourceOklab.b
 
 	return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
 }
@@ -695,44 +706,58 @@ function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, minimumCo
 		? [mappedSource.oklch.l, 0.98]
 		: [0.02, mappedSource.oklch.l]
 	let bestPassingCandidate = null
+	let bestPassingIdentityDistance = Number.POSITIVE_INFINITY
+	let bestPassingChromaRetention = Number.NEGATIVE_INFINITY
 	let bestPassingLightnessDistance = Number.POSITIVE_INFINITY
-	let bestPassingChromaDistance = Number.POSITIVE_INFINITY
 	let bestFailingCandidate = null
 	let bestFailingContrast = Number.NEGATIVE_INFINITY
-	let bestFailingLightnessDistance = Number.POSITIVE_INFINITY
+	let bestFailingIdentityDistance = Number.POSITIVE_INFINITY
+	let bestFailingChromaRetention = Number.NEGATIVE_INFINITY
 
 	for (let index = 0; index <= 400; index += 1) {
 		const lightness = minLightness + ((maxLightness - minLightness) * index) / 400
-		const candidate = gamutMapOklch({
-			l: lightness,
-			c: mappedSource.oklch.c,
-			h: mappedSource.oklch.h
-		})
-		const candidateContrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
-		const lightnessDistance = Math.abs(candidate.oklch.l - mappedSource.oklch.l)
-		const chromaDistance = Math.abs(candidate.oklch.c - mappedSource.oklch.c)
+		for (const chromaMultiplier of CHROMATIC_ADAPTATION_CHROMA_MULTIPLIERS) {
+			const candidate = gamutMapOklch({
+				l: lightness,
+				c: mappedSource.oklch.c * chromaMultiplier,
+				h: mappedSource.oklch.h
+			})
+			const candidateContrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
+			const candidateIdentityDistance = colorIdentityDistance(candidate.oklch, mappedSource.oklch)
+			const candidateChromaRetention = candidate.oklch.c / mappedSource.oklch.c
+			const lightnessDistance = Math.abs(candidate.oklch.l - mappedSource.oklch.l)
 
-		if (candidateContrast >= minimumContrast) {
-			if (
-				bestPassingCandidate === null ||
-				lightnessDistance < bestPassingLightnessDistance ||
-				(lightnessDistance === bestPassingLightnessDistance && chromaDistance < bestPassingChromaDistance)
-			) {
-				bestPassingCandidate = candidate
-				bestPassingLightnessDistance = lightnessDistance
-				bestPassingChromaDistance = chromaDistance
+			if (candidateContrast >= minimumContrast) {
+				if (
+					bestPassingCandidate === null ||
+					candidateIdentityDistance < bestPassingIdentityDistance ||
+					(candidateIdentityDistance === bestPassingIdentityDistance &&
+						candidateChromaRetention > bestPassingChromaRetention) ||
+					(candidateIdentityDistance === bestPassingIdentityDistance &&
+						candidateChromaRetention === bestPassingChromaRetention &&
+						lightnessDistance < bestPassingLightnessDistance)
+				) {
+					bestPassingCandidate = candidate
+					bestPassingIdentityDistance = candidateIdentityDistance
+					bestPassingChromaRetention = candidateChromaRetention
+					bestPassingLightnessDistance = lightnessDistance
+				}
+				continue
 			}
-			continue
-		}
 
-		if (
-			bestFailingCandidate === null ||
-			candidateContrast > bestFailingContrast ||
-			(candidateContrast === bestFailingContrast && lightnessDistance < bestFailingLightnessDistance)
-		) {
-			bestFailingCandidate = candidate
-			bestFailingContrast = candidateContrast
-			bestFailingLightnessDistance = lightnessDistance
+			if (
+				bestFailingCandidate === null ||
+				candidateContrast > bestFailingContrast ||
+				(candidateContrast === bestFailingContrast && candidateIdentityDistance < bestFailingIdentityDistance) ||
+				(candidateContrast === bestFailingContrast &&
+					candidateIdentityDistance === bestFailingIdentityDistance &&
+					candidateChromaRetention > bestFailingChromaRetention)
+			) {
+				bestFailingCandidate = candidate
+				bestFailingContrast = candidateContrast
+				bestFailingIdentityDistance = candidateIdentityDistance
+				bestFailingChromaRetention = candidateChromaRetention
+			}
 		}
 	}
 

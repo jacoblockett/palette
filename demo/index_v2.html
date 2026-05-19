@@ -154,133 +154,135 @@
 						<p class="text-xs opacity-70">The entire site is your live color preview canvas.</p>
 					</div>
 				</div>
-
-				<!-- Quick Options / Generate Bar -->
-				<div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-					<div
-						class="flex items-center gap-2 bg-black/5 p-1 rounded-xl border"
-						style="border-color: rgba(var(--color-text-rgb), 0.1)">
-						<select
-							id="schemeSelect"
-							class="bg-white text-xs font-bold py-1.5 px-3 rounded-lg border outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer text-slate-800">
-							<option value="random" selected>Random</option>
-							<option value="monochromatic">Monochromatic</option>
-							<option value="analogous">Analogous</option>
-							<option value="complementary">Complementary</option>
-							<option value="split-complementary">Split Complementary</option>
-							<option value="triadic">Triadic</option>
-							<option value="compound">Compound</option>
-							<option value="double-split-complementary">Double Split Complementary</option>
-							<option value="neutral-complementary">Neutral Complementary</option>
-							<option value="accented-neutral">Accented Neutral</option>
-							<option value="achromatic">Achromatic</option>
-							<option value="warm">Warm</option>
-							<option value="cool">Cool</option>
-							<option value="muted">Muted</option>
-							<option value="earth">Earth</option>
-							<option value="pastel">Pastel</option>
-							<option value="neon">Neon</option>
-							<option value="jewel">Jewel</option>
-							<option value="brand-status">Brand Status</option>
-							<option value="enterprise">Enterprise</option>
-							<option value="luxury">Luxury</option>
-						</select>
-					</div>
-
-					<label
-						class="flex items-center gap-2 bg-black/5 p-2 rounded-xl border text-xs font-bold"
-						style="border-color: rgba(var(--color-text-rgb), 0.1)">
-						<input id="wcagToggle" type="checkbox" class="h-4 w-4 cursor-pointer" />
-						<span>WCAG Only</span>
-					</label>
-
-					<div
-						class="flex items-center gap-2 bg-black/5 p-1 rounded-xl border"
-						style="border-color: rgba(var(--color-text-rgb), 0.1)">
-						<span class="text-xs font-bold px-2.5 opacity-75" id="modeIndicator">Mode: Light</span>
-					</div>
-
-					<button
-						id="btnGenerate"
-						class="text-white font-bold py-2.5 px-5 rounded-xl text-xs shadow-md flex items-center gap-2 transition-all transform active:scale-95 hover:brightness-110"
-						style="background-color: var(--color-primary)">
-						<i class="fa-solid fa-wand-magic-sparkles"></i> Generate
-					</button>
-
-					<button
-						id="toggleThemeMode"
-						class="font-bold py-2.5 px-4 rounded-xl text-xs border flex items-center gap-2 transition-all"
-						style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.1)"
-						title="Generate a palette for the opposite mode">
-						<i class="fa-solid fa-circle-half-stroke"></i> Toggle Mode
-					</button>
-
-					<button
-						id="btnReset"
-						class="font-bold py-2.5 px-4 rounded-xl text-xs border flex items-center gap-2 transition-all"
-						style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.1)"
-						title="Reset Locks and Palette">
-						<i class="fa-solid fa-rotate-left"></i>
-					</button>
-				</div>
 			</div>
 		</header>
 
 		<main class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">
 			<!-- Large Unsquished Palette Section -->
 			<section class="flex flex-col gap-4">
-				<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+				<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
 					<div>
 						<h2 class="text-2xl font-black tracking-tight uppercase">Master Color Strip</h2>
-						<p class="text-sm opacity-70">Click any color column to reveal the advanced fine-tuning dashboard.</p>
+						<p class="text-sm opacity-70">Click any color card to reveal the advanced fine-tuning dashboard.</p>
 					</div>
-					<div class="flex items-center gap-2">
-						<button
-							id="btnLockAll"
-							class="text-xs font-bold bg-black/5 hover:bg-black/10 border py-1.5 px-3.5 rounded-lg transition"
+					<div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+						<div
+							class="flex items-center rounded-xl overflow-hidden border"
 							style="border-color: rgba(var(--color-text-rgb), 0.15)">
-							Lock All
-						</button>
+							<select
+								id="schemeSelect"
+								class="h-10 bg-white px-3 text-xs font-bold outline-none cursor-pointer text-slate-800 border-r rounded-l-xl"
+								style="border-color: rgba(var(--color-text-rgb), 0.15)">
+								<option value="random" selected>Random</option>
+								<option value="monochromatic">Monochromatic</option>
+								<option value="analogous">Analogous</option>
+								<option value="complementary">Complementary</option>
+								<option value="split-complementary">Split Complementary</option>
+								<option value="triadic">Triadic</option>
+								<option value="compound">Compound</option>
+								<option value="double-split-complementary">Double Split Complementary</option>
+								<option value="neutral-complementary">Neutral Complementary</option>
+								<option value="accented-neutral">Accented Neutral</option>
+								<option value="achromatic">Achromatic</option>
+								<option value="warm">Warm</option>
+								<option value="cool">Cool</option>
+								<option value="muted">Muted</option>
+								<option value="earth">Earth</option>
+								<option value="pastel">Pastel</option>
+								<option value="neon">Neon</option>
+								<option value="jewel">Jewel</option>
+								<option value="brand-status">Brand Status</option>
+								<option value="enterprise">Enterprise</option>
+								<option value="luxury">Luxury</option>
+							</select>
+							<button
+								id="btnGenerate"
+								class="h-10 w-10 flex items-center justify-center text-white transition hover:brightness-110"
+								style="background-color: var(--color-primary)"
+								title="Generate Palette">
+								<i class="fa-solid fa-dice"></i>
+							</button>
+						</div>
 						<button
-							id="btnUnlockAll"
-							class="text-xs font-bold bg-black/5 hover:bg-black/10 border py-1.5 px-3.5 rounded-lg transition"
-							style="border-color: rgba(var(--color-text-rgb), 0.15)">
-							Unlock All
+							id="toggleThemeMode"
+							class="h-10 w-10 rounded-xl border flex items-center justify-center text-sm transition"
+							style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.15)"
+							title="Generate a palette for the opposite mode">
+							<i id="modeToggleIcon" class="fa-solid fa-sun"></i>
 						</button>
+						<label
+							class="flex items-center gap-2 bg-black/5 p-0.5 pr-3 rounded-xl border text-[10px] font-black tracking-wider uppercase"
+							style="border-color: rgba(var(--color-text-rgb), 0.12)">
+							<input id="wcagToggle" type="checkbox" class="sr-only" />
+							<span
+								id="wcagSwitchTrack"
+								class="relative flex h-7 w-12 items-center rounded-full transition"
+								style="background-color: rgba(var(--color-text-rgb), 0.12)">
+								<span
+									id="wcagSwitchThumb"
+									class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform"></span>
+							</span>
+							<span>WCAG</span>
+						</label>
+						<div
+							class="flex items-center rounded-xl overflow-hidden border"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
+							<button
+								id="btnUndo"
+								class="h-10 w-10 flex items-center justify-center transition disabled:opacity-40"
+								style="background: rgba(var(--color-text-rgb), 0.05)"
+								title="Undo">
+								<i class="fa-solid fa-rotate-left"></i>
+							</button>
+							<button
+								id="btnRedo"
+								class="h-10 w-10 flex items-center justify-center border-l transition disabled:opacity-40"
+								style="background: rgba(var(--color-text-rgb), 0.05); border-color: rgba(var(--color-text-rgb), 0.15)"
+								title="Redo">
+								<i class="fa-solid fa-rotate-right"></i>
+							</button>
+						</div>
 					</div>
 				</div>
 
-				<!-- Majestic 5-Color Continuous Adjacent Strip -->
 				<div
-					class="flex flex-col md:flex-row rounded-2xl border overflow-hidden shadow-xl h-[450px] md:h-[260px] w-full"
-					style="border-color: rgba(var(--color-text-rgb), 0.15)"
-					id="palette-strip">
-					<!-- SLOT: TEXT COLOR -->
+					id="palette-strip"
+					class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 w-full max-w-full overflow-hidden rounded-2xl border shadow-xl"
+					style="border-color: rgba(var(--color-text-rgb), 0.15)">
 					<div
 						data-color-type="text"
-						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
-						<div class="flex flex-col gap-1">
-							<span class="text-xs font-black tracking-widest uppercase opacity-75">Text</span>
-							<h3 id="hex-text" class="text-xl md:text-2xl font-black tracking-mono uppercase">#1E293B</h3>
+						class="min-w-0 min-h-[220px] p-5 overflow-hidden relative cursor-pointer color-card-transition group select-none flex flex-col justify-between">
+						<div class="flex flex-col gap-4">
+							<div class="flex items-center justify-between gap-3">
+								<span class="text-xs font-black tracking-widest uppercase opacity-75">Text</span>
+								<div class="flex items-center gap-2">
+									<span id="ratio-text" class="text-[10px] font-black uppercase tracking-wider">11.4:1</span>
+									<span id="badge-text" class="text-[10px] font-black uppercase tracking-wider">Pass AAA</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between gap-3">
+								<h3 id="hex-text" class="min-w-0 text-xl md:text-2xl font-black tracking-mono uppercase truncate">
+									#1E293B
+								</h3>
+								<button
+									data-copy-id="hex-text"
+									class="shrink-0 opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+							</div>
 						</div>
-
 						<div
-							class="flex items-center justify-between pt-4 border-t"
-							style="border-color: rgba(var(--color-text-rgb), 0.15)"
-							id="divider-text">
+							id="divider-text"
+							class="flex items-center justify-between gap-2 pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
 							<button
 								id="lock-text"
 								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
 								data-locked="false">
 								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
 							</button>
-							<div class="flex items-center gap-3">
-								<button
-									data-copy-id="hex-text"
-									class="opacity-80 hover:opacity-100 p-1.5 transition"
-									title="Copy Hex Code">
-									<i class="fa-regular fa-copy"></i>
-								</button>
+							<div class="flex items-center gap-2">
 								<button
 									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-shades-target="text">
@@ -295,32 +297,40 @@
 						</div>
 					</div>
 
-					<!-- SLOT: BACKGROUND COLOR -->
 					<div
 						data-color-type="background"
-						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
-						<div class="flex flex-col gap-1">
-							<span class="text-xs font-black tracking-widest uppercase opacity-75">Background</span>
-							<h3 id="hex-background" class="text-xl md:text-2xl font-black tracking-mono uppercase">#F8FAFC</h3>
+						class="min-w-0 min-h-[220px] p-5 overflow-hidden relative cursor-pointer color-card-transition group select-none flex flex-col justify-between">
+						<div class="flex flex-col gap-4">
+							<div class="flex items-center justify-between gap-3">
+								<span class="text-xs font-black tracking-widest uppercase opacity-75">Background</span>
+								<div class="flex items-center gap-2">
+									<span id="ratio-background" class="text-[10px] font-black uppercase tracking-wider">1.0:1</span>
+									<span id="badge-background" class="text-[10px] font-black uppercase tracking-wider">Base</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between gap-3">
+								<h3 id="hex-background" class="min-w-0 text-xl md:text-2xl font-black tracking-mono uppercase truncate">
+									#F8FAFC
+								</h3>
+								<button
+									data-copy-id="hex-background"
+									class="shrink-0 opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+							</div>
 						</div>
-
 						<div
-							class="flex items-center justify-between pt-4 border-t"
-							style="border-color: rgba(var(--color-text-rgb), 0.15)"
-							id="divider-background">
+							id="divider-background"
+							class="flex items-center justify-between gap-2 pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
 							<button
 								id="lock-background"
 								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
 								data-locked="false">
 								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
 							</button>
-							<div class="flex items-center gap-3">
-								<button
-									data-copy-id="hex-background"
-									class="opacity-80 hover:opacity-100 p-1.5 transition"
-									title="Copy Hex Code">
-									<i class="fa-regular fa-copy"></i>
-								</button>
+							<div class="flex items-center gap-2">
 								<button
 									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-shades-target="background">
@@ -335,32 +345,40 @@
 						</div>
 					</div>
 
-					<!-- SLOT: PRIMARY COLOR -->
 					<div
 						data-color-type="primary"
-						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
-						<div class="flex flex-col gap-1">
-							<span class="text-xs font-black tracking-widest uppercase opacity-75">Primary</span>
-							<h3 id="hex-primary" class="text-xl md:text-2xl font-black tracking-mono uppercase">#6366F1</h3>
+						class="min-w-0 min-h-[220px] p-5 overflow-hidden relative cursor-pointer color-card-transition group select-none flex flex-col justify-between">
+						<div class="flex flex-col gap-4">
+							<div class="flex items-center justify-between gap-3">
+								<span class="text-xs font-black tracking-widest uppercase opacity-75">Primary</span>
+								<div class="flex items-center gap-2">
+									<span id="ratio-primary" class="text-[10px] font-black uppercase tracking-wider">4.2:1</span>
+									<span id="badge-primary" class="text-[10px] font-black uppercase tracking-wider">Pass AA</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between gap-3">
+								<h3 id="hex-primary" class="min-w-0 text-xl md:text-2xl font-black tracking-mono uppercase truncate">
+									#6366F1
+								</h3>
+								<button
+									data-copy-id="hex-primary"
+									class="shrink-0 opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+							</div>
 						</div>
-
 						<div
-							class="flex items-center justify-between pt-4 border-t"
-							style="border-color: rgba(var(--color-text-rgb), 0.15)"
-							id="divider-primary">
+							id="divider-primary"
+							class="flex items-center justify-between gap-2 pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
 							<button
 								id="lock-primary"
 								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
 								data-locked="false">
 								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
 							</button>
-							<div class="flex items-center gap-3">
-								<button
-									data-copy-id="hex-primary"
-									class="opacity-80 hover:opacity-100 p-1.5 transition"
-									title="Copy Hex Code">
-									<i class="fa-regular fa-copy"></i>
-								</button>
+							<div class="flex items-center gap-2">
 								<button
 									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-shades-target="primary">
@@ -375,32 +393,40 @@
 						</div>
 					</div>
 
-					<!-- SLOT: SECONDARY COLOR -->
 					<div
 						data-color-type="secondary"
-						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
-						<div class="flex flex-col gap-1">
-							<span class="text-xs font-black tracking-widest uppercase opacity-75">Secondary</span>
-							<h3 id="hex-secondary" class="text-xl md:text-2xl font-black tracking-mono uppercase">#10B981</h3>
+						class="min-w-0 min-h-[220px] p-5 overflow-hidden relative cursor-pointer color-card-transition group select-none flex flex-col justify-between">
+						<div class="flex flex-col gap-4">
+							<div class="flex items-center justify-between gap-3">
+								<span class="text-xs font-black tracking-widest uppercase opacity-75">Secondary</span>
+								<div class="flex items-center gap-2">
+									<span id="ratio-secondary" class="text-[10px] font-black uppercase tracking-wider">3.1:1</span>
+									<span id="badge-secondary" class="text-[10px] font-black uppercase tracking-wider">Large UI</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between gap-3">
+								<h3 id="hex-secondary" class="min-w-0 text-xl md:text-2xl font-black tracking-mono uppercase truncate">
+									#10B981
+								</h3>
+								<button
+									data-copy-id="hex-secondary"
+									class="shrink-0 opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+							</div>
 						</div>
-
 						<div
-							class="flex items-center justify-between pt-4 border-t"
-							style="border-color: rgba(var(--color-text-rgb), 0.15)"
-							id="divider-secondary">
+							id="divider-secondary"
+							class="flex items-center justify-between gap-2 pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
 							<button
 								id="lock-secondary"
 								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
 								data-locked="false">
 								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
 							</button>
-							<div class="flex items-center gap-3">
-								<button
-									data-copy-id="hex-secondary"
-									class="opacity-80 hover:opacity-100 p-1.5 transition"
-									title="Copy Hex Code">
-									<i class="fa-regular fa-copy"></i>
-								</button>
+							<div class="flex items-center gap-2">
 								<button
 									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-shades-target="secondary">
@@ -415,32 +441,40 @@
 						</div>
 					</div>
 
-					<!-- SLOT: ACCENT COLOR -->
 					<div
 						data-color-type="accent"
-						class="flex-1 flex flex-col justify-between p-6 relative cursor-pointer color-card-transition group select-none hover:flex-[1.25]">
-						<div class="flex flex-col gap-1">
-							<span class="text-xs font-black tracking-widest uppercase opacity-75">Accent</span>
-							<h3 id="hex-accent" class="text-xl md:text-2xl font-black tracking-mono uppercase">#F59E0B</h3>
+						class="min-w-0 min-h-[220px] p-5 overflow-hidden relative cursor-pointer color-card-transition group select-none flex flex-col justify-between">
+						<div class="flex flex-col gap-4">
+							<div class="flex items-center justify-between gap-3">
+								<span class="text-xs font-black tracking-widest uppercase opacity-75">Accent</span>
+								<div class="flex items-center gap-2">
+									<span id="ratio-accent" class="text-[10px] font-black uppercase tracking-wider">4.5:1</span>
+									<span id="badge-accent" class="text-[10px] font-black uppercase tracking-wider">Pass AA</span>
+								</div>
+							</div>
+							<div class="flex items-center justify-between gap-3">
+								<h3 id="hex-accent" class="min-w-0 text-xl md:text-2xl font-black tracking-mono uppercase truncate">
+									#F59E0B
+								</h3>
+								<button
+									data-copy-id="hex-accent"
+									class="shrink-0 opacity-80 hover:opacity-100 p-1.5 transition"
+									title="Copy Hex Code">
+									<i class="fa-regular fa-copy"></i>
+								</button>
+							</div>
 						</div>
-
 						<div
-							class="flex items-center justify-between pt-4 border-t"
-							style="border-color: rgba(var(--color-text-rgb), 0.15)"
-							id="divider-accent">
+							id="divider-accent"
+							class="flex items-center justify-between gap-2 pt-4 border-t"
+							style="border-color: rgba(var(--color-text-rgb), 0.15)">
 							<button
 								id="lock-accent"
 								class="lock-btn opacity-80 hover:opacity-100 transition flex items-center gap-2 text-xs font-extrabold uppercase"
 								data-locked="false">
 								<i class="fa-solid fa-lock-open"></i> <span class="lock-label">Unlock</span>
 							</button>
-							<div class="flex items-center gap-3">
-								<button
-									data-copy-id="hex-accent"
-									class="opacity-80 hover:opacity-100 p-1.5 transition"
-									title="Copy Hex Code">
-									<i class="fa-regular fa-copy"></i>
-								</button>
+							<div class="flex items-center gap-2">
 								<button
 									class="shade-btn opacity-80 hover:opacity-100 transition flex items-center gap-1 text-xs font-extrabold uppercase"
 									data-shades-target="accent">
@@ -562,181 +596,202 @@
 						</div>
 					</div>
 
-					<!-- Live Elements Showcase (Dynamic Proofing of the active colors) -->
 					<div class="dynamic-glass rounded-2xl p-6 shadow-md transition-colors duration-300">
 						<div class="mb-6">
 							<h3 class="text-sm font-black uppercase tracking-widest opacity-60">Interactive Showcase</h3>
 							<p class="text-xs opacity-70">
-								How components naturally compile styled under your dynamic palette setup.
+								A richer preview surface for product UI decisions under the active palette.
 							</p>
 						</div>
-
-						<!-- Sandbox component strip -->
 						<div
-							class="flex flex-col gap-6 p-6 rounded-xl border transition-colors duration-300"
+							class="relative overflow-hidden rounded-[28px] border p-6 shadow-2xl flex flex-col gap-6"
 							style="
-								background-color: var(--color-bg);
+								background:
+									radial-gradient(circle at top left, rgba(var(--color-primary-rgb), 0.2), transparent 42%),
+									radial-gradient(circle at right 20%, rgba(var(--color-accent-rgb), 0.18), transparent 38%),
+									var(--color-bg);
 								color: var(--color-text);
 								border-color: rgba(var(--color-text-rgb), 0.12);
+								box-shadow:
+									0 24px 60px rgba(var(--color-text-rgb), 0.14),
+									inset 0 1px 0 rgba(255, 255, 255, 0.3);
 							">
-							<!-- Navigation element -->
 							<div
-								class="flex items-center justify-between pb-4 border-b"
-								style="border-color: rgba(var(--color-text-rgb), 0.15)">
-								<div class="flex items-center gap-2 font-black text-sm tracking-wider uppercase">
-									<span class="w-3 h-3 rounded-full" style="background-color: var(--color-primary)"></span>
-									Horizon UI
+								class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b pb-4"
+								style="border-color: rgba(var(--color-text-rgb), 0.14)">
+								<div class="flex items-center gap-3">
+									<div
+										class="h-10 w-10 rounded-2xl flex items-center justify-center text-white shadow-lg"
+										style="background-color: var(--color-primary)">
+										<i class="fa-solid fa-wave-square"></i>
+									</div>
+									<div>
+										<div class="text-sm font-black tracking-[0.25em] uppercase">Horizon UI</div>
+										<div class="text-xs opacity-65">Product systems cockpit</div>
+									</div>
 								</div>
-								<div class="flex items-center gap-3 text-[11px] font-bold">
-									<span class="opacity-80">Products</span>
-									<span class="opacity-80">Insights</span>
+								<div class="flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.2em]">
+									<a href="#" class="opacity-70 hover:opacity-100 transition">Workspace</a>
+									<a href="#" class="opacity-70 hover:opacity-100 transition">Signals</a>
 									<button
-										class="py-1 px-2.5 rounded text-[10px] font-black uppercase tracking-wider transition hover:opacity-90"
+										class="rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg transition hover:brightness-110"
 										style="background-color: var(--color-primary); color: var(--color-bg)">
-										Get Started
+										Launch
 									</button>
 								</div>
 							</div>
 
-							<!-- Mini Hero Segment -->
-							<div class="flex flex-col gap-2.5 py-2">
-								<span
-									class="text-[9px] font-black tracking-widest uppercase self-start px-2 py-0.5 rounded"
-									style="background-color: rgba(var(--color-primary-rgb), 0.15); color: var(--color-primary)"
-									>Sandbox System</span
-								>
-								<h4 class="text-xl font-extrabold tracking-tight leading-tight">Create rapid modular solutions.</h4>
-								<p class="text-xs opacity-80 leading-relaxed max-w-md">
-									Our workspace compiles theme elements synchronously. Check out the contrast values below to see if the
-									colors pass standards.
-								</p>
-							</div>
+							<div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
+								<div class="flex flex-col gap-5">
+									<div class="flex flex-col gap-3">
+										<span
+											class="self-start rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.3em]"
+											style="background-color: rgba(var(--color-primary-rgb), 0.15); color: var(--color-primary)">
+											Interactive layer
+										</span>
+										<h4 class="max-w-xl text-3xl font-black tracking-tight leading-tight">
+											Deliver launch-ready interfaces with palette-aware product motion and faster visual QA.
+										</h4>
+										<p class="max-w-2xl text-sm leading-7 opacity-75">
+											Every component below is sampled from the active theme so you can pressure-test contrast, depth,
+											and brand energy in one place.
+										</p>
+									</div>
 
-							<!-- Button Showcases -->
-							<div class="flex flex-wrap items-center gap-3">
-								<button
-									class="py-2.5 px-4 rounded-lg text-xs font-extrabold uppercase tracking-wide flex items-center gap-2 shadow-sm hover:brightness-110 transition"
-									style="background-color: var(--color-primary); color: var(--color-bg)">
-									<i class="fa-solid fa-cloud-arrow-up"></i> Primary Callout
-								</button>
-								<button
-									class="py-2.5 px-4 rounded-lg text-xs font-extrabold uppercase tracking-wide flex items-center gap-2 border hover:bg-black/5 transition"
-									style="border-color: var(--color-secondary); color: var(--color-secondary)">
-									Secondary Action
-								</button>
-							</div>
+									<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+										<div
+											class="rounded-2xl border p-4 shadow-sm"
+											style="
+												background-color: rgba(var(--color-primary-rgb), 0.14);
+												border-color: rgba(var(--color-primary-rgb), 0.22);
+											">
+											<div class="text-[10px] font-black uppercase tracking-[0.25em] opacity-70">Velocity</div>
+											<div class="mt-3 text-2xl font-black" style="color: var(--color-primary)">+28%</div>
+											<div class="text-xs opacity-70">Launch throughput this cycle</div>
+										</div>
+										<div
+											class="rounded-2xl border p-4 shadow-sm"
+											style="
+												background-color: rgba(var(--color-secondary-rgb), 0.14);
+												border-color: rgba(var(--color-secondary-rgb), 0.22);
+											">
+											<div class="text-[10px] font-black uppercase tracking-[0.25em] opacity-70">Stability</div>
+											<div class="mt-3 text-2xl font-black" style="color: var(--color-secondary)">97.2%</div>
+											<div class="text-xs opacity-70">Healthy component adoption</div>
+										</div>
+										<div
+											class="rounded-2xl border p-4 shadow-sm"
+											style="
+												background-color: rgba(var(--color-accent-rgb), 0.14);
+												border-color: rgba(var(--color-accent-rgb), 0.22);
+											">
+											<div class="text-[10px] font-black uppercase tracking-[0.25em] opacity-70">Attention</div>
+											<div class="mt-3 text-2xl font-black" style="color: var(--color-accent)">14</div>
+											<div class="text-xs opacity-70">Critical review moments queued</div>
+										</div>
+									</div>
 
-							<!-- Dynamic Alert Box styled via ACCENT color -->
-							<div
-								class="p-4 rounded-xl flex gap-3 text-xs"
-								style="
-									background-color: rgba(var(--color-accent-rgb), 0.12);
-									border-left: 4px solid var(--color-accent);
-								">
-								<span class="text-sm mt-0.5" style="color: var(--color-accent)"
-									><i class="fa-solid fa-triangle-exclamation"></i
-								></span>
-								<div>
-									<h5
-										class="font-extrabold uppercase text-[10px] tracking-wider mb-0.5"
-										style="color: var(--color-accent)">
-										Design Guidelines Warning
-									</h5>
-									<p class="opacity-85 text-[11px] leading-relaxed">
-										Ensure you evaluate secondary contrasting tokens to meet modern AAA access guidelines.
-									</p>
+									<div
+										class="rounded-2xl border p-4 shadow-sm flex flex-col gap-4"
+										style="
+											background-color: rgba(var(--color-text-rgb), 0.04);
+											border-color: rgba(var(--color-text-rgb), 0.12);
+										">
+										<div class="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.25em]">
+											<span class="opacity-65">Pipeline</span>
+											<span class="opacity-65">71% complete</span>
+										</div>
+										<div
+											class="h-3 rounded-full overflow-hidden flex"
+											style="background-color: rgba(var(--color-text-rgb), 0.08)">
+											<div class="h-full" style="width: 42%; background-color: var(--color-primary)"></div>
+											<div class="h-full" style="width: 31%; background-color: var(--color-secondary)"></div>
+											<div class="h-full" style="width: 27%; background-color: var(--color-accent)"></div>
+										</div>
+										<div class="grid grid-cols-3 gap-2 text-[11px] font-semibold opacity-75">
+											<span>Briefing</span>
+											<span>Components</span>
+											<span>Validation</span>
+										</div>
+									</div>
+
+									<div class="flex flex-wrap items-center gap-3">
+										<button
+											class="rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-[0.2em] shadow-lg transition hover:brightness-110"
+											style="background-color: var(--color-primary); color: var(--color-bg)">
+											Primary Action
+										</button>
+										<button
+											class="rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-[0.2em] border transition hover:bg-black/5"
+											style="border-color: var(--color-secondary); color: var(--color-secondary)">
+											Secondary Action
+										</button>
+									</div>
+								</div>
+
+								<div class="flex flex-col gap-4">
+									<div
+										class="rounded-3xl border p-5 shadow-lg"
+										style="
+											background-color: rgba(var(--color-bg-rgb), 0.82);
+											border-color: rgba(var(--color-text-rgb), 0.12);
+										">
+										<div class="flex items-center justify-between">
+											<div>
+												<div class="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">Live Sync</div>
+												<div class="mt-1 text-lg font-black">Design system rollout</div>
+											</div>
+											<div
+												class="h-11 w-11 rounded-2xl flex items-center justify-center text-white shadow-md"
+												style="background-color: var(--color-secondary)">
+												<i class="fa-solid fa-bolt"></i>
+											</div>
+										</div>
+										<div class="mt-5 grid grid-cols-2 gap-3 text-xs">
+											<div class="rounded-2xl border p-3" style="border-color: rgba(var(--color-text-rgb), 0.1)">
+												<div class="opacity-60 uppercase font-black tracking-[0.2em] text-[10px]">Components</div>
+												<div class="mt-2 text-xl font-black">128</div>
+											</div>
+											<div class="rounded-2xl border p-3" style="border-color: rgba(var(--color-text-rgb), 0.1)">
+												<div class="opacity-60 uppercase font-black tracking-[0.2em] text-[10px]">Pending</div>
+												<div class="mt-2 text-xl font-black">06</div>
+											</div>
+										</div>
+									</div>
+									<div
+										class="rounded-3xl border p-5 shadow-lg"
+										style="
+											background-color: rgba(var(--color-accent-rgb), 0.14);
+											border-color: rgba(var(--color-accent-rgb), 0.22);
+										">
+										<div class="flex items-start gap-3">
+											<div
+												class="h-10 w-10 rounded-2xl flex items-center justify-center text-white shadow-md"
+												style="background-color: var(--color-accent)">
+												<i class="fa-solid fa-bell"></i>
+											</div>
+											<div class="flex-1">
+												<div
+													class="text-[10px] font-black uppercase tracking-[0.25em]"
+													style="color: var(--color-accent)">
+													Notification
+												</div>
+												<div class="mt-1 text-sm font-bold">
+													Stakeholder review requested for the release candidate narrative.
+												</div>
+												<div class="mt-2 text-xs opacity-75">
+													Accent surfaces highlight urgency without flattening the rest of the layout.
+												</div>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Right Code & WCAG Statistics Column (5/12 cols) -->
 				<div class="lg:col-span-5 flex flex-col gap-8">
-					<!-- Expanded Accessibility Suite (WCAG 2.1 Pass metrics) -->
-					<div class="dynamic-glass rounded-2xl p-6 shadow-md transition-colors duration-300">
-						<div class="mb-5">
-							<h3 class="text-sm font-black uppercase tracking-widest opacity-60">WCAG 2.1 Contrast Suite</h3>
-							<p class="text-xs opacity-70">
-								Spacious evaluation of all foreground layers calculated against the Background.
-							</p>
-						</div>
-
-						<div class="flex flex-col gap-4" id="wcag-analysis-container">
-							<!-- Row: Text vs BG -->
-							<div
-								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
-								style="border-color: rgba(var(--color-text-rgb), 0.12)">
-								<div class="flex flex-col gap-1">
-									<span class="text-xs font-black tracking-wider uppercase">Text Contrast</span>
-									<span class="text-[10px] opacity-60">Calculates reading clarity of primary copy block.</span>
-								</div>
-								<div class="text-right">
-									<span id="val-text-bg" class="text-lg font-black tracking-tight block">11.4:1</span>
-									<span
-										id="badge-text-bg"
-										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
-										>Pass AAA</span
-									>
-								</div>
-							</div>
-
-							<!-- Row: Primary vs BG -->
-							<div
-								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
-								style="border-color: rgba(var(--color-text-rgb), 0.12)">
-								<div class="flex flex-col gap-1">
-									<span class="text-xs font-black tracking-wider uppercase">Primary Contrast</span>
-									<span class="text-[10px] opacity-60">Button labels, components, and heavy titles.</span>
-								</div>
-								<div class="text-right">
-									<span id="val-primary-bg" class="text-lg font-black tracking-tight block">4.2:1</span>
-									<span
-										id="badge-primary-bg"
-										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
-										>Pass AA</span
-									>
-								</div>
-							</div>
-
-							<!-- Row: Secondary vs BG -->
-							<div
-								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
-								style="border-color: rgba(var(--color-text-rgb), 0.12)">
-								<div class="flex flex-col gap-1">
-									<span class="text-xs font-black tracking-wider uppercase">Secondary Contrast</span>
-									<span class="text-[10px] opacity-60">Subheaders, badges, and alternative elements.</span>
-								</div>
-								<div class="text-right">
-									<span id="val-secondary-bg" class="text-lg font-black tracking-tight block">3.1:1</span>
-									<span
-										id="badge-secondary-bg"
-										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
-										>Pass AA</span
-									>
-								</div>
-							</div>
-
-							<!-- Row: Accent vs BG -->
-							<div
-								class="p-4 rounded-xl border flex items-center justify-between transition-colors bg-white/20"
-								style="border-color: rgba(var(--color-text-rgb), 0.12)">
-								<div class="flex flex-col gap-1">
-									<span class="text-xs font-black tracking-wider uppercase">Accent Contrast</span>
-									<span class="text-[10px] opacity-60">Highlit items, indicators, and side alerts.</span>
-								</div>
-								<div class="text-right">
-									<span id="val-accent-bg" class="text-lg font-black tracking-tight block">4.5:1</span>
-									<span
-										id="badge-accent-bg"
-										class="text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider"
-										>Pass AA</span
-									>
-								</div>
-							</div>
-						</div>
-					</div>
-
 					<!-- Export Framework Code Configuration Panel -->
 					<div class="dynamic-glass rounded-2xl p-6 shadow-md transition-colors duration-300">
 						<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
@@ -833,6 +888,9 @@
 				generatedPalette: null,
 				activePicker: null,
 				activeShadesRole: null,
+				history: [],
+				historyIndex: -1,
+				isRestoringHistory: false,
 				activeFormat: "css"
 			}
 
@@ -995,6 +1053,69 @@
 				return { text, background, primary, secondary, accent }
 			}
 
+			function cloneHistoryValue(value) {
+				return JSON.parse(JSON.stringify(value))
+			}
+
+			function createHistorySnapshot() {
+				return {
+					mode: state.mode,
+					scheme: state.scheme,
+					wcag: state.wcag,
+					colors: cloneHistoryValue(state.colors),
+					generatedPalette: cloneHistoryValue(state.generatedPalette),
+					locks: cloneHistoryValue(state.locks)
+				}
+			}
+
+			function applyHistorySnapshot(snapshot) {
+				state.mode = snapshot.mode
+				state.scheme = snapshot.scheme
+				state.wcag = snapshot.wcag
+				state.colors = cloneHistoryValue(snapshot.colors)
+				state.generatedPalette = cloneHistoryValue(snapshot.generatedPalette)
+				state.locks = cloneHistoryValue(snapshot.locks)
+				document.getElementById("schemeSelect").value = state.scheme
+				document.getElementById("wcagToggle").checked = state.wcag
+			}
+
+			function updateHistoryButtons() {
+				document.getElementById("btnUndo").disabled = state.historyIndex <= 0
+				document.getElementById("btnRedo").disabled = state.historyIndex >= state.history.length - 1
+			}
+
+			function pushHistorySnapshot() {
+				if (state.isRestoringHistory) {
+					return
+				}
+
+				state.history = state.history.slice(0, state.historyIndex + 1)
+				state.history.push(createHistorySnapshot())
+
+				if (state.history.length > 100) {
+					state.history.shift()
+				}
+
+				state.historyIndex = state.history.length - 1
+				updateHistoryButtons()
+			}
+
+			function restoreHistoryAt(index) {
+				if (index < 0 || index >= state.history.length) {
+					return
+				}
+
+				state.isRestoringHistory = true
+				applyHistorySnapshot(state.history[index])
+				state.historyIndex = index
+				renderApp()
+				if (state.activeShadesRole) {
+					openShadesModal(state.activeShadesRole)
+				}
+				updateHistoryButtons()
+				state.isRestoringHistory = false
+			}
+
 			function applyGeneratedPalette(generatedPalette) {
 				const previousPalette = state.generatedPalette
 				state.generatedPalette = {
@@ -1055,6 +1176,7 @@
 					shades: true
 				})
 				applyGeneratedPalette(generatedColors)
+				pushHistorySnapshot()
 			}
 
 			function openShadesModal(role) {
@@ -1123,37 +1245,24 @@
 
 			// --- STREAMING_CHUNK: App Rendering loop & custom property synchronization ---
 			function renderApp() {
-				// Write Custom CSS variables directly to Document root so entire site changes
 				const root = document.documentElement
 
 				for (const key in state.colors) {
 					const hexVal = state.colors[key]
-
-					// Set core hex variables
 					root.style.setProperty(`--color-${key}`, hexVal)
-
-					// Set helper RGB values for smooth transparency computations
 					const rgb = hexToRgb(hexVal)
 					root.style.setProperty(`--color-${key}-rgb`, `${rgb.r}, ${rgb.g}, ${rgb.b}`)
-
-					// Sync continuous adjacent strip
 					const card = document.querySelector(`[data-color-type="${key}"]`)
 					const hexLabel = document.getElementById(`hex-${key}`)
 					const lockBtn = document.getElementById(`lock-${key}`)
 					const divider = document.getElementById(`divider-${key}`)
-
 					card.style.backgroundColor = hexVal
 					hexLabel.textContent = hexVal.toUpperCase()
-
-					// Automatically switch text and icons depending on swatch brightness
 					const contrastMode = getContrastYIQ(hexVal)
 					const fgColor = contrastMode === "light" ? "#0f172a" : "#ffffff"
 					const borderColor = contrastMode === "light" ? "rgba(15, 23, 42, 0.15)" : "rgba(255, 255, 255, 0.2)"
-
 					card.style.color = fgColor
-					if (divider) divider.style.borderColor = borderColor
-
-					// Configure lock icons
+					divider.style.borderColor = borderColor
 					if (state.locks[key]) {
 						lockBtn.innerHTML = `<i class="fa-solid fa-lock text-sm"></i> <span class="lock-label text-[11px] font-extrabold uppercase">Locked</span>`
 						card.classList.add("z-10", "ring-4", "ring-indigo-500/50")
@@ -1166,58 +1275,60 @@
 				const backgroundRgb = hexToRgb(state.colors.background)
 				root.style.setProperty("--color-bg", state.colors.background)
 				root.style.setProperty("--color-bg-rgb", `${backgroundRgb.r}, ${backgroundRgb.g}, ${backgroundRgb.b}`)
-
-				document.getElementById("modeIndicator").textContent = state.mode === "light" ? "Mode: Light" : "Mode: Dark"
-
-				// Fire accessibility calculator calculations
+				document.getElementById("modeToggleIcon").className =
+					state.mode === "light" ? "fa-solid fa-sun" : "fa-solid fa-moon"
+				document.getElementById("wcagSwitchTrack").style.backgroundColor = state.wcag
+					? "var(--color-primary)"
+					: "rgba(var(--color-text-rgb), 0.12)"
+				document.getElementById("wcagSwitchThumb").style.transform = state.wcag ? "translateX(20px)" : "translateX(0)"
 				calculateAccessibilityWCAG()
-
-				// Refresh Picker Panel status if currently open
 				if (state.activePicker) {
 					updatePickerSlidersUI()
 				}
-
-				// Sync framework export structures
 				updateCodeExportBlock()
+				updateHistoryButtons()
 			}
 
-			// --- STREAMING_CHUNK: Computing dynamic WCAG standards for all input fields ---
 			function calculateAccessibilityWCAG() {
 				const bg = state.colors.background
+				const roles = ["text", "background", "primary", "secondary", "accent"]
 
-				const metrics = [
-					{ key: "text", targetName: "Text" },
-					{ key: "primary", targetName: "Primary" },
-					{ key: "secondary", targetName: "Secondary" },
-					{ key: "accent", targetName: "Accent" }
-				]
+				roles.forEach(role => {
+					const ratioLabel = document.getElementById(`ratio-${role}`)
+					const badge = document.getElementById(`badge-${role}`)
+					const contrastMode = getContrastYIQ(state.colors[role])
+					const fgColor = contrastMode === "light" ? "#0f172a" : "#ffffff"
+					const pillBackground = contrastMode === "light" ? "rgba(255, 255, 255, 0.72)" : "rgba(15, 23, 42, 0.24)"
+					const pillBorder = contrastMode === "light" ? "rgba(15, 23, 42, 0.12)" : "rgba(255, 255, 255, 0.18)"
+					const pillClass =
+						"text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border backdrop-blur-sm"
 
-				metrics.forEach(item => {
-					const fgHex = state.colors[item.key]
-					const ratio = calculateContrast(fgHex, bg)
+					ratioLabel.className = pillClass
+					badge.className = pillClass
+					ratioLabel.style.color = fgColor
+					badge.style.color = fgColor
+					ratioLabel.style.backgroundColor = pillBackground
+					badge.style.backgroundColor = pillBackground
+					ratioLabel.style.borderColor = pillBorder
+					badge.style.borderColor = pillBorder
 
-					const ratioLabel = document.getElementById(`val-${item.key}-bg`)
-					const badge = document.getElementById(`badge-${item.key}-bg`)
+					if (role === "background") {
+						ratioLabel.textContent = "1.0:1"
+						badge.textContent = "Base"
+						return
+					}
 
-					ratioLabel.textContent = `${ratio}:1`
+					const ratio = Number(calculateContrast(state.colors[role], bg))
+					ratioLabel.textContent = `${ratio.toFixed(1)}:1`
 
-					// WCAG 2.1 Criteria evaluation
-					if (ratio >= 7.0) {
+					if (ratio >= 7) {
 						badge.textContent = "Pass AAA"
-						badge.className =
-							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
 					} else if (ratio >= 4.5) {
 						badge.textContent = "Pass AA"
-						badge.className =
-							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-teal-500/10 border-teal-500/30 text-teal-500"
-					} else if (ratio >= 3.0) {
-						badge.textContent = "Pass Large UI"
-						badge.className =
-							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-amber-500/10 border-amber-500/30 text-amber-500"
+					} else if (ratio >= 3) {
+						badge.textContent = "Large UI"
 					} else {
-						badge.textContent = "Fail Standard"
-						badge.className =
-							"text-[9px] font-black px-2 py-0.5 rounded-md uppercase border tracking-wider bg-red-500/10 border-red-500/30 text-red-500"
+						badge.textContent = "Low"
 					}
 				})
 			}
@@ -1249,7 +1360,11 @@ module.exports = {
   }
 }`
 				} else {
-					block.textContent = JSON.stringify(state.colors, null, 2)
+					block.textContent = JSON.stringify(
+						state.generatedPalette ? state.generatedPalette[state.mode] : state.colors,
+						null,
+						2
+					)
 				}
 			}
 
@@ -1312,6 +1427,7 @@ module.exports = {
 				setCurrentColorValue(state.activePicker, newHex)
 
 				renderApp()
+				pushHistorySnapshot()
 			}
 
 			function initQuickSwatches() {
@@ -1328,6 +1444,7 @@ module.exports = {
 						if (state.activePicker) {
 							setCurrentColorValue(state.activePicker, hex)
 							renderApp()
+							pushHistorySnapshot()
 						}
 					})
 					container.appendChild(btn)
@@ -1368,39 +1485,8 @@ module.exports = {
 			// --- STREAMING_CHUNK: Initializing Event Listeners on Load ---
 			function initEventListeners() {
 				document.getElementById("btnGenerate").addEventListener("click", generateLibraryPalette)
-
-				document.getElementById("btnReset").addEventListener("click", () => {
-					for (const key in state.locks) {
-						state.locks[key] = false
-					}
-					state.mode = "light"
-					state.scheme = "random"
-					state.wcag = false
-					document.getElementById("schemeSelect").value = state.scheme
-					document.getElementById("wcagToggle").checked = state.wcag
-					state.generatedPalette = palette({
-						mode: state.mode,
-						seeds: state.colors,
-						scheme: state.scheme,
-						wcag: state.wcag,
-						shades: true
-					})
-					state.colors = { ...getCurrentGeneratedColors() }
-					renderApp()
-					if (state.activeShadesRole) {
-						openShadesModal(state.activeShadesRole)
-					}
-					triggerToast("Locks and palette reset to default configurations.")
-				})
-
-				document.getElementById("btnLockAll").addEventListener("click", () => {
-					for (const key in state.locks) state.locks[key] = true
-					renderApp()
-				})
-				document.getElementById("btnUnlockAll").addEventListener("click", () => {
-					for (const key in state.locks) state.locks[key] = false
-					renderApp()
-				})
+				document.getElementById("btnUndo").addEventListener("click", () => restoreHistoryAt(state.historyIndex - 1))
+				document.getElementById("btnRedo").addEventListener("click", () => restoreHistoryAt(state.historyIndex + 1))
 
 				document.getElementById("sliderHue").addEventListener("input", handleSliderInteraction)
 				document.getElementById("sliderSat").addEventListener("input", handleSliderInteraction)
@@ -1414,6 +1500,7 @@ module.exports = {
 						document.getElementById("hexErrorMsg").classList.add("hidden")
 						setCurrentColorValue(state.activePicker, val)
 						renderApp()
+						pushHistorySnapshot()
 					} else {
 						document.getElementById("hexErrorMsg").classList.remove("hidden")
 					}
@@ -1425,6 +1512,7 @@ module.exports = {
 						const colorId = btn.id.split("-")[1]
 						state.locks[colorId] = !state.locks[colorId]
 						renderApp()
+						pushHistorySnapshot()
 					})
 				})
 
@@ -1449,7 +1537,8 @@ module.exports = {
 						if (
 							e.target.closest(".lock-btn") ||
 							e.target.closest("button[data-copy-id]") ||
-							e.target.closest(".shade-btn")
+							e.target.closest(".shade-btn") ||
+							e.target.closest(".tune-btn")
 						) {
 							return
 						}
@@ -1512,6 +1601,7 @@ module.exports = {
 					if (state.activeShadesRole) {
 						openShadesModal(state.activeShadesRole)
 					}
+					pushHistorySnapshot()
 					triggerToast(
 						state.mode === "light"
 							? "Switched to generated light mode palette."
@@ -1532,6 +1622,7 @@ module.exports = {
 				})
 				state.colors = { ...getCurrentGeneratedColors() }
 				renderApp()
+				pushHistorySnapshot()
 			})
 		</script>
 	</body>
