@@ -6,6 +6,11 @@
 	"exports": {
 		".": "./src/index.js"
 	},
+	"files": [
+		"src",
+		"LICENSE",
+		"README.md"
+	],
 	"scripts": {
 		"dev:1": "vite --host 0.0.0.0 --open /demo/index.html",
 		"dev:2": "vite --host 0.0.0.0 --open /demo/index_v2.html",
