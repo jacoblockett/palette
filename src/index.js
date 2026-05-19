@@ -363,16 +363,6 @@ function oklabDistance(colorA, colorB) {
 	return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
 }
 
-function colorIdentityDistance(candidateOklch, sourceOklch) {
-	const candidateOklab = oklchToOklab(candidateOklch)
-	const sourceOklab = oklchToOklab(sourceOklch)
-	const deltaL = candidateOklab.l - sourceOklab.l
-	const deltaA = candidateOklab.a - sourceOklab.a
-	const deltaB = candidateOklab.b - sourceOklab.b
-
-	return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB)
-}
-
 function relativeLuminanceFromOklch(oklch) {
 	const linearSrgb = oklabToLinearSrgb(oklchToOklab(oklch))
 	const r = clamp(linearSrgb.r, 0, 1)
@@ -909,7 +899,7 @@ function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, activeWca
 				h: projected.oklch.h
 			})
 			const contrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
-			const identityDistance = colorIdentityDistance(candidate.oklch, projected.oklch)
+			const identityDistance = oklabDistance(candidate.oklch, projected.oklch)
 			const chromaLoss = Math.max(0, projected.oklch.c - candidate.oklch.c)
 			const lightnessMovement = Math.abs(candidate.oklch.l - projected.oklch.l)
 			const score = identityDistance * 1 + chromaLoss * 0.35 + lightnessMovement * 0.25
