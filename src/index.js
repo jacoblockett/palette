@@ -869,17 +869,7 @@ function shapeProjectedChromaForTargetMode(chroma, hue, role, targetMode) {
 	return clamp(shapedChroma, chromaRange[0], chromaRange[1])
 }
 
-function adaptChromaticRoleForMode(
-	sourceOklch,
-	sourceBackgroundOklch,
-	targetBackgroundOklch,
-	activeWcag,
-	role,
-	sourceMode,
-	targetMode
-) {
-	void sourceBackgroundOklch
-
+function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, activeWcag, role, sourceMode, targetMode) {
 	const projectedLightness = getRoleProjectedLightness(sourceOklch, role, sourceMode, targetMode)
 	const projectedChroma = shapeProjectedChromaForTargetMode(
 		getRoleProjectedChroma(sourceOklch, role, sourceMode, targetMode),
@@ -953,25 +943,9 @@ function adaptChromaticRoleForMode(
 	return bestFallbackRecord === null ? projected : bestFallbackRecord.candidate
 }
 
-function deriveRoleForMode(
-	sourceOklch,
-	role,
-	sourceMode,
-	targetMode,
-	sourceBackgroundOklch,
-	targetBackgroundOklch,
-	activeWcag
-) {
+function deriveRoleForMode(sourceOklch, role, sourceMode, targetMode, targetBackgroundOklch, activeWcag) {
 	if (isChromaticRole(role)) {
-		return adaptChromaticRoleForMode(
-			sourceOklch,
-			sourceBackgroundOklch,
-			targetBackgroundOklch,
-			activeWcag,
-			role,
-			sourceMode,
-			targetMode
-		)
+		return adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, activeWcag, role, sourceMode, targetMode)
 	}
 
 	const sourceRange = ROLE_RANGES[sourceMode][role]
@@ -1118,7 +1092,6 @@ function palette(options = {}) {
 				"text",
 				sourceMode,
 				oppositeMode,
-				sampledCandidate.background.oklch,
 				null,
 				activeWcag
 			),
@@ -1127,7 +1100,6 @@ function palette(options = {}) {
 				"background",
 				sourceMode,
 				oppositeMode,
-				sampledCandidate.background.oklch,
 				null,
 				activeWcag
 			)
@@ -1137,7 +1109,6 @@ function palette(options = {}) {
 			"primary",
 			sourceMode,
 			oppositeMode,
-			sampledCandidate.background.oklch,
 			derivedCandidate.background.oklch,
 			activeWcag
 		)
@@ -1146,7 +1117,6 @@ function palette(options = {}) {
 			"secondary",
 			sourceMode,
 			oppositeMode,
-			sampledCandidate.background.oklch,
 			derivedCandidate.background.oklch,
 			activeWcag
 		)
@@ -1155,7 +1125,6 @@ function palette(options = {}) {
 			"accent",
 			sourceMode,
 			oppositeMode,
-			sampledCandidate.background.oklch,
 			derivedCandidate.background.oklch,
 			activeWcag
 		)
