@@ -4,5 +4,4 @@ node_modules
 .npmrc
 /.vscode
 .pnpm-store
-demo
 scripts
