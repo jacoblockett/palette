@@ -883,49 +883,83 @@ function shapeProjectedChromaForTargetMode(chroma, hue, role, targetMode) {
 	return clamp(shapedChroma, chromaRange[0], chromaRange[1])
 }
 
+function isBetterContrastRepairRecord(record, bestRecord) {
+	if (bestRecord === null) {
+		return true
+	}
+
+	if (record.score < bestRecord.score) {
+		return true
+	}
+
+	return false
+}
+
+function createContrastRepairRecord(projected, targetBackgroundOklch, lightness, chromaMultiplier) {
+	const candidate = gamutMapOklch({
+		l: lightness,
+		c: projected.oklch.c * chromaMultiplier,
+		h: projected.oklch.h
+	})
+	const contrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
+	const identityDistance = oklabDistance(candidate.oklch, projected.oklch)
+	const chromaLoss = Math.max(0, projected.oklch.c - candidate.oklch.c)
+	const lightnessMovement = Math.abs(candidate.oklch.l - projected.oklch.l)
+	const score = identityDistance * 1 + chromaLoss * 0.35 + lightnessMovement * 0.25
+
+	return {
+		candidate,
+		contrast,
+		score
+	}
+}
+
 function repairChromaticContrast(projected, targetBackgroundOklch, requiredContrast, polarityRange, targetMode) {
 	const repairMinLightness = targetMode === "light" ? polarityRange[0] : projected.oklch.l
 	const repairMaxLightness = targetMode === "light" ? projected.oklch.l : polarityRange[1]
 	let bestPassingRecord = null
 	let bestFallbackRecord = null
 
-	for (let index = 0; index <= 400; index += 1) {
-		const progress = index / 400
-		const lightness =
-			targetMode === "light"
-				? projected.oklch.l - (projected.oklch.l - repairMinLightness) * progress
-				: projected.oklch.l + (repairMaxLightness - projected.oklch.l) * progress
-
-		for (const chromaMultiplier of [1, 0.96, 0.92, 0.88, 0.84, 0.78, 0.72, 0.66]) {
-			const candidate = gamutMapOklch({
-				l: lightness,
-				c: projected.oklch.c * chromaMultiplier,
-				h: projected.oklch.h
-			})
-			const contrast = wcagContrast(candidate.oklch, targetBackgroundOklch)
-			const identityDistance = oklabDistance(candidate.oklch, projected.oklch)
-			const chromaLoss = Math.max(0, projected.oklch.c - candidate.oklch.c)
-			const lightnessMovement = Math.abs(candidate.oklch.l - projected.oklch.l)
-			const score = identityDistance * 1 + chromaLoss * 0.35 + lightnessMovement * 0.25
-			const record = {
-				candidate,
-				contrast,
-				score
+	const considerRecord = record => {
+		if (record.contrast >= requiredContrast) {
+			if (isBetterContrastRepairRecord(record, bestPassingRecord)) {
+				bestPassingRecord = record
 			}
+			return
+		}
 
-			if (contrast >= requiredContrast) {
-				if (bestPassingRecord === null || score < bestPassingRecord.score) {
-					bestPassingRecord = record
+		if (
+			bestFallbackRecord === null ||
+			record.contrast > bestFallbackRecord.contrast ||
+			(record.contrast === bestFallbackRecord.contrast && record.score < bestFallbackRecord.score)
+		) {
+			bestFallbackRecord = record
+		}
+	}
+
+	for (const chromaMultiplier of [1, 0.96, 0.92, 0.88, 0.84, 0.78, 0.72, 0.66]) {
+		considerRecord(createContrastRepairRecord(projected, targetBackgroundOklch, repairMinLightness, chromaMultiplier))
+		considerRecord(createContrastRepairRecord(projected, targetBackgroundOklch, repairMaxLightness, chromaMultiplier))
+
+		let low = repairMinLightness
+		let high = repairMaxLightness
+
+		for (let index = 0; index < 24; index += 1) {
+			const midpoint = (low + high) / 2
+			const record = createContrastRepairRecord(projected, targetBackgroundOklch, midpoint, chromaMultiplier)
+
+			considerRecord(record)
+
+			if (targetMode === "light") {
+				if (record.contrast >= requiredContrast) {
+					high = midpoint
+				} else {
+					low = midpoint
 				}
-				continue
-			}
-
-			if (
-				bestFallbackRecord === null ||
-				contrast > bestFallbackRecord.contrast ||
-				(contrast === bestFallbackRecord.contrast && score < bestFallbackRecord.score)
-			) {
-				bestFallbackRecord = record
+			} else if (record.contrast < requiredContrast) {
+				high = midpoint
+			} else {
+				low = midpoint
 			}
 		}
 	}
