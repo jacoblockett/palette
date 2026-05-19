@@ -15,6 +15,22 @@ const ROLE_RANGES = {
 	}
 }
 
+const SUPPORTED_SCHEMES = [
+	"random",
+	"monochromatic",
+	"analogous",
+	"complementary",
+	"split-complementary",
+	"triadic",
+	"accented-neutral",
+	"achromatic",
+	"warm",
+	"cool",
+	"muted"
+]
+
+const DEFAULT_SCHEME = "random"
+
 const CHROMATIC_LIGHTNESS_SEARCH_RANGES = {
 	light: {
 		primary: [0.08, 0.88],
@@ -28,6 +44,29 @@ const CHROMATIC_LIGHTNESS_SEARCH_RANGES = {
 	}
 }
 
+const MIN_CHROMA_BY_SCHEME = {
+	default: {
+		primary: 0.045,
+		secondary: 0.022,
+		accent: 0.045
+	},
+	"accented-neutral": {
+		primary: 0.035,
+		secondary: 0.01,
+		accent: 0.045
+	},
+	achromatic: {
+		primary: 0.002,
+		secondary: 0.002,
+		accent: 0.002
+	},
+	muted: {
+		primary: 0.025,
+		secondary: 0.012,
+		accent: 0.025
+	}
+}
+
 function randomFloat(min, max) {
 	return min + Math.random() * (max - min)
 }
@@ -36,8 +75,51 @@ function randomHue() {
 	return randomFloat(0, 360)
 }
 
+function randomSign() {
+	return Math.random() < 0.5 ? -1 : 1
+}
+
 function clamp(value, min, max) {
 	return Math.min(max, Math.max(min, value))
+}
+
+function normalizeScheme(scheme) {
+	if (scheme === undefined) {
+		return DEFAULT_SCHEME
+	}
+
+	if (SUPPORTED_SCHEMES.includes(scheme)) {
+		return scheme
+	}
+
+	throw new RangeError("palette scheme must be a supported scheme.")
+}
+
+function wrapHue(hue) {
+	const wrapped = hue % 360
+
+	return wrapped < 0 ? wrapped + 360 : wrapped
+}
+
+function shiftHue(hue, amount) {
+	return wrapHue(hue + amount)
+}
+
+function randomFromRanges(ranges) {
+	const [min, max] = ranges[Math.floor(Math.random() * ranges.length)]
+
+	return randomFloat(min, max)
+}
+
+function sampleWarmHue() {
+	return randomFromRanges([
+		[0, 70],
+		[330, 360]
+	])
+}
+
+function sampleCoolHue() {
+	return randomFromRanges([[155, 285]])
 }
 
 function oklchToOklab({ l, c, h }) {
@@ -174,13 +256,98 @@ function isChromaticRole(role) {
 	return role === "primary" || role === "secondary" || role === "accent"
 }
 
-function sampleRole(mode, role, primaryHue) {
+function sampleRole(mode, role, hue) {
 	const range = ROLE_RANGES[mode][role]
 
 	return {
 		l: randomFloat(range.l[0], range.l[1]),
 		c: randomFloat(range.c[0], range.c[1]),
-		h: role === "text" || role === "background" ? primaryHue : randomHue()
+		h: hue
+	}
+}
+
+function sampleRoleWithChroma(mode, role, hue, chromaRange) {
+	const range = ROLE_RANGES[mode][role]
+
+	return {
+		l: randomFloat(range.l[0], range.l[1]),
+		c: randomFloat(chromaRange[0], chromaRange[1]),
+		h: hue
+	}
+}
+
+function sampleChromaticRoles(mode, scheme) {
+	let primaryHue = randomHue()
+	let secondaryHue = randomHue()
+	let accentHue = randomHue()
+
+	if (scheme === "monochromatic") {
+		secondaryHue = primaryHue
+		accentHue = primaryHue
+	} else if (scheme === "analogous") {
+		const direction = randomSign()
+		secondaryHue = shiftHue(primaryHue, direction * randomFloat(24, 52))
+		accentHue = shiftHue(primaryHue, direction * randomFloat(-52, -24))
+	} else if (scheme === "complementary") {
+		const direction = randomSign()
+		secondaryHue = shiftHue(primaryHue, 180)
+		accentHue = shiftHue(primaryHue, direction * randomFloat(24, 44))
+	} else if (scheme === "split-complementary") {
+		const direction = randomSign()
+		secondaryHue = shiftHue(primaryHue, direction * randomFloat(145, 165))
+		accentHue = shiftHue(primaryHue, direction * randomFloat(195, 215))
+	} else if (scheme === "triadic") {
+		const direction = randomSign()
+		secondaryHue = shiftHue(primaryHue, direction * 120)
+		accentHue = shiftHue(primaryHue, direction * 240)
+	} else if (scheme === "accented-neutral") {
+		secondaryHue = shiftHue(primaryHue, randomFloat(-18, 18))
+		accentHue = randomHue()
+	} else if (scheme === "achromatic") {
+		secondaryHue = primaryHue
+		accentHue = primaryHue
+	} else if (scheme === "warm") {
+		primaryHue = sampleWarmHue()
+		secondaryHue = sampleWarmHue()
+		accentHue = sampleWarmHue()
+	} else if (scheme === "cool") {
+		primaryHue = sampleCoolHue()
+		secondaryHue = sampleCoolHue()
+		accentHue = sampleCoolHue()
+	} else if (scheme === "muted") {
+		primaryHue = randomHue()
+		secondaryHue = randomHue()
+		accentHue = randomHue()
+	}
+
+	if (scheme === "accented-neutral") {
+		return {
+			primary: sampleRole(mode, "primary", primaryHue),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.012, 0.07]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.06, ROLE_RANGES[mode].accent.c[1]])
+		}
+	}
+
+	if (scheme === "achromatic") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.004, 0.018]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.004, 0.016]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.004, 0.02])
+		}
+	}
+
+	if (scheme === "muted") {
+		return {
+			primary: sampleRoleWithChroma(mode, "primary", primaryHue, [0.035, 0.12]),
+			secondary: sampleRoleWithChroma(mode, "secondary", secondaryHue, [0.018, 0.09]),
+			accent: sampleRoleWithChroma(mode, "accent", accentHue, [0.035, 0.13])
+		}
+	}
+
+	return {
+		primary: sampleRole(mode, "primary", primaryHue),
+		secondary: sampleRole(mode, "secondary", secondaryHue),
+		accent: sampleRole(mode, "accent", accentHue)
 	}
 }
 
@@ -248,7 +415,9 @@ function deriveRoleForMode(sourceOklch, role, sourceMode, targetMode, sourceBack
 	}
 }
 
-function isRejectedCandidate(mode, candidate) {
+function isRejectedCandidate(mode, candidate, scheme) {
+	const minimumChroma = MIN_CHROMA_BY_SCHEME[scheme] ?? MIN_CHROMA_BY_SCHEME.default
+
 	if (mode === "light" && candidate.text.oklch.l >= candidate.background.oklch.l) {
 		return true
 	}
@@ -257,15 +426,15 @@ function isRejectedCandidate(mode, candidate) {
 		return true
 	}
 
-	if (candidate.primary.oklch.c < 0.045) {
+	if (candidate.primary.oklch.c < minimumChroma.primary) {
 		return true
 	}
 
-	if (candidate.secondary.oklch.c < 0.022) {
+	if (candidate.secondary.oklch.c < minimumChroma.secondary) {
 		return true
 	}
 
-	if (candidate.accent.oklch.c < 0.045) {
+	if (candidate.accent.oklch.c < minimumChroma.accent) {
 		return true
 	}
 
@@ -295,7 +464,7 @@ function toPublicPalette(candidate) {
 }
 
 export function palette(options = {}) {
-	const { mode, seeds } = options
+	const { mode, seeds, scheme } = options
 
 	void seeds
 
@@ -307,16 +476,17 @@ export function palette(options = {}) {
 		throw new RangeError("palette mode must be light or dark.")
 	}
 
+	const activeScheme = normalizeScheme(scheme)
 	const oppositeMode = mode === "light" ? "dark" : "light"
 
 	for (let index = 0; index < 500; index += 1) {
-		const primarySample = sampleRole(mode, "primary")
+		const chromaticRoles = sampleChromaticRoles(mode, activeScheme)
 		const sampledCandidate = {
-			text: mapSampledRole(sampleRole(mode, "text", primarySample.h)),
-			background: mapSampledRole(sampleRole(mode, "background", primarySample.h)),
-			primary: mapSampledRole(primarySample),
-			secondary: mapSampledRole(sampleRole(mode, "secondary")),
-			accent: mapSampledRole(sampleRole(mode, "accent"))
+			text: mapSampledRole(sampleRole(mode, "text", chromaticRoles.primary.h)),
+			background: mapSampledRole(sampleRole(mode, "background", chromaticRoles.primary.h)),
+			primary: mapSampledRole(chromaticRoles.primary),
+			secondary: mapSampledRole(chromaticRoles.secondary),
+			accent: mapSampledRole(chromaticRoles.accent)
 		}
 		const derivedCandidate = {
 			text: deriveRoleForMode(
@@ -365,7 +535,10 @@ export function palette(options = {}) {
 				? { light: sampledCandidate, dark: derivedCandidate }
 				: { light: derivedCandidate, dark: sampledCandidate }
 
-		if (isRejectedCandidate("light", pairedCandidate.light) || isRejectedCandidate("dark", pairedCandidate.dark)) {
+		if (
+			isRejectedCandidate("light", pairedCandidate.light, activeScheme) ||
+			isRejectedCandidate("dark", pairedCandidate.dark, activeScheme)
+		) {
 			continue
 		}
 
