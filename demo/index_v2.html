@@ -862,7 +862,7 @@
 		</div>
 
 		<script type="module">
-			import { palette } from "/src/index.js"
+			import palette from "/src/index.js"
 
 			const SHADE_STOPS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 
@@ -1065,6 +1065,22 @@
 				return lockedSeeds
 			}
 
+			function createPaletteOptions() {
+				const lockedSeeds = createLockedSeeds()
+				const options = {
+					scheme: state.scheme,
+					wcag: state.wcag,
+					shades: true
+				}
+
+				if (Object.keys(lockedSeeds).length > 0) {
+					options.mode = state.mode
+					options.seeds = lockedSeeds
+				}
+
+				return options
+			}
+
 			function cloneHistoryValue(value) {
 				return JSON.parse(JSON.stringify(value))
 			}
@@ -1160,13 +1176,7 @@
 			}
 
 			function generateLibraryPalette() {
-				const generatedColors = palette({
-					mode: state.mode,
-					seeds: createLockedSeeds(),
-					scheme: state.scheme,
-					wcag: state.wcag,
-					shades: true
-				})
+				const generatedColors = palette(createPaletteOptions())
 				applyGeneratedPalette(generatedColors)
 				pushHistorySnapshot()
 			}
@@ -1606,13 +1616,7 @@ module.exports = {
 			document.addEventListener("DOMContentLoaded", () => {
 				initEventListeners()
 				initQuickSwatches()
-				state.generatedPalette = palette({
-					mode: state.mode,
-					seeds: createLockedSeeds(),
-					scheme: state.scheme,
-					wcag: state.wcag,
-					shades: true
-				})
+				state.generatedPalette = palette(createPaletteOptions())
 				state.colors = { ...getCurrentGeneratedColors() }
 				renderApp()
 				pushHistorySnapshot()

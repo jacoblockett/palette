@@ -1187,4 +1187,4 @@ function palette(options = {}) {
 	throw new Error("Unable to generate a semantic palette candidate.")
 }
 
-export default palette
+module.exports = palette
