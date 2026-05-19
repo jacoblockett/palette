@@ -487,7 +487,7 @@ function getStrongShadeTargetContrast(baseContrast) {
 	return baseContrast + (21 - baseContrast) * SHADE_STRONG_CONTRAST_PROGRESS
 }
 
-function generateRoleShadeScale(roleOklch, backgroundOklch) {
+function generateRoleShadeScale(roleOklch, roleHex, backgroundOklch) {
 	const baseContrast = wcagContrast(roleOklch, backgroundOklch)
 	const softAnchor = findColorByContrast(
 		roleOklch,
@@ -507,7 +507,7 @@ function generateRoleShadeScale(roleOklch, backgroundOklch) {
 		const key = String(percent)
 
 		if (percent === 100) {
-			shades[key] = oklchToHex(roleOklch)
+			shades[key] = roleHex
 			continue
 		}
 
@@ -535,7 +535,7 @@ function interpolateOklch(startOklch, endOklch, amount) {
 	}
 }
 
-function generateBackgroundShadeScale(backgroundOklch, mode) {
+function generateBackgroundShadeScale(backgroundOklch, backgroundHex, mode) {
 	const lowAnchor = mode === "light" ? 0.995 : 0.02
 	const highAnchor =
 		mode === "light" ? Math.max(0.72, backgroundOklch.l - 0.18) : Math.min(0.34, backgroundOklch.l + 0.18)
@@ -545,7 +545,7 @@ function generateBackgroundShadeScale(backgroundOklch, mode) {
 		const key = String(percent)
 
 		if (percent === 100) {
-			shades[key] = oklchToHex(backgroundOklch)
+			shades[key] = backgroundHex
 			continue
 		}
 
@@ -883,27 +883,7 @@ function shapeProjectedChromaForTargetMode(chroma, hue, role, targetMode) {
 	return clamp(shapedChroma, chromaRange[0], chromaRange[1])
 }
 
-function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, activeWcag, role, sourceMode, targetMode) {
-	const projectedLightness = getRoleProjectedLightness(sourceOklch, role, sourceMode, targetMode)
-	const projectedChroma = shapeProjectedChromaForTargetMode(
-		getRoleProjectedChroma(sourceOklch, role, sourceMode, targetMode),
-		sourceOklch.h,
-		role,
-		targetMode
-	)
-	const polarityRange = getTargetChromaticPolarityRange(role, targetMode, targetBackgroundOklch)
-	const projected = gamutMapOklch({
-		l: clamp(projectedLightness, polarityRange[0], polarityRange[1]),
-		c: projectedChroma,
-		h: sourceOklch.h
-	})
-	const requiredContrast = activeWcag ? WCAG_MINIMUM_CONTRAST : CHROMATIC_NON_WCAG_MINIMUM_CONTRAST
-	const projectedContrast = wcagContrast(projected.oklch, targetBackgroundOklch)
-
-	if (projectedContrast >= requiredContrast) {
-		return projected
-	}
-
+function repairChromaticContrast(projected, targetBackgroundOklch, requiredContrast, polarityRange, targetMode) {
 	const repairMinLightness = targetMode === "light" ? polarityRange[0] : projected.oklch.l
 	const repairMaxLightness = targetMode === "light" ? projected.oklch.l : polarityRange[1]
 	let bestPassingRecord = null
@@ -954,7 +934,47 @@ function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, activeWca
 		return bestPassingRecord.candidate
 	}
 
-	return bestFallbackRecord === null ? projected : bestFallbackRecord.candidate
+	if (bestFallbackRecord === null) {
+		return projected
+	}
+
+	return bestFallbackRecord.candidate
+}
+
+function adaptChromaticRoleForMode(sourceOklch, targetBackgroundOklch, activeWcag, role, sourceMode, targetMode) {
+	const projectedLightness = getRoleProjectedLightness(sourceOklch, role, sourceMode, targetMode)
+	const projectedChroma = shapeProjectedChromaForTargetMode(
+		getRoleProjectedChroma(sourceOklch, role, sourceMode, targetMode),
+		sourceOklch.h,
+		role,
+		targetMode
+	)
+	const polarityRange = getTargetChromaticPolarityRange(role, targetMode, targetBackgroundOklch)
+	const projected = gamutMapOklch({
+		l: clamp(projectedLightness, polarityRange[0], polarityRange[1]),
+		c: projectedChroma,
+		h: sourceOklch.h
+	})
+	const requiredContrast = activeWcag ? WCAG_MINIMUM_CONTRAST : CHROMATIC_NON_WCAG_MINIMUM_CONTRAST
+	const projectedContrast = wcagContrast(projected.oklch, targetBackgroundOklch)
+
+	if (projectedContrast >= requiredContrast) {
+		return projected
+	}
+
+	return repairChromaticContrast(projected, targetBackgroundOklch, requiredContrast, polarityRange, targetMode)
+}
+
+function repairGeneratedSourceChromaticRole(roleColor, backgroundOklch, role, mode) {
+	const projectedContrast = wcagContrast(roleColor.oklch, backgroundOklch)
+
+	if (projectedContrast >= WCAG_MINIMUM_CONTRAST) {
+		return roleColor
+	}
+
+	const polarityRange = getTargetChromaticPolarityRange(role, mode, backgroundOklch)
+
+	return repairChromaticContrast(roleColor, backgroundOklch, WCAG_MINIMUM_CONTRAST, polarityRange, mode)
 }
 
 function deriveRoleForMode(sourceOklch, role, sourceMode, targetMode, targetBackgroundOklch, activeWcag) {
@@ -1052,11 +1072,15 @@ function toPublicPalette(candidate, mode, includeShades) {
 	return {
 		...publicPalette,
 		shades: {
-			text: generateRoleShadeScale(candidate.text.oklch, candidate.background.oklch),
-			background: generateBackgroundShadeScale(candidate.background.oklch, mode),
-			primary: generateRoleShadeScale(candidate.primary.oklch, candidate.background.oklch),
-			secondary: generateRoleShadeScale(candidate.secondary.oklch, candidate.background.oklch),
-			accent: generateRoleShadeScale(candidate.accent.oklch, candidate.background.oklch)
+			text: generateRoleShadeScale(candidate.text.oklch, candidate.text.hex, candidate.background.oklch),
+			background: generateBackgroundShadeScale(candidate.background.oklch, candidate.background.hex, mode),
+			primary: generateRoleShadeScale(candidate.primary.oklch, candidate.primary.hex, candidate.background.oklch),
+			secondary: generateRoleShadeScale(
+				candidate.secondary.oklch,
+				candidate.secondary.hex,
+				candidate.background.oklch
+			),
+			accent: generateRoleShadeScale(candidate.accent.oklch, candidate.accent.hex, candidate.background.oklch)
 		}
 	}
 }
@@ -1100,6 +1124,36 @@ function palette(options = {}) {
 				: mapSampledRole(chromaticRoles.secondary),
 			accent: activeSeeds.accent ? mapSeededRole(activeSeeds.accent) : mapSampledRole(chromaticRoles.accent)
 		}
+
+		if (activeWcag) {
+			if (!activeSeedLocks.primary) {
+				sampledCandidate.primary = repairGeneratedSourceChromaticRole(
+					sampledCandidate.primary,
+					sampledCandidate.background.oklch,
+					"primary",
+					sourceMode
+				)
+			}
+
+			if (!activeSeedLocks.secondary) {
+				sampledCandidate.secondary = repairGeneratedSourceChromaticRole(
+					sampledCandidate.secondary,
+					sampledCandidate.background.oklch,
+					"secondary",
+					sourceMode
+				)
+			}
+
+			if (!activeSeedLocks.accent) {
+				sampledCandidate.accent = repairGeneratedSourceChromaticRole(
+					sampledCandidate.accent,
+					sampledCandidate.background.oklch,
+					"accent",
+					sourceMode
+				)
+			}
+		}
+
 		const derivedCandidate = {
 			text: deriveRoleForMode(
 				sampledCandidate.text.oklch,
