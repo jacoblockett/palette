@@ -1053,6 +1053,18 @@
 				return { text, background, primary, secondary, accent }
 			}
 
+			function createLockedSeeds() {
+				const lockedSeeds = {}
+
+				for (const role in state.colors) {
+					if (state.locks[role] === true) {
+						lockedSeeds[role] = state.colors[role]
+					}
+				}
+
+				return lockedSeeds
+			}
+
 			function cloneHistoryValue(value) {
 				return JSON.parse(JSON.stringify(value))
 			}
@@ -1117,7 +1129,6 @@
 			}
 
 			function applyGeneratedPalette(generatedPalette) {
-				const previousPalette = state.generatedPalette
 				state.generatedPalette = {
 					light: {
 						...generatedPalette.light,
@@ -1126,25 +1137,6 @@
 					dark: {
 						...generatedPalette.dark,
 						shades: generatedPalette.dark.shades ? { ...generatedPalette.dark.shades } : undefined
-					}
-				}
-
-				if (previousPalette) {
-					for (const key in state.locks) {
-						if (!state.locks[key]) {
-							continue
-						}
-
-						state.generatedPalette.light[key] = previousPalette.light[key]
-						state.generatedPalette.dark[key] = previousPalette.dark[key]
-
-						if (previousPalette.light.shades?.[key] && state.generatedPalette.light.shades) {
-							state.generatedPalette.light.shades[key] = { ...previousPalette.light.shades[key] }
-						}
-
-						if (previousPalette.dark.shades?.[key] && state.generatedPalette.dark.shades) {
-							state.generatedPalette.dark.shades[key] = { ...previousPalette.dark.shades[key] }
-						}
 					}
 				}
 
@@ -1170,7 +1162,7 @@
 			function generateLibraryPalette() {
 				const generatedColors = palette({
 					mode: state.mode,
-					seeds: state.colors,
+					seeds: createLockedSeeds(),
 					scheme: state.scheme,
 					wcag: state.wcag,
 					shades: true
@@ -1263,6 +1255,7 @@
 					const borderColor = contrastMode === "light" ? "rgba(15, 23, 42, 0.15)" : "rgba(255, 255, 255, 0.2)"
 					card.style.color = fgColor
 					divider.style.borderColor = borderColor
+					lockBtn.setAttribute("data-locked", state.locks[key] ? "true" : "false")
 					if (state.locks[key]) {
 						lockBtn.innerHTML = `<i class="fa-solid fa-lock text-sm"></i> <span class="lock-label text-[11px] font-extrabold uppercase">Locked</span>`
 						card.classList.add("z-10", "ring-4", "ring-indigo-500/50")
@@ -1615,7 +1608,7 @@ module.exports = {
 				initQuickSwatches()
 				state.generatedPalette = palette({
 					mode: state.mode,
-					seeds: state.colors,
+					seeds: createLockedSeeds(),
 					scheme: state.scheme,
 					wcag: state.wcag,
 					shades: true

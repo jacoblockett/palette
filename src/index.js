@@ -40,6 +40,7 @@ const SUPPORTED_SCHEMES = [
 ]
 
 const DEFAULT_SCHEME = "random"
+const ROLE_KEYS = ["text", "background", "primary", "secondary", "accent"]
 
 const MIN_CHROMA_BY_SCHEME = {
 	default: {
@@ -119,6 +120,16 @@ function randomSign() {
 
 function clamp(value, min, max) {
 	return Math.min(max, Math.max(min, value))
+}
+
+function normalizeHexSeed(hex) {
+	if (typeof hex !== "string" || !/^#?[0-9a-fA-F]{6}$/.test(hex)) {
+		throw new RangeError("palette seed values must be 6-digit hex colors.")
+	}
+
+	const normalized = hex.startsWith("#") ? hex.slice(1) : hex
+
+	return `#${normalized.toLowerCase()}`
 }
 
 function normalizeScheme(scheme) {
@@ -241,6 +252,49 @@ function encodeSrgbChannel(channel) {
 	return channel <= 0.0031308 ? 12.92 * channel : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055
 }
 
+function decodeSrgbChannel(channel) {
+	return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4)
+}
+
+function hexToLinearSrgb(hex) {
+	const normalizedHex = normalizeHexSeed(hex)
+	const r = parseInt(normalizedHex.slice(1, 3), 16) / 255
+	const g = parseInt(normalizedHex.slice(3, 5), 16) / 255
+	const b = parseInt(normalizedHex.slice(5, 7), 16) / 255
+
+	return {
+		r: decodeSrgbChannel(r),
+		g: decodeSrgbChannel(g),
+		b: decodeSrgbChannel(b)
+	}
+}
+
+function linearSrgbToOklab({ r, g, b }) {
+	const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+	const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+	const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+
+	return {
+		l: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+		a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+		b: 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s
+	}
+}
+
+function oklabToOklch({ l, a, b }) {
+	const c = Math.sqrt(a * a + b * b)
+
+	return {
+		l,
+		c,
+		h: c < 0.000001 ? 0 : wrapHue((Math.atan2(b, a) * 180) / Math.PI)
+	}
+}
+
+function hexToOklch(hex) {
+	return oklabToOklch(linearSrgbToOklab(hexToLinearSrgb(normalizeHexSeed(hex))))
+}
+
 function channelToHex(channel) {
 	const clamped = clamp(channel, 0, 1)
 	const byte = Math.round(clamped * 255)
@@ -337,6 +391,37 @@ function wcagContrast(firstOklch, secondOklch) {
 
 function safeDivide(numerator, denominator) {
 	return denominator === 0 ? 0 : numerator / denominator
+}
+
+function normalizeSeeds(seeds) {
+	if (seeds === undefined || seeds === null) {
+		return {}
+	}
+
+	if (typeof seeds !== "object" || Array.isArray(seeds)) {
+		throw new TypeError("palette seeds must be an object.")
+	}
+
+	const normalizedSeeds = {}
+
+	for (const role of ROLE_KEYS) {
+		if (seeds[role] === undefined) {
+			continue
+		}
+
+		const hex = normalizeHexSeed(seeds[role])
+
+		normalizedSeeds[role] = {
+			hex,
+			oklch: hexToOklch(hex)
+		}
+	}
+
+	return normalizedSeeds
+}
+
+function createSeedLockMap(normalizedSeeds) {
+	return Object.fromEntries(ROLE_KEYS.map(role => [role, normalizedSeeds[role] !== undefined]))
 }
 
 function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightnessRange) {
@@ -510,8 +595,8 @@ function clampChromaRange(mode, role, requestedRange) {
 	return [Math.max(roleChromaRange[0], requestedRange[0]), Math.min(roleChromaRange[1], requestedRange[1])]
 }
 
-function sampleChromaticRoles(mode, scheme) {
-	let primaryHue = randomHue()
+function sampleChromaticRoles(mode, scheme, basePrimaryHue) {
+	let primaryHue = typeof basePrimaryHue === "number" ? basePrimaryHue : randomHue()
 	let secondaryHue = randomHue()
 	let accentHue = randomHue()
 
@@ -552,43 +637,54 @@ function sampleChromaticRoles(mode, scheme) {
 		secondaryHue = primaryHue
 		accentHue = primaryHue
 	} else if (scheme === "warm") {
-		primaryHue = sampleWarmHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleWarmHue()
+		}
 		secondaryHue = sampleWarmHue()
 		accentHue = sampleWarmHue()
 	} else if (scheme === "cool") {
-		primaryHue = sampleCoolHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleCoolHue()
+		}
 		secondaryHue = sampleCoolHue()
 		accentHue = sampleCoolHue()
 	} else if (scheme === "earth") {
-		primaryHue = sampleEarthHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleEarthHue()
+		}
 		secondaryHue = sampleEarthHue()
 		accentHue = sampleEarthHue()
 	} else if (scheme === "pastel") {
-		primaryHue = randomHue()
 		secondaryHue = randomHue()
 		accentHue = randomHue()
 	} else if (scheme === "neon") {
-		primaryHue = randomHue()
 		secondaryHue = randomHue()
 		accentHue = randomHue()
 	} else if (scheme === "jewel") {
-		primaryHue = sampleJewelHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleJewelHue()
+		}
 		secondaryHue = sampleJewelHue()
 		accentHue = sampleJewelHue()
 	} else if (scheme === "brand-status") {
-		primaryHue = sampleBrandStatusHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleBrandStatusHue()
+		}
 		secondaryHue = sampleSuccessHue()
 		accentHue = sampleWarningHue()
 	} else if (scheme === "enterprise") {
-		primaryHue = sampleEnterpriseHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleEnterpriseHue()
+		}
 		secondaryHue = sampleEnterpriseHue()
 		accentHue = sampleEnterpriseHue()
 	} else if (scheme === "luxury") {
-		primaryHue = sampleLuxuryHue()
+		if (typeof basePrimaryHue !== "number") {
+			primaryHue = sampleLuxuryHue()
+		}
 		secondaryHue = sampleLuxuryHue()
 		accentHue = sampleLuxuryHue()
 	} else if (scheme === "muted") {
-		primaryHue = randomHue()
 		secondaryHue = randomHue()
 		accentHue = randomHue()
 	}
@@ -694,6 +790,13 @@ function mapSampledRole(sampled) {
 	return {
 		oklch: mapped.oklch,
 		hex: mapped.hex
+	}
+}
+
+function mapSeededRole(seed) {
+	return {
+		hex: seed.hex,
+		oklch: seed.oklch
 	}
 }
 
@@ -882,7 +985,7 @@ function deriveRoleForMode(
 	}
 }
 
-function isRejectedCandidate(mode, candidate, scheme) {
+function isRejectedCandidate(mode, candidate, scheme, seedLocks) {
 	const minimumChroma = MIN_CHROMA_BY_SCHEME[scheme] ?? MIN_CHROMA_BY_SCHEME.default
 
 	if (mode === "light" && candidate.text.oklch.l >= candidate.background.oklch.l) {
@@ -893,27 +996,39 @@ function isRejectedCandidate(mode, candidate, scheme) {
 		return true
 	}
 
-	if (candidate.primary.oklch.c < minimumChroma.primary) {
+	if (!seedLocks.primary && candidate.primary.oklch.c < minimumChroma.primary) {
 		return true
 	}
 
-	if (candidate.secondary.oklch.c < minimumChroma.secondary) {
+	if (!seedLocks.secondary && candidate.secondary.oklch.c < minimumChroma.secondary) {
 		return true
 	}
 
-	if (candidate.accent.oklch.c < minimumChroma.accent) {
+	if (!seedLocks.accent && candidate.accent.oklch.c < minimumChroma.accent) {
 		return true
 	}
 
-	if (oklabDistance(candidate.primary.oklch, candidate.secondary.oklch) < 0.075) {
+	if (
+		!seedLocks.primary &&
+		!seedLocks.secondary &&
+		oklabDistance(candidate.primary.oklch, candidate.secondary.oklch) < 0.075
+	) {
 		return true
 	}
 
-	if (oklabDistance(candidate.primary.oklch, candidate.accent.oklch) < 0.075) {
+	if (
+		!seedLocks.primary &&
+		!seedLocks.accent &&
+		oklabDistance(candidate.primary.oklch, candidate.accent.oklch) < 0.075
+	) {
 		return true
 	}
 
-	if (oklabDistance(candidate.secondary.oklch, candidate.accent.oklch) < 0.075) {
+	if (
+		!seedLocks.secondary &&
+		!seedLocks.accent &&
+		oklabDistance(candidate.secondary.oklch, candidate.accent.oklch) < 0.075
+	) {
 		return true
 	}
 
@@ -957,8 +1072,6 @@ function toPublicPalette(candidate, mode, includeShades) {
 export function palette(options = {}) {
 	const { mode, seeds, scheme, wcag, shades } = options
 
-	void seeds
-
 	if (mode === undefined) {
 		throw new TypeError("palette requires a mode of light or dark.")
 	}
@@ -968,18 +1081,29 @@ export function palette(options = {}) {
 	}
 
 	const activeScheme = normalizeScheme(scheme)
+	const activeSeeds = normalizeSeeds(seeds)
+	const activeSeedLocks = createSeedLockMap(activeSeeds)
 	const activeWcag = Boolean(wcag)
 	const activeShades = Boolean(shades)
 	const oppositeMode = mode === "light" ? "dark" : "light"
 
 	for (let index = 0; index < 2000; index += 1) {
-		const chromaticRoles = sampleChromaticRoles(mode, activeScheme)
+		const chromaticRoles = sampleChromaticRoles(mode, activeScheme, activeSeeds.primary?.oklch.h)
+		const sourcePrimary = activeSeeds.primary
+			? mapSeededRole(activeSeeds.primary)
+			: mapSampledRole(chromaticRoles.primary)
 		const sampledCandidate = {
-			text: mapSampledRole(sampleRole(mode, "text", chromaticRoles.primary.h)),
-			background: mapSampledRole(sampleRole(mode, "background", chromaticRoles.primary.h)),
-			primary: mapSampledRole(chromaticRoles.primary),
-			secondary: mapSampledRole(chromaticRoles.secondary),
-			accent: mapSampledRole(chromaticRoles.accent)
+			primary: sourcePrimary,
+			text: activeSeeds.text
+				? mapSeededRole(activeSeeds.text)
+				: mapSampledRole(sampleRole(mode, "text", sourcePrimary.oklch.h)),
+			background: activeSeeds.background
+				? mapSeededRole(activeSeeds.background)
+				: mapSampledRole(sampleRole(mode, "background", sourcePrimary.oklch.h)),
+			secondary: activeSeeds.secondary
+				? mapSeededRole(activeSeeds.secondary)
+				: mapSampledRole(chromaticRoles.secondary),
+			accent: activeSeeds.accent ? mapSeededRole(activeSeeds.accent) : mapSampledRole(chromaticRoles.accent)
 		}
 		const derivedCandidate = {
 			text: deriveRoleForMode(
@@ -1034,8 +1158,8 @@ export function palette(options = {}) {
 				: { light: derivedCandidate, dark: sampledCandidate }
 
 		if (
-			isRejectedCandidate("light", pairedCandidate.light, activeScheme) ||
-			isRejectedCandidate("dark", pairedCandidate.dark, activeScheme)
+			isRejectedCandidate("light", pairedCandidate.light, activeScheme, activeSeedLocks) ||
+			isRejectedCandidate("dark", pairedCandidate.dark, activeScheme, activeSeedLocks)
 		) {
 			continue
 		}
