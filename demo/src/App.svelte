@@ -840,9 +840,9 @@
 													<div
 														bind:this={saturationValueElement}
 														onpointerdown={beginSaturationValueDrag}
-														class="relative h-48 w-full rounded-xl border border-white/10 touch-none">
+														class="relative h-48 w-full border border-white/10 touch-none">
 														<div
-															class="absolute inset-px overflow-hidden rounded-[0.65rem]"
+															class="absolute inset-px overflow-hidden"
 															style={`background:
 																linear-gradient(to top, rgb(0 0 0), transparent),
 																linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
@@ -952,7 +952,7 @@
 							</button>
 						</div>
 						<div class="p-4 sm:p-6 text-sm font-mono text-slate-300 overflow-x-auto">
-							<div class="text-slate-500">// 1. Import the totally-not-already-taken-package-name</div>
+							<div class="text-slate-500">// 1. Import the totally-not-already-taken package name</div>
 							<div class="mb-4 text-purple-400">
 								import <span class="text-white">palette</span> from
 								<span class="text-green-400">"@jacoblockett/palette"</span>
