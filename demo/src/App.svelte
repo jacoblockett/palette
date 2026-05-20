@@ -1043,14 +1043,18 @@
 						class="pointer-events-none absolute -inset-2 bg-gradient-to-br from-indigo-500/25 via-purple-500/15 to-blue-500/10 blur-3xl">
 					</div>
 					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-						<div class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/10">
-							<div class="flex gap-2">
+						<div class="relative flex items-center px-4 py-3 bg-white/5 border-b border-white/10">
+							<div class="relative z-10 flex gap-2">
 								<div class="w-3 h-3 rounded-full bg-red-500/80"></div>
 								<div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
 								<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
 							</div>
-							<div class="text-sm text-slate-400">Don't worry, I don't actually use Unix</div>
-							<button onclick={handleCopyCode} class="text-slate-400 flex items-center gap-1.5 text-xs font-medium">
+							<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-slate-400">
+								Don't worry, I don't actually use Unix
+							</div>
+							<button
+								onclick={handleCopyCode}
+								class="relative z-10 ml-auto flex w-16 items-center gap-1.5 text-xs font-medium text-slate-400">
 								{#if isCopied}
 									<CheckCircle2 class="w-3.5 h-3.5 text-green-400" />
 								{:else}
