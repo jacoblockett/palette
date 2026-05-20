@@ -241,7 +241,7 @@
 				</div>
 				<div class="hidden md:flex gap-8 text-sm font-medium text-slate-300">
 					<a href="#features" class="hover:text-white transition-colors">Features</a>
-					<a href="#features" class="hover:text-white transition-colors">Testimonials</a>
+					<a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a>
 					<a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
 				</div>
 				<div class="flex items-center gap-4">
@@ -436,6 +436,47 @@
 					<p class="text-slate-400 leading-relaxed">{feature.desc}</p>
 				</div>
 			{/each}
+		</div>
+	</section>
+
+	<section id="testimonials" class="py-24 bg-slate-900 border-y border-white/5">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center mb-16">
+				<h2 class="text-3xl md:text-4xl font-bold mb-4">Testimonials from real-ish people.</h2>
+				<p class="text-slate-400 text-lg">Social proof, because apparently software needs witnesses now.</p>
+			</div>
+
+			<div class="grid md:grid-cols-3 gap-8">
+				<div class="bg-slate-950 border border-white/10 rounded-2xl p-8">
+					<p class="text-slate-300 leading-relaxed mb-6">
+						"Palette generated colors so confidently that I stopped asking whether they were good."
+					</p>
+					<div>
+						<div class="font-semibold text-white">A Frontend Developer</div>
+						<div class="text-sm text-slate-500">Still shipping buttons</div>
+					</div>
+				</div>
+
+				<div class="bg-slate-950 border border-white/10 rounded-2xl p-8">
+					<p class="text-slate-300 leading-relaxed mb-6">
+						"We replaced three meetings, two Figma comments, and one very tired designer with a hex code."
+					</p>
+					<div>
+						<div class="font-semibold text-white">A Product Manager</div>
+						<div class="text-sm text-slate-500">Probably in another sync</div>
+					</div>
+				</div>
+
+				<div class="bg-slate-950 border border-white/10 rounded-2xl p-8">
+					<p class="text-slate-300 leading-relaxed mb-6">
+						"The WCAG errors hurt my feelings, but the contrast was technically better."
+					</p>
+					<div>
+						<div class="font-semibold text-white">A Design System Lead</div>
+						<div class="text-sm text-slate-500">Learning to vibe</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</section>
 
