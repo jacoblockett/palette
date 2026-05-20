@@ -32,6 +32,7 @@
 	let copiedSeedRole = null
 	let isNavInstallCopied = false
 	let isHeroInstallCopied = false
+	let expandedPreviewShades = null
 	let activeColorField = null
 	let isSchemeOpen = false
 	let pickerHue = 218
@@ -99,6 +100,7 @@
 		"luxury"
 	]
 	const installCommand = "pnpm i @jacoblockett/palette"
+	const previewShadeSteps = ["10", "25", "50", "75", "100", "125", "150", "175", "200"]
 
 	const features = [
 		{
@@ -602,6 +604,18 @@
 		}, 2000)
 	}
 
+	function togglePreviewShades(mode) {
+		expandedPreviewShades = expandedPreviewShades === mode ? null : mode
+	}
+
+	function hidePreviewShades() {
+		expandedPreviewShades = null
+	}
+
+	function getPreviewShadeValue(mode, role, step) {
+		return generatedPalette[mode]?.shades?.[role]?.[step] ?? generatedPalette[mode]?.[role] ?? "#000000"
+	}
+
 	function createRandomHex() {
 		return `#${Math.floor(Math.random() * 0xffffff)
 			.toString(16)
@@ -935,7 +949,7 @@
 								{isCopied ? "Copied" : "Copy"}
 							</button>
 						</div>
-						<div class="p-4 sm:p-6 text-sm font-mono text-slate-300 overflow-x-auto">
+						<div class="max-h-[36rem] overflow-x-auto overflow-y-auto p-4 text-sm font-mono text-slate-300 sm:p-6">
 							<div class="text-slate-500">// 1. Import the totally-not-already-taken package name</div>
 							<div class="mb-4 text-purple-400">
 								import <span class="text-white">palette</span> from
@@ -989,7 +1003,34 @@
 								<div class="pl-8">
 									"accent": "<span class="text-yellow-300">{generatedPalette.light.accent}</span>",
 								</div>
-								<div class="pl-8">"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;</div>
+								<div class="pl-8">
+									"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
+									<button
+										type="button"
+										onclick={() => togglePreviewShades("light")}
+										class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
+										{expandedPreviewShades === "light" ? "Hide" : "Expand"}
+									</button>
+								</div>
+								{#if expandedPreviewShades === "light"}
+									<div class="pl-8">"shades": &#123;</div>
+									{#each seedFields as field}
+										<div class="pl-12">"{field.key}": &#123;</div>
+										{#each previewShadeSteps as step}
+											<div class="pl-16">"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("light", field.key, step)}</span>",</div>
+										{/each}
+										<div class="pl-12">&#125;,</div>
+									{/each}
+									<div class="pl-8">&#125;,</div>
+									<div class="pl-8">
+										<button
+											type="button"
+											onclick={hidePreviewShades}
+											class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
+											Hide
+										</button>
+									</div>
+								{/if}
 								<div class="pl-4">&#125;,</div>
 								<div class="pl-4">"dark": &#123;</div>
 								<div class="pl-8">"text": "<span class="text-yellow-300">{generatedPalette.dark.text}</span>",</div>
@@ -1001,7 +1042,34 @@
 									"secondary": "<span class="text-yellow-300">{generatedPalette.dark.secondary}</span>",
 								</div>
 								<div class="pl-8">"accent": "<span class="text-yellow-300">{generatedPalette.dark.accent}</span>",</div>
-								<div class="pl-8">"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;</div>
+								<div class="pl-8">
+									"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
+									<button
+										type="button"
+										onclick={() => togglePreviewShades("dark")}
+										class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
+										{expandedPreviewShades === "dark" ? "Hide" : "Expand"}
+									</button>
+								</div>
+								{#if expandedPreviewShades === "dark"}
+									<div class="pl-8">"shades": &#123;</div>
+									{#each seedFields as field}
+										<div class="pl-12">"{field.key}": &#123;</div>
+										{#each previewShadeSteps as step}
+											<div class="pl-16">"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("dark", field.key, step)}</span>",</div>
+										{/each}
+										<div class="pl-12">&#125;,</div>
+									{/each}
+									<div class="pl-8">&#125;,</div>
+									<div class="pl-8">
+										<button
+											type="button"
+											onclick={hidePreviewShades}
+											class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
+											Hide
+										</button>
+									</div>
+								{/if}
 								<div class="pl-4">&#125;</div>
 								&#125;
 							</div>
