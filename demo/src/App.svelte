@@ -693,6 +693,7 @@
 						<span class="font-bold text-xl tracking-tight">Palette</span>
 					</div>
 					<div class="hidden md:flex gap-8 text-sm font-medium text-slate-300">
+						<a href="#playground" class="hover:text-white transition-colors">Playground</a>
 						<a href="#features" class="hover:text-white transition-colors">Features</a>
 						<a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a>
 						<a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
@@ -719,7 +720,7 @@
 						onclick={() => handleCopyInstallCommand("nav")}
 						class="relative hidden h-10 sm:inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-4 text-xs font-mono text-slate-300 transition-colors hover:bg-slate-800">
 						<span
-							class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isNavInstallCopied ? "opacity-100" : "opacity-0"}`}>
+							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
 							Copied!
 						</span>
 						<span class="flex items-center gap-2">
@@ -733,11 +734,6 @@
 	</nav>
 
 	<section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
-		<div
-			class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-sm font-medium mb-8 border border-indigo-500/20">
-			<span class="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
-			A five-role, seedable color palette generator.
-		</div>
 		<h1
 			class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
 			Enterprise-grade colors. <br class="hidden md:block" />
@@ -757,7 +753,7 @@
 				onclick={() => handleCopyInstallCommand("hero")}
 				class="relative flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
 				<span
-					class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isHeroInstallCopied ? "opacity-100" : "opacity-0"}`}>
+					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
 					Copied!
 				</span>
 				<Terminal class="w-4 h-4" />
@@ -766,7 +762,7 @@
 		</div>
 	</section>
 
-	<section id="demo" class="py-20 bg-slate-900 border-y border-white/5">
+	<section id="playground" class="py-20 bg-slate-900 border-y border-white/5">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="mb-8">
 				<h2 class="text-3xl font-bold mb-4">Playground</h2>
@@ -844,8 +840,7 @@
 													<div
 														bind:this={saturationValueElement}
 														onpointerdown={beginSaturationValueDrag}
-														class="relative h-48 w-full rounded-xl border border-white/10 touch-none"
-													>
+														class="relative h-48 w-full rounded-xl border border-white/10 touch-none">
 														<div
 															class="absolute inset-px overflow-hidden rounded-[0.65rem]"
 															style={`background:
