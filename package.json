@@ -20,7 +20,7 @@
 		"url": "git+https://github.com/jacoblockett/palette.git"
 	},
 	"scripts": {
-		"build:dist": "rollup -c",
+		"build": "rollup -c",
 		"dev:1": "vite --host 0.0.0.0 --open /demo/index.html",
 		"dev:2": "vite --host 0.0.0.0 --open /demo/index_v2.html",
 		"format": "prettier --write src demo scripts"
