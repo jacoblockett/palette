@@ -601,7 +601,7 @@
 	}
 
 	function handleCopyCode() {
-		const code = `import palette from '@jacoblockett/palette';\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n});\nconsole.log(theme);`
+		const code = `import palette from '@jacoblockett/palette'\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n})`
 		navigator.clipboard.writeText(code)
 		isCopied = true
 		setTimeout(() => {
@@ -976,7 +976,7 @@
 								<div class="text-slate-500 mb-2">// for those of you who can't let go</div>
 							</div>
 							<div class="text-slate-500">// 2. Do the thang</div>
-							<div class="mb-6 text-indigo-300">
+							<div class="mb-2 text-indigo-300">
 								const <span class="text-white">theme</span> = <span class="text-blue-300">palette</span>(&#123;
 								<div class="pl-4">
 									<span class="text-slate-300"> text:</span> <span class="text-green-400">"{seeds.text}"</span>,
@@ -1003,106 +1003,6 @@
 									<span class="text-yellow-400">{wcag ? "true" : "false"}</span>
 								</div>
 								&#125;)
-							</div>
-							<div class="text-slate-500">// 3. Stare in awe</div>
-							<div class="flex flex-col gap-1">
-								&#123;
-								<div class="pl-4">"light": &#123;</div>
-								<div class="pl-8">"text": "<span class="text-yellow-300">{generatedPalette.light.text}</span>",</div>
-								<div class="pl-8">
-									"background": "<span class="text-yellow-300">{generatedPalette.light.background}</span>",
-								</div>
-								<div class="pl-8">
-									"primary": "<span class="text-yellow-300">{generatedPalette.light.primary}</span>",
-								</div>
-								<div class="pl-8">
-									"secondary": "<span class="text-yellow-300">{generatedPalette.light.secondary}</span>",
-								</div>
-								<div class="pl-8">
-									"accent": "<span class="text-yellow-300">{generatedPalette.light.accent}</span>",
-								</div>
-								{#if isLightPreviewShadesExpanded}
-									<div class="flex items-center">
-										<span class={previewShadeControlGutterClass}>
-											<button type="button" onclick={() => hidePreviewShades("light")} class={previewShadeButtonClass}>
-												Hide
-											</button>
-										</span>
-										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>"shades": &#123;</span>
-									</div>
-									{#each seedFields as field}
-										<div class="pl-12">"{field.key}": &#123;</div>
-										{#each previewShadeSteps as step}
-											<div class="pl-16">
-												"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("light", field.key, step)}</span
-												>",
-											</div>
-										{/each}
-										<div class="pl-12">&#125;,</div>
-									{/each}
-									<div class="pl-8">&#125;,</div>
-								{:else}
-									<div class="flex items-center">
-										<span class={previewShadeControlGutterClass}>
-											<button
-												type="button"
-												onclick={() => togglePreviewShades("light")}
-												class={previewShadeButtonClass}>
-												Expand
-											</button>
-										</span>
-										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>
-											"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
-										</span>
-									</div>
-								{/if}
-								<div class="pl-4">&#125;,</div>
-								<div class="pl-4">"dark": &#123;</div>
-								<div class="pl-8">"text": "<span class="text-yellow-300">{generatedPalette.dark.text}</span>",</div>
-								<div class="pl-8">
-									"background": "<span class="text-yellow-300">{generatedPalette.dark.background}</span>",
-								</div>
-								<div class="pl-8">
-									"primary": "<span class="text-yellow-300">{generatedPalette.dark.primary}</span>",
-								</div>
-								<div class="pl-8">
-									"secondary": "<span class="text-yellow-300">{generatedPalette.dark.secondary}</span>",
-								</div>
-								<div class="pl-8">"accent": "<span class="text-yellow-300">{generatedPalette.dark.accent}</span>",</div>
-								{#if isDarkPreviewShadesExpanded}
-									<div class="flex items-center">
-										<span class={previewShadeControlGutterClass}>
-											<button type="button" onclick={() => hidePreviewShades("dark")} class={previewShadeButtonClass}>
-												Hide
-											</button>
-										</span>
-										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>"shades": &#123;</span>
-									</div>
-									{#each seedFields as field}
-										<div class="pl-12">"{field.key}": &#123;</div>
-										{#each previewShadeSteps as step}
-											<div class="pl-16">
-												"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("dark", field.key, step)}</span
-												>",
-											</div>
-										{/each}
-										<div class="pl-12">&#125;,</div>
-									{/each}
-									<div class="pl-8">&#125;</div>
-								{:else}
-									<div class="flex items-center">
-										<span class={previewShadeControlGutterClass}>
-											<button type="button" onclick={() => togglePreviewShades("dark")} class={previewShadeButtonClass}>
-												Expand
-											</button>
-										</span>
-										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>
-											"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
-										</span>
-									</div>
-								{/if}
-								<div class="pl-4">&#125;</div>
-								&#125;
 							</div>
 						</div>
 					</div>
