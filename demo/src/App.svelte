@@ -600,8 +600,101 @@
 		}
 	}
 
+	$: codePreviewLines = [
+		{
+			indent: 0,
+			segments: [
+				{ text: "import ", className: "text-purple-400" },
+				{ text: "palette", className: "text-white" },
+				{ text: " from ", className: "text-purple-400" },
+				{ text: '"@jacoblockett/palette"', className: "text-green-400" }
+			]
+		},
+		{
+			indent: 0,
+			segments: [{ text: '// const palette = require("@jacoblockett/palette")', className: "text-slate-500" }]
+		},
+		{
+			indent: 0,
+			segments: [{ text: "// for those of you who can't let go", className: "text-slate-500" }]
+		},
+		{
+			indent: 0,
+			segments: []
+		},
+		{
+			indent: 0,
+			segments: [
+				{ text: "const ", className: "text-indigo-300" },
+				{ text: "theme", className: "text-white" },
+				{ text: " = ", className: "text-indigo-300" },
+				{ text: "palette", className: "text-blue-300" },
+				{ text: "({", className: "text-indigo-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "text: ", className: "text-slate-300" },
+				{ text: `"${seeds.text}"`, className: "text-green-400" },
+				{ text: ",", className: "text-slate-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "background: ", className: "text-slate-300" },
+				{ text: `"${seeds.background}"`, className: "text-green-400" },
+				{ text: ",", className: "text-slate-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "primary: ", className: "text-slate-300" },
+				{ text: `"${seeds.primary}"`, className: "text-green-400" },
+				{ text: ",", className: "text-slate-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "secondary: ", className: "text-slate-300" },
+				{ text: `"${seeds.secondary}"`, className: "text-green-400" },
+				{ text: ",", className: "text-slate-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "accent: ", className: "text-slate-300" },
+				{ text: `"${seeds.accent}"`, className: "text-green-400" },
+				{ text: ",", className: "text-slate-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "scheme: ", className: "text-slate-300" },
+				{ text: `"${demoScheme}"`, className: "text-green-400" },
+				{ text: ",", className: "text-slate-300" }
+			]
+		},
+		{
+			indent: 1,
+			segments: [
+				{ text: "wcag: ", className: "text-slate-300" },
+				{ text: wcag ? "true" : "false", className: "text-yellow-400" }
+			]
+		},
+		{
+			indent: 0,
+			segments: [{ text: "})", className: "text-indigo-300" }]
+		}
+	]
+
 	function handleCopyCode() {
-		const code = `import palette from '@jacoblockett/palette'\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n})`
+		const code = `import palette from '@jacoblockett/palette'\n\nconst theme = palette({\n\ttext: '${seeds.text}',\n\tbackground: '${seeds.background}',\n\tprimary: '${seeds.primary}',\n\tsecondary: '${seeds.secondary}',\n\taccent: '${seeds.accent}',\n\tscheme: '${demoScheme}',\n\twcag: ${wcag}\n})`
 		navigator.clipboard.writeText(code)
 		isCopied = true
 		setTimeout(() => {
@@ -966,43 +1059,24 @@
 								{isCopied ? "Copied" : "Copy"}
 							</button>
 						</div>
-						<div
-							class="code-preview-scrollbar max-h-[36rem] overflow-x-auto overflow-y-auto p-4 text-sm font-mono text-slate-300 sm:p-6">
-							<div class="text-slate-500">// 1. Import the totally-not-already-taken package name</div>
-							<div class="mb-4 text-purple-400">
-								import <span class="text-white">palette</span> from
-								<span class="text-green-400">"@jacoblockett/palette"</span>
-								<div class="text-slate-500">// const palette = require("@jacoblockett/palette")</div>
-								<div class="text-slate-500 mb-2">// for those of you who can't let go</div>
-							</div>
-							<div class="text-slate-500">// 2. Do the thang</div>
-							<div class="mb-2 text-indigo-300">
-								const <span class="text-white">theme</span> = <span class="text-blue-300">palette</span>(&#123;
-								<div class="pl-4">
-									<span class="text-slate-300"> text:</span> <span class="text-green-400">"{seeds.text}"</span>,
-								</div>
-								<div class="pl-4">
-									<span class="text-slate-300"> background:</span>
-									<span class="text-green-400">"{seeds.background}"</span>,
-								</div>
-								<div class="pl-4">
-									<span class="text-slate-300"> primary:</span> <span class="text-green-400">"{seeds.primary}"</span>,
-								</div>
-								<div class="pl-4">
-									<span class="text-slate-300"> secondary:</span>
-									<span class="text-green-400">"{seeds.secondary}"</span>,
-								</div>
-								<div class="pl-4">
-									<span class="text-slate-300"> accent:</span> <span class="text-green-400">"{seeds.accent}"</span>,
-								</div>
-								<div class="pl-4">
-									<span class="text-slate-300"> scheme:</span> <span class="text-green-400">"{demoScheme}"</span>,
-								</div>
-								<div class="pl-4">
-									<span class="text-slate-300"> wcag:</span>
-									<span class="text-yellow-400">{wcag ? "true" : "false"}</span>
-								</div>
-								&#125;)
+						<div class="overflow-x-auto overflow-y-auto px-4 py-4 text-sm font-mono text-slate-300 sm:px-6 sm:py-6">
+							<div class="flex min-w-max flex-col">
+								{#each codePreviewLines as line, index}
+									<div class="grid grid-cols-[2rem_minmax(0,1fr)] leading-6">
+										<div class=" pr-4 text-right text-gray tabular-nums">
+											{index + 1}
+										</div>
+										<div class="whitespace-pre" style={`padding-left: ${line.indent * 2}rem;`}>
+											{#if line.segments.length === 0}
+												&nbsp;
+											{:else}
+												{#each line.segments as segment}
+													<span class={segment.className}>{segment.text}</span>
+												{/each}
+											{/if}
+										</div>
+									</div>
+								{/each}
 							</div>
 						</div>
 					</div>
@@ -1163,34 +1237,6 @@
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
 		background: #64748b;
-	}
-
-	.code-preview-scrollbar {
-		scrollbar-width: thin;
-		scrollbar-color: #334155 #0d1117;
-	}
-
-	.code-preview-scrollbar::-webkit-scrollbar {
-		width: 10px;
-		height: 10px;
-	}
-
-	.code-preview-scrollbar::-webkit-scrollbar-track {
-		background: #0d1117;
-	}
-
-	.code-preview-scrollbar::-webkit-scrollbar-thumb {
-		background: #334155;
-		border: 2px solid #0d1117;
-		border-radius: 9999px;
-	}
-
-	.code-preview-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: #475569;
-	}
-
-	.code-preview-scrollbar::-webkit-scrollbar-corner {
-		background: #0d1117;
 	}
 
 	.testimonials-track {
