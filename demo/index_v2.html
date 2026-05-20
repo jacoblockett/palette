@@ -1067,18 +1067,12 @@
 
 			function createPaletteOptions() {
 				const lockedSeeds = createLockedSeeds()
-				const options = {
+
+				return {
+					...lockedSeeds,
 					scheme: state.scheme,
-					wcag: state.wcag,
-					shades: true
+					wcag: state.wcag
 				}
-
-				if (Object.keys(lockedSeeds).length > 0) {
-					options.mode = state.mode
-					options.seeds = lockedSeeds
-				}
-
-				return options
 			}
 
 			function cloneHistoryValue(value) {
@@ -1148,11 +1142,11 @@
 				state.generatedPalette = {
 					light: {
 						...generatedPalette.light,
-						shades: generatedPalette.light.shades ? { ...generatedPalette.light.shades } : undefined
+						shades: { ...generatedPalette.light.shades }
 					},
 					dark: {
 						...generatedPalette.dark,
-						shades: generatedPalette.dark.shades ? { ...generatedPalette.dark.shades } : undefined
+						shades: { ...generatedPalette.dark.shades }
 					}
 				}
 

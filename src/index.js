@@ -122,9 +122,9 @@ function clamp(value, min, max) {
 	return Math.min(max, Math.max(min, value))
 }
 
-function normalizeHexSeed(hex) {
+function normalizeHexSeed(hex, message = "palette seed values must be 6-digit hex colors.") {
 	if (typeof hex !== "string" || !/^#?[0-9a-fA-F]{6}$/.test(hex)) {
-		throw new RangeError("palette seed values must be 6-digit hex colors.")
+		throw new RangeError(message)
 	}
 
 	const normalized = hex.startsWith("#") ? hex.slice(1) : hex
@@ -416,6 +416,94 @@ function createSeedLockMap(normalizedSeeds) {
 
 function hasSeedValues(normalizedSeeds) {
 	return ROLE_KEYS.some(role => normalizedSeeds[role] !== undefined)
+}
+
+function inferSourceMode(normalizedSeeds) {
+	const textSeed = normalizedSeeds.text
+	const backgroundSeed = normalizedSeeds.background
+
+	if (textSeed && backgroundSeed) {
+		if (textSeed.hex === backgroundSeed.hex) {
+			throw new RangeError("palette text and background cannot be the same color.")
+		}
+
+		return textSeed.oklch.l < backgroundSeed.oklch.l ? "light" : "dark"
+	}
+
+	if (backgroundSeed) {
+		return backgroundSeed.oklch.l >= 0.5 ? "light" : "dark"
+	}
+
+	if (textSeed) {
+		return textSeed.oklch.l < 0.5 ? "light" : "dark"
+	}
+
+	return "dark"
+}
+
+function validateProvidedSeedContrast(role, roleColor, backgroundColor) {
+	if (wcagContrast(roleColor.oklch, backgroundColor.oklch) >= WCAG_MINIMUM_CONTRAST) {
+		return
+	}
+
+	throw new RangeError(
+		`palette ${role} seed ${roleColor.hex} must meet 4.5 contrast against background ${backgroundColor.hex}.`
+	)
+}
+
+function validateProvidedSeeds(candidate, seedLocks, activeWcag) {
+	if (!activeWcag) {
+		return
+	}
+
+	for (const role of ["text", "primary", "secondary", "accent"]) {
+		if (seedLocks[role]) {
+			validateProvidedSeedContrast(role, candidate[role], candidate.background)
+		}
+	}
+}
+
+function isPlainObject(value) {
+	if (value === null || typeof value !== "object" || Array.isArray(value)) {
+		return false
+	}
+
+	return Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null
+}
+
+function normalizeArbitraryShadesColors(colors) {
+	if (Array.isArray(colors)) {
+		if (colors.length === 0) {
+			throw new TypeError("palette.shades colors must be a non-empty array or plain object.")
+		}
+
+		return colors.map(color => ({
+			kind: "array",
+			value: {
+				hex: normalizeHexSeed(color, "palette.shades color values must be 6-digit hex colors."),
+				oklch: hexToOklch(color)
+			}
+		}))
+	}
+
+	if (!isPlainObject(colors)) {
+		throw new TypeError("palette.shades colors must be a non-empty array or plain object.")
+	}
+
+	const entries = Object.entries(colors)
+
+	if (entries.length === 0) {
+		throw new TypeError("palette.shades colors must be a non-empty array or plain object.")
+	}
+
+	return entries.map(([key, color]) => ({
+		kind: "object",
+		key,
+		value: {
+			hex: normalizeHexSeed(color, "palette.shades color values must be 6-digit hex colors."),
+			oklch: hexToOklch(color)
+		}
+	}))
 }
 
 function findColorByContrast(baseOklch, backgroundOklch, targetContrast, lightnessRange) {
@@ -1090,54 +1178,37 @@ function isWcagCompliantCandidate(candidate) {
 	)
 }
 
-function toPublicPalette(candidate, mode, includeShades) {
-	const publicPalette = {
+function toPublicPalette(candidate, mode) {
+	return {
 		text: candidate.text.hex,
 		background: candidate.background.hex,
 		primary: candidate.primary.hex,
 		secondary: candidate.secondary.hex,
-		accent: candidate.accent.hex
-	}
-
-	if (!includeShades) {
-		return publicPalette
-	}
-
-	return {
-		...publicPalette,
+		accent: candidate.accent.hex,
 		shades: {
 			text: generateRoleShadeScale(candidate.text.oklch, candidate.text.hex, candidate.background.oklch),
 			background: generateBackgroundShadeScale(candidate.background.oklch, candidate.background.hex, mode),
 			primary: generateRoleShadeScale(candidate.primary.oklch, candidate.primary.hex, candidate.background.oklch),
-			secondary: generateRoleShadeScale(
-				candidate.secondary.oklch,
-				candidate.secondary.hex,
-				candidate.background.oklch
-			),
+			secondary: generateRoleShadeScale(candidate.secondary.oklch, candidate.secondary.hex, candidate.background.oklch),
 			accent: generateRoleShadeScale(candidate.accent.oklch, candidate.accent.hex, candidate.background.oklch)
 		}
 	}
 }
 
 function palette(options = {}) {
-	const { mode, seeds, scheme, wcag, shades } = options
-	const activeSeeds = normalizeSeeds(seeds)
+	const { text, background, primary, secondary, accent, scheme, wcag } = options
+	const activeSeeds = normalizeSeeds({
+		text,
+		background,
+		primary,
+		secondary,
+		accent
+	})
 	const activeHasSeeds = hasSeedValues(activeSeeds)
-
-	if (mode === undefined && activeHasSeeds) {
-		throw new TypeError("palette requires a mode of light or dark when seeds are provided.")
-	}
-
-	const sourceMode = mode === undefined ? "light" : mode
-
-	if (sourceMode !== "light" && sourceMode !== "dark") {
-		throw new RangeError("palette mode must be light or dark.")
-	}
-
+	const sourceMode = activeHasSeeds ? inferSourceMode(activeSeeds) : "dark"
 	const activeScheme = normalizeScheme(scheme)
 	const activeSeedLocks = createSeedLockMap(activeSeeds)
 	const activeWcag = Boolean(wcag)
-	const activeShades = Boolean(shades)
 	const oppositeMode = sourceMode === "light" ? "dark" : "light"
 
 	for (let index = 0; index < 2000; index += 1) {
@@ -1188,15 +1259,10 @@ function palette(options = {}) {
 			}
 		}
 
+		validateProvidedSeeds(sampledCandidate, activeSeedLocks, activeWcag)
+
 		const derivedCandidate = {
-			text: deriveRoleForMode(
-				sampledCandidate.text.oklch,
-				"text",
-				sourceMode,
-				oppositeMode,
-				null,
-				activeWcag
-			),
+			text: deriveRoleForMode(sampledCandidate.text.oklch, "text", sourceMode, oppositeMode, null, activeWcag),
 			background: deriveRoleForMode(
 				sampledCandidate.background.oklch,
 				"background",
@@ -1250,12 +1316,40 @@ function palette(options = {}) {
 		}
 
 		return {
-			light: toPublicPalette(pairedCandidate.light, "light", activeShades),
-			dark: toPublicPalette(pairedCandidate.dark, "dark", activeShades)
+			light: toPublicPalette(pairedCandidate.light, "light"),
+			dark: toPublicPalette(pairedCandidate.dark, "dark")
 		}
 	}
 
 	throw new Error("Unable to generate a semantic palette candidate.")
 }
+
+function paletteShades(options = {}) {
+	const { background, colors, wcag } = options
+	const normalizedBackgroundHex = normalizeHexSeed(background, "palette.shades background must be a 6-digit hex color.")
+	const normalizedBackground = {
+		hex: normalizedBackgroundHex,
+		oklch: hexToOklch(normalizedBackgroundHex)
+	}
+	const normalizedColors = normalizeArbitraryShadesColors(colors)
+	const activeWcag = Boolean(wcag)
+	const createScale = color => {
+		if (activeWcag && wcagContrast(color.oklch, normalizedBackground.oklch) < WCAG_MINIMUM_CONTRAST) {
+			throw new RangeError(
+				`palette.shades color ${color.hex} must meet 4.5 contrast against background ${normalizedBackground.hex}.`
+			)
+		}
+
+		return generateRoleShadeScale(color.oklch, color.hex, normalizedBackground.oklch)
+	}
+
+	if (Array.isArray(colors)) {
+		return normalizedColors.map(({ value }) => createScale(value))
+	}
+
+	return Object.fromEntries(normalizedColors.map(({ key, value }) => [key, createScale(value)]))
+}
+
+palette.shades = paletteShades
 
 export default palette

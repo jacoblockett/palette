@@ -889,19 +889,21 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 							<span class="text-palette-accent">import</span> Palette <span class="text-palette-accent">from</span>
 							<span class="text-palette-primary">'@design/palette'</span>;<br /><br />
 
-							<span class="text-palette-accent">const</span> dynamicStyles = Palette.generate({<br />
-							&nbsp;&nbsp;seeds: {<br />
-							&nbsp;&nbsp;&nbsp;&nbsp;text: <span class="text-palette-accent">"#f8e2f2"</span>,<br />
-							&nbsp;&nbsp;&nbsp;&nbsp;background: <span class="text-palette-accent">"#0e030b"</span>,<br />
-							&nbsp;&nbsp;&nbsp;&nbsp;primary: <span class="text-palette-accent">"#e48ec7"</span>,<br />
-							&nbsp;&nbsp;&nbsp;&nbsp;secondary: <span class="text-palette-accent">"#81341f"</span>,<br />
-							&nbsp;&nbsp;&nbsp;&nbsp;accent: <span class="text-palette-accent">"#d28c41"</span><br />
-							&nbsp;&nbsp;}<br />
+							<span class="text-palette-accent">import</span> palette <span class="text-palette-accent">from</span>
+							<span class="text-palette-primary">'@jacoblockett/palette'</span>;<br /><br />
+
+							<span class="text-palette-accent">const</span> theme = palette({<br />
+							&nbsp;&nbsp;text: <span class="text-palette-accent">"#f8e2f2"</span>,<br />
+							&nbsp;&nbsp;background: <span class="text-palette-accent">"#0e030b"</span>,<br />
+							&nbsp;&nbsp;primary: <span class="text-palette-accent">"#e48ec7"</span>,<br />
+							&nbsp;&nbsp;secondary: <span class="text-palette-accent">"#81341f"</span>,<br />
+							&nbsp;&nbsp;accent: <span class="text-palette-accent">"#d28c41"</span><br />
 							});<br /><br />
 
-							<span class="text-palette-text-muted"
-								>// Step 3: Call dynamicStyles.apply() to paint HTML elements live.</span
-							>
+							<span class="text-palette-accent">const</span> currentModeTokens = theme.<span
+								class="text-palette-primary"
+								>dark</span
+							>;<br />
 						</div>
 					</div>
 				</div>
@@ -990,85 +992,183 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 		</footer>
 
 		<script type="module">
-			import { createPalette, createRandomPaletteSeeds } from "../src/index.js"
+			import palette from "../src/index.js"
 
 			let isDarkMode = true
-			const initialSeeds = createRandomPaletteSeeds({ mode: "dark" })
 
-			const currentPalette = { ...initialSeeds }
-
-			const defaultSeeds = { ...initialSeeds }
-
-			function getGeneratedPalette() {
-				return createPalette({
-					mode: isDarkMode ? "dark" : "light",
-					seeds: currentPalette
-				})
+			function getModeKey() {
+				return isDarkMode ? "dark" : "light"
 			}
 
-			function getResolvedDisplayValues(palette) {
+			function pickRoleSeeds(themeMode) {
 				return {
-					text: palette.current.app.fg,
-					background: palette.current.app.bg,
-					primary: palette.current.roles.primary.solid.bg,
-					secondary: palette.current.roles.secondary.solid.bg,
-					accent: palette.current.roles.accent.solid.bg,
-					border: palette.current.app.border,
-					surface: palette.current.surfaces.base.bg
+					text: themeMode.text,
+					background: themeMode.background,
+					primary: themeMode.primary,
+					secondary: themeMode.secondary,
+					accent: themeMode.accent
+				}
+			}
+
+			function createRandomSeeds(mode) {
+				return pickRoleSeeds(palette()[mode])
+			}
+
+			const initialSeeds = createRandomSeeds("dark")
+			const currentPalette = { ...initialSeeds }
+			const defaultSeeds = { ...initialSeeds }
+
+			function hexToRgb(hex) {
+				const normalizedHex = hex.replace("#", "")
+				return {
+					r: parseInt(normalizedHex.slice(0, 2), 16),
+					g: parseInt(normalizedHex.slice(2, 4), 16),
+					b: parseInt(normalizedHex.slice(4, 6), 16)
+				}
+			}
+
+			function decodeSrgbChannel(channel) {
+				const normalizedChannel = channel / 255
+
+				return normalizedChannel <= 0.04045
+					? normalizedChannel / 12.92
+					: Math.pow((normalizedChannel + 0.055) / 1.055, 2.4)
+			}
+
+			function relativeLuminance(hex) {
+				const { r, g, b } = hexToRgb(hex)
+				const linearR = decodeSrgbChannel(r)
+				const linearG = decodeSrgbChannel(g)
+				const linearB = decodeSrgbChannel(b)
+
+				return 0.2126 * linearR + 0.7152 * linearG + 0.0722 * linearB
+			}
+
+			function calculateContrast(firstHex, secondHex) {
+				const firstLuminance = relativeLuminance(firstHex) + 0.05
+				const secondLuminance = relativeLuminance(secondHex) + 0.05
+
+				return Math.max(firstLuminance, secondLuminance) / Math.min(firstLuminance, secondLuminance)
+			}
+
+			function pickReadableForeground(backgroundHex, activeTheme) {
+				return calculateContrast(activeTheme.text, backgroundHex) >=
+					calculateContrast(activeTheme.background, backgroundHex)
+					? activeTheme.text
+					: activeTheme.background
+			}
+
+			function getGeneratedTheme() {
+				return palette(currentPalette)
+			}
+
+			function getResolvedDisplayValues(theme) {
+				const currentModeTokens = theme[getModeKey()]
+				const { shades } = currentModeTokens
+				const primarySoft = shades.primary["30"]
+				const secondarySoft = shades.secondary["30"]
+				const accentSoft = shades.accent["30"]
+				const primaryOutlineBg = shades.primary["60"]
+				const secondaryOutlineBg = shades.secondary["60"]
+				const accentOutlineBg = shades.accent["60"]
+				const primaryGhostBg = shades.primary["20"]
+				const secondaryGhostBg = shades.secondary["20"]
+				const accentGhostBg = shades.accent["20"]
+				const selectionBg = shades.primary["130"]
+
+				return {
+					text: currentModeTokens.text,
+					background: currentModeTokens.background,
+					primary: currentModeTokens.primary,
+					secondary: currentModeTokens.secondary,
+					accent: currentModeTokens.accent,
+					selectionBg,
+					selectionFg: pickReadableForeground(selectionBg, currentModeTokens),
+					onPrimary: pickReadableForeground(currentModeTokens.primary, currentModeTokens),
+					onSecondary: pickReadableForeground(currentModeTokens.secondary, currentModeTokens),
+					onAccent: pickReadableForeground(currentModeTokens.accent, currentModeTokens),
+					primarySoft,
+					secondarySoft,
+					accentSoft,
+					onPrimarySoft: pickReadableForeground(primarySoft, currentModeTokens),
+					onSecondarySoft: pickReadableForeground(secondarySoft, currentModeTokens),
+					onAccentSoft: pickReadableForeground(accentSoft, currentModeTokens),
+					primaryOutlineBg,
+					secondaryOutlineBg,
+					accentOutlineBg,
+					onPrimaryOutline: pickReadableForeground(primaryOutlineBg, currentModeTokens),
+					onSecondaryOutline: pickReadableForeground(secondaryOutlineBg, currentModeTokens),
+					onAccentOutline: pickReadableForeground(accentOutlineBg, currentModeTokens),
+					primaryGhostBg,
+					secondaryGhostBg,
+					accentGhostBg,
+					onPrimaryGhost: pickReadableForeground(primaryGhostBg, currentModeTokens),
+					onSecondaryGhost: pickReadableForeground(secondaryGhostBg, currentModeTokens),
+					onAccentGhost: pickReadableForeground(accentGhostBg, currentModeTokens),
+					primaryBorder: shades.primary["120"],
+					secondaryBorder: shades.secondary["120"],
+					accentBorder: shades.accent["120"],
+					textMuted: shades.text["70"],
+					card: shades.background["110"],
+					alternateSurface: shades.background["120"],
+					border: shades.background["140"],
+					primaryGlow: shades.primary["50"],
+					accentGlow: shades.accent["50"],
+					surface: shades.background["110"]
 				}
 			}
 
 			function updatePageColors() {
 				const root = document.documentElement
-				const palette = getGeneratedPalette()
+				const theme = getGeneratedTheme()
+				const tokens = getResolvedDisplayValues(theme)
 
-				root.style.setProperty("--p-text", palette.current.app.fg)
-				root.style.setProperty("--p-bg", palette.current.app.bg)
-				root.style.setProperty("--p-primary", palette.current.roles.primary.solid.bg)
-				root.style.setProperty("--p-secondary", palette.current.roles.secondary.solid.bg)
-				root.style.setProperty("--p-accent", palette.current.roles.accent.solid.bg)
-				root.style.setProperty("--p-selection-bg", palette.current.app.selectionBg)
-				root.style.setProperty("--p-selection-fg", palette.current.app.selectionFg)
-				root.style.setProperty("--p-on-primary", palette.current.roles.primary.solid.fg)
-				root.style.setProperty("--p-on-secondary", palette.current.roles.secondary.solid.fg)
-				root.style.setProperty("--p-on-accent", palette.current.roles.accent.solid.fg)
-				root.style.setProperty("--p-primary-soft", palette.current.roles.primary.soft.bg)
-				root.style.setProperty("--p-secondary-soft", palette.current.roles.secondary.soft.bg)
-				root.style.setProperty("--p-accent-soft", palette.current.roles.accent.soft.bg)
-				root.style.setProperty("--p-on-primary-soft", palette.current.roles.primary.soft.fg)
-				root.style.setProperty("--p-on-secondary-soft", palette.current.roles.secondary.soft.fg)
-				root.style.setProperty("--p-on-accent-soft", palette.current.roles.accent.soft.fg)
-				root.style.setProperty("--p-primary-outline-bg", palette.current.roles.primary.outline.bg)
-				root.style.setProperty("--p-secondary-outline-bg", palette.current.roles.secondary.outline.bg)
-				root.style.setProperty("--p-accent-outline-bg", palette.current.roles.accent.outline.bg)
-				root.style.setProperty("--p-on-primary-outline", palette.current.roles.primary.outline.fg)
-				root.style.setProperty("--p-on-secondary-outline", palette.current.roles.secondary.outline.fg)
-				root.style.setProperty("--p-on-accent-outline", palette.current.roles.accent.outline.fg)
-				root.style.setProperty("--p-primary-ghost-bg", palette.current.roles.primary.ghost.bg)
-				root.style.setProperty("--p-secondary-ghost-bg", palette.current.roles.secondary.ghost.bg)
-				root.style.setProperty("--p-accent-ghost-bg", palette.current.roles.accent.ghost.bg)
-				root.style.setProperty("--p-on-primary-ghost", palette.current.roles.primary.ghost.fg)
-				root.style.setProperty("--p-on-secondary-ghost", palette.current.roles.secondary.ghost.fg)
-				root.style.setProperty("--p-on-accent-ghost", palette.current.roles.accent.ghost.fg)
-				root.style.setProperty("--p-primary-border", palette.current.roles.primary.solid.border)
-				root.style.setProperty("--p-secondary-border", palette.current.roles.secondary.solid.border)
-				root.style.setProperty("--p-accent-border", palette.current.roles.accent.solid.border)
-				root.style.setProperty("--p-text-muted", palette.current.app.mutedFg)
-				root.style.setProperty("--p-bg-card", palette.current.surfaces.raised.bg)
-				root.style.setProperty("--p-bg-alt", palette.current.surfaces.base.bg)
-				root.style.setProperty("--p-border", palette.current.app.border)
-				root.style.setProperty("--p-primary-glow", palette.current.roles.primary.soft.bg)
-				root.style.setProperty("--p-accent-glow", palette.current.roles.accent.soft.bg)
+				root.style.setProperty("--p-text", tokens.text)
+				root.style.setProperty("--p-bg", tokens.background)
+				root.style.setProperty("--p-primary", tokens.primary)
+				root.style.setProperty("--p-secondary", tokens.secondary)
+				root.style.setProperty("--p-accent", tokens.accent)
+				root.style.setProperty("--p-selection-bg", tokens.selectionBg)
+				root.style.setProperty("--p-selection-fg", tokens.selectionFg)
+				root.style.setProperty("--p-on-primary", tokens.onPrimary)
+				root.style.setProperty("--p-on-secondary", tokens.onSecondary)
+				root.style.setProperty("--p-on-accent", tokens.onAccent)
+				root.style.setProperty("--p-primary-soft", tokens.primarySoft)
+				root.style.setProperty("--p-secondary-soft", tokens.secondarySoft)
+				root.style.setProperty("--p-accent-soft", tokens.accentSoft)
+				root.style.setProperty("--p-on-primary-soft", tokens.onPrimarySoft)
+				root.style.setProperty("--p-on-secondary-soft", tokens.onSecondarySoft)
+				root.style.setProperty("--p-on-accent-soft", tokens.onAccentSoft)
+				root.style.setProperty("--p-primary-outline-bg", tokens.primaryOutlineBg)
+				root.style.setProperty("--p-secondary-outline-bg", tokens.secondaryOutlineBg)
+				root.style.setProperty("--p-accent-outline-bg", tokens.accentOutlineBg)
+				root.style.setProperty("--p-on-primary-outline", tokens.onPrimaryOutline)
+				root.style.setProperty("--p-on-secondary-outline", tokens.onSecondaryOutline)
+				root.style.setProperty("--p-on-accent-outline", tokens.onAccentOutline)
+				root.style.setProperty("--p-primary-ghost-bg", tokens.primaryGhostBg)
+				root.style.setProperty("--p-secondary-ghost-bg", tokens.secondaryGhostBg)
+				root.style.setProperty("--p-accent-ghost-bg", tokens.accentGhostBg)
+				root.style.setProperty("--p-on-primary-ghost", tokens.onPrimaryGhost)
+				root.style.setProperty("--p-on-secondary-ghost", tokens.onSecondaryGhost)
+				root.style.setProperty("--p-on-accent-ghost", tokens.onAccentGhost)
+				root.style.setProperty("--p-primary-border", tokens.primaryBorder)
+				root.style.setProperty("--p-secondary-border", tokens.secondaryBorder)
+				root.style.setProperty("--p-accent-border", tokens.accentBorder)
+				root.style.setProperty("--p-text-muted", tokens.textMuted)
+				root.style.setProperty("--p-bg-card", tokens.card)
+				root.style.setProperty("--p-bg-alt", tokens.alternateSurface)
+				root.style.setProperty("--p-border", tokens.border)
+				root.style.setProperty("--p-primary-glow", tokens.primaryGlow)
+				root.style.setProperty("--p-accent-glow", tokens.accentGlow)
 
-				syncPickerUI(palette)
+				syncPickerUI(tokens)
 			}
 
-			function syncPickerUI(palette) {
+			function syncPickerUI(tokens) {
 				const keys = ["text", "background", "primary", "secondary", "accent"]
-				const resolvedValues = getResolvedDisplayValues(palette)
 
 				keys.forEach(key => {
-					const hexVal = resolvedValues[key].toLowerCase()
+					const hexVal = tokens[key].toLowerCase()
 					const label = document.getElementById(`hex-${key}`)
 					if (label) label.textContent = hexVal
 
@@ -1084,7 +1184,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 					})
 				})
 				;["border", "surface"].forEach(key => {
-					const resolvedValue = resolvedValues[key].toLowerCase()
+					const resolvedValue = tokens[key].toLowerCase()
 					const codeElements = document.querySelectorAll(`.code-${key}`)
 					codeElements.forEach(el => {
 						el.textContent = resolvedValue
@@ -1130,7 +1230,7 @@ export const <span class="text-palette-accent">tailwindTheme</span> = {
 			}
 
 			function randomizePalette() {
-				const nextPalette = createRandomPaletteSeeds({ mode: isDarkMode ? "dark" : "light" })
+				const nextPalette = createRandomSeeds(getModeKey())
 
 				currentPalette.text = nextPalette.text
 				currentPalette.background = nextPalette.background
