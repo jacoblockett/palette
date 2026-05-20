@@ -102,6 +102,8 @@
 	]
 	const installCommand = "pnpm i @jacoblockett/palette"
 	const previewShadeSteps = ["10", "25", "50", "75", "100", "125", "150", "175", "200"]
+	const previewShadeControlGutterClass = "inline-flex w-16 shrink-0 justify-end pr-2"
+	const previewShadeCodeColumnClass = "min-w-0"
 	const previewShadeButtonClass =
 		"inline-flex items-center rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-slate-300"
 
@@ -718,14 +720,14 @@
 				<div class="flex items-center gap-2">
 					<button
 						aria-label="Toggle color mode"
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800">
-						<Moon class="w-5 h-5" />
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-colors hover:bg-slate-800">
+						<Moon />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-colors hover:text-white">
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-colors hover:bg-slate-800">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -734,7 +736,7 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative hidden h-10 sm:inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-4 text-xs font-mono text-slate-300 transition-colors hover:bg-slate-800">
+						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-4 text-xs font-mono text-slate-300 transition-colors hover:bg-slate-800">
 						<span
 							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
 							Copied!
@@ -964,7 +966,8 @@
 								{isCopied ? "Copied" : "Copy"}
 							</button>
 						</div>
-						<div class="code-preview-scrollbar max-h-[36rem] overflow-x-auto overflow-y-auto p-4 text-sm font-mono text-slate-300 sm:p-6">
+						<div
+							class="code-preview-scrollbar max-h-[36rem] overflow-x-auto overflow-y-auto p-4 text-sm font-mono text-slate-300 sm:p-6">
 							<div class="text-slate-500">// 1. Import the totally-not-already-taken package name</div>
 							<div class="mb-4 text-purple-400">
 								import <span class="text-white">palette</span> from
@@ -1019,26 +1022,38 @@
 									"accent": "<span class="text-yellow-300">{generatedPalette.light.accent}</span>",
 								</div>
 								{#if isLightPreviewShadesExpanded}
-									<div class="pl-8 flex items-center gap-2">
-										<button type="button" onclick={() => hidePreviewShades("light")} class={previewShadeButtonClass}>
-											Hide
-										</button>
-										"shades": &#123;
+									<div class="flex items-center">
+										<span class={previewShadeControlGutterClass}>
+											<button type="button" onclick={() => hidePreviewShades("light")} class={previewShadeButtonClass}>
+												Hide
+											</button>
+										</span>
+										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>"shades": &#123;</span>
 									</div>
 									{#each seedFields as field}
 										<div class="pl-12">"{field.key}": &#123;</div>
 										{#each previewShadeSteps as step}
-											<div class="pl-16">"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("light", field.key, step)}</span>",</div>
+											<div class="pl-16">
+												"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("light", field.key, step)}</span
+												>",
+											</div>
 										{/each}
 										<div class="pl-12">&#125;,</div>
 									{/each}
 									<div class="pl-8">&#125;,</div>
 								{:else}
-									<div class="pl-8 flex items-center gap-2">
-										<button type="button" onclick={() => togglePreviewShades("light")} class={previewShadeButtonClass}>
-											Expand
-										</button>
-										"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
+									<div class="flex items-center">
+										<span class={previewShadeControlGutterClass}>
+											<button
+												type="button"
+												onclick={() => togglePreviewShades("light")}
+												class={previewShadeButtonClass}>
+												Expand
+											</button>
+										</span>
+										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>
+											"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
+										</span>
 									</div>
 								{/if}
 								<div class="pl-4">&#125;,</div>
@@ -1047,32 +1062,43 @@
 								<div class="pl-8">
 									"background": "<span class="text-yellow-300">{generatedPalette.dark.background}</span>",
 								</div>
-								<div class="pl-8">"primary": "<span class="text-yellow-300">{generatedPalette.dark.primary}</span>",</div>
+								<div class="pl-8">
+									"primary": "<span class="text-yellow-300">{generatedPalette.dark.primary}</span>",
+								</div>
 								<div class="pl-8">
 									"secondary": "<span class="text-yellow-300">{generatedPalette.dark.secondary}</span>",
 								</div>
 								<div class="pl-8">"accent": "<span class="text-yellow-300">{generatedPalette.dark.accent}</span>",</div>
 								{#if isDarkPreviewShadesExpanded}
-									<div class="pl-8 flex items-center gap-2">
-										<button type="button" onclick={() => hidePreviewShades("dark")} class={previewShadeButtonClass}>
-											Hide
-										</button>
-										"shades": &#123;
+									<div class="flex items-center">
+										<span class={previewShadeControlGutterClass}>
+											<button type="button" onclick={() => hidePreviewShades("dark")} class={previewShadeButtonClass}>
+												Hide
+											</button>
+										</span>
+										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>"shades": &#123;</span>
 									</div>
 									{#each seedFields as field}
 										<div class="pl-12">"{field.key}": &#123;</div>
 										{#each previewShadeSteps as step}
-											<div class="pl-16">"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("dark", field.key, step)}</span>",</div>
+											<div class="pl-16">
+												"{step}": "<span class="text-yellow-300">{getPreviewShadeValue("dark", field.key, step)}</span
+												>",
+											</div>
 										{/each}
 										<div class="pl-12">&#125;,</div>
 									{/each}
 									<div class="pl-8">&#125;</div>
 								{:else}
-									<div class="pl-8 flex items-center gap-2">
-										<button type="button" onclick={() => togglePreviewShades("dark")} class={previewShadeButtonClass}>
-											Expand
-										</button>
-										"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
+									<div class="flex items-center">
+										<span class={previewShadeControlGutterClass}>
+											<button type="button" onclick={() => togglePreviewShades("dark")} class={previewShadeButtonClass}>
+												Expand
+											</button>
+										</span>
+										<span class={`pl-8 ${previewShadeCodeColumnClass}`}>
+											"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
+										</span>
 									</div>
 								{/if}
 								<div class="pl-4">&#125;</div>
