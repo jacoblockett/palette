@@ -1,5 +1,5 @@
 <script>
-	import { tick } from "svelte"
+	import { onMount, tick } from "svelte"
 	import {
 		ArrowRight,
 		CheckCircle2,
@@ -462,13 +462,16 @@
 
 		commitColorChangeSession()
 		activeDragTarget = null
-		activeColorField = null
 	}
 
 	function closeColorPicker() {
 		commitColorChangeSession()
 		activeColorField = null
 		activeDragTarget = null
+	}
+
+	function handleColorPickerPointerDown(event) {
+		event.preventDefault()
 	}
 
 	function getReadableTextColor(hex) {
@@ -531,6 +534,50 @@
 		}
 	}
 
+	function isScrollableSchemeMenuEvent(event) {
+		return schemeMenuElement ? schemeMenuElement.contains(event.target) : false
+	}
+
+	function handleSchemeWheel(event) {
+		if (!isSchemeOpen) {
+			return
+		}
+
+		if (!isScrollableSchemeMenuEvent(event)) {
+			event.preventDefault()
+			return
+		}
+
+		const maxScrollTop = schemeMenuElement.scrollHeight - schemeMenuElement.clientHeight
+		const isScrollingUp = event.deltaY < 0
+		const isScrollingDown = event.deltaY > 0
+		const isAtTop = schemeMenuElement.scrollTop <= 0
+		const isAtBottom = schemeMenuElement.scrollTop >= maxScrollTop
+
+		if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
+			event.preventDefault()
+		}
+	}
+
+	function handleSchemeTouchMove(event) {
+		if (isSchemeOpen && !isScrollableSchemeMenuEvent(event)) {
+			event.preventDefault()
+		}
+	}
+
+	function handleSchemeKeydown(event) {
+		if (!isSchemeOpen) {
+			return
+		}
+
+		const scrollKeys = ["PageUp", "PageDown", "End", "Home", "ArrowUp", "ArrowDown"]
+		const isSpaceKey = event.key === " " || event.code === "Space"
+
+		if ((isSpaceKey || scrollKeys.includes(event.key)) && !isScrollableSchemeMenuEvent(event)) {
+			event.preventDefault()
+		}
+	}
+
 	function handleCopyCode() {
 		const code = `import palette from '@jacoblockett/palette';\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n});\nconsole.log(theme);`
 		navigator.clipboard.writeText(code)
@@ -585,6 +632,18 @@
 	}
 
 	$: pickerHueColor = `hsl(${pickerHue} 100% 50%)`
+
+	onMount(() => {
+		window.addEventListener("wheel", handleSchemeWheel, { passive: false })
+		window.addEventListener("touchmove", handleSchemeTouchMove, { passive: false })
+		window.addEventListener("keydown", handleSchemeKeydown)
+
+		return () => {
+			window.removeEventListener("wheel", handleSchemeWheel)
+			window.removeEventListener("touchmove", handleSchemeTouchMove)
+			window.removeEventListener("keydown", handleSchemeKeydown)
+		}
+	})
 </script>
 
 <svelte:window
@@ -749,6 +808,7 @@
 										<div
 											class={`absolute top-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] ${index % 2 === 0 ? "left-0" : "right-0"}`}>
 											<div
+												onpointerdown={handleColorPickerPointerDown}
 												class="rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
 												<div class="space-y-4">
 													<div
@@ -772,13 +832,15 @@
 														<div
 															bind:this={hueTrackElement}
 															onpointerdown={beginHueDrag}
-															class="relative h-4 w-full cursor-ew-resize overflow-hidden rounded-full border border-white/10 touch-none">
-															<div
-																class="absolute inset-px rounded-full"
-																style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
+															class="relative h-7 w-full cursor-ew-resize overflow-visible touch-none">
+															<div class="absolute inset-x-0 top-1/2 h-4 -translate-y-1/2 overflow-hidden rounded-full border border-white/10">
+																<div
+																	class="absolute inset-px rounded-full"
+																	style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
+																</div>
 															</div>
 															<div
-																class="pointer-events-none absolute top-1/2 z-10 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-slate-950 shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
+																class="pointer-events-none absolute top-1/2 z-10 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
 																style={`left: ${(pickerHue / 360) * 100}%;`}>
 															</div>
 														</div>
