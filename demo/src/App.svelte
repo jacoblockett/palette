@@ -37,15 +37,12 @@
 	let pickerHue = 218
 	let pickerSaturation = 0.75
 	let pickerValue = 0.96
-	let codeGlowX = 50
-	let codeGlowY = 50
 	let colorHistory = [cloneSeeds(initialSeeds)]
 	let colorHistoryIndex = 0
 	let pendingHistorySnapshot = null
 	let activeDragTarget = null
 	let saturationValueElement
 	let hueTrackElement
-	let codePreviewElement
 	let schemeTriggerElement
 	let schemeMenuElement
 	let schemeMenuDirection = "down"
@@ -596,16 +593,6 @@
 		}
 	}
 
-	function handleCodePreviewPointerMove(event) {
-		if (!codePreviewElement) {
-			return
-		}
-
-		const rect = codePreviewElement.getBoundingClientRect()
-		codeGlowX = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100)
-		codeGlowY = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100)
-	}
-
 	function handleCopyCode() {
 		const code = `import palette from '@jacoblockett/palette';\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n});\nconsole.log(theme);`
 		navigator.clipboard.writeText(code)
@@ -927,11 +914,7 @@
 					</div>
 				</div>
 
-				<div bind:this={codePreviewElement} onpointermove={handleCodePreviewPointerMove} class="relative group">
-					<div
-						class="pointer-events-none absolute -inset-6 rounded-[2rem] opacity-70 blur-2xl transition-opacity duration-200 group-hover:opacity-100"
-						style={`background: radial-gradient(circle at ${codeGlowX}% ${codeGlowY}%, rgb(99 102 241 / 0.55) 0%, rgb(168 85 247 / 0.35) 28%, transparent 68%);`}>
-					</div>
+				<div class="relative">
 					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
 						<div class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/10">
 							<div class="flex gap-2">
@@ -942,7 +925,7 @@
 							<div class="text-sm text-slate-400">Don't worry, I don't actually use Unix</div>
 							<button
 								onclick={handleCopyCode}
-								class="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium">
+								class="text-slate-400 flex items-center gap-1.5 text-xs font-medium">
 								{#if isCopied}
 									<CheckCircle2 class="w-3.5 h-3.5 text-green-400" />
 								{:else}
