@@ -1,5 +1,5 @@
 {
-	"name": "palette",
+	"name": "@jacoblockett/palette",
 	"version": "1.0.0",
 	"description": "A contrast-aware semantic UI palette generator based on seed colors.",
 	"main": "dist/index.cjs",

@@ -11,8 +11,8 @@ pnpm i palette
 ## Basic Usage
 
 ```js
-import palette from "palette"
-// const palette = require("palette")
+import palette from "@jacoblockett/palette"
+// const palette = require("@jacoblockett/palette")
 
 const theme = palette()
 ```
