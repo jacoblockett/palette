@@ -37,15 +37,12 @@
 	let pickerHue = 218
 	let pickerSaturation = 0.75
 	let pickerValue = 0.96
-	let codeGlowX = 50
-	let codeGlowY = 50
 	let colorHistory = [cloneSeeds(initialSeeds)]
 	let colorHistoryIndex = 0
 	let pendingHistorySnapshot = null
 	let activeDragTarget = null
 	let saturationValueElement
 	let hueTrackElement
-	let codePreviewElement
 	let schemeTriggerElement
 	let schemeMenuElement
 	let schemeMenuDirection = "down"
@@ -596,17 +593,6 @@
 		}
 	}
 
-	function handleCodePreviewPointerMove(event) {
-		const rect = codePreviewElement.getBoundingClientRect()
-		codeGlowX = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100)
-		codeGlowY = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100)
-	}
-
-	function resetCodePreviewGlow() {
-		codeGlowX = 50
-		codeGlowY = 50
-	}
-
 	function handleCopyCode() {
 		const code = `import palette from '@jacoblockett/palette';\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n});\nconsole.log(theme);`
 		navigator.clipboard.writeText(code)
@@ -928,14 +914,9 @@
 					</div>
 				</div>
 
-				<div
-					bind:this={codePreviewElement}
-					onpointermove={handleCodePreviewPointerMove}
-					onpointerleave={resetCodePreviewGlow}
-					class="relative">
+				<div class="relative">
 					<div
-						class="pointer-events-none absolute -inset-3 rounded-[1.75rem] blur-xl opacity-45"
-						style={`background: radial-gradient(circle at ${codeGlowX}% ${codeGlowY}%, rgb(99 102 241 / 0.22) 0%, rgb(168 85 247 / 0.14) 30%, transparent 62%);`}>
+						class="pointer-events-none absolute -inset-2 bg-gradient-to-br from-indigo-500/25 via-purple-500/15 to-blue-500/10 blur-3xl">
 					</div>
 					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
 						<div class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/10">
@@ -945,9 +926,7 @@
 								<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
 							</div>
 							<div class="text-sm text-slate-400">Don't worry, I don't actually use Unix</div>
-							<button
-								onclick={handleCopyCode}
-								class="text-slate-400 flex items-center gap-1.5 text-xs font-medium">
+							<button onclick={handleCopyCode} class="text-slate-400 flex items-center gap-1.5 text-xs font-medium">
 								{#if isCopied}
 									<CheckCircle2 class="w-3.5 h-3.5 text-green-400" />
 								{:else}
