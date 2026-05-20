@@ -29,6 +29,8 @@
 	let demoScheme = "triadic"
 	let wcag = true
 	let isCopied = false
+	let copiedSeedRole = null
+	let isInstallCopied = false
 	let activeColorField = null
 	let isSchemeOpen = false
 	let pickerHue = 218
@@ -95,6 +97,7 @@
 		"enterprise",
 		"luxury"
 	]
+	const installCommand = "pnpm i palette"
 
 	const features = [
 		{
@@ -357,12 +360,26 @@
 
 	function handleSeedFieldFocusOut(event) {
 		if (!event.currentTarget.contains(event.relatedTarget)) {
-			commitColorChangeSession()
+			closeColorPicker()
 		}
 	}
 
-	function handleCopySeed(value) {
-		navigator.clipboard.writeText(value)
+	async function handleCopySeed(role, value) {
+		await navigator.clipboard.writeText(value)
+		copiedSeedRole = role
+		setTimeout(() => {
+			if (copiedSeedRole === role) {
+				copiedSeedRole = null
+			}
+		}, 1200)
+	}
+
+	async function handleCopyInstallCommand() {
+		await navigator.clipboard.writeText(installCommand)
+		isInstallCopied = true
+		setTimeout(() => {
+			isInstallCopied = false
+		}, 1200)
 	}
 
 	function updateActiveSeedFromPicker() {
@@ -443,8 +460,15 @@
 			return
 		}
 
-		activeDragTarget = null
 		commitColorChangeSession()
+		activeDragTarget = null
+		activeColorField = null
+	}
+
+	function closeColorPicker() {
+		commitColorChangeSession()
+		activeColorField = null
+		activeDragTarget = null
 	}
 
 	function getReadableTextColor(hex) {
@@ -560,7 +584,6 @@
 		setSeedsState(colorHistory[colorHistoryIndex])
 	}
 
-	$: pickerSwatchColor = hsvToHex(pickerHue, pickerSaturation, pickerValue)
 	$: pickerHueColor = `hsl(${pickerHue} 100% 50%)`
 </script>
 
@@ -603,11 +626,18 @@
 							<path d={siGithub.path}></path>
 						</svg>
 					</a>
-					<div
+					<button
+						type="button"
+						aria-label="Copy install command"
+						onclick={handleCopyInstallCommand}
 						class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs font-mono text-slate-300">
-						<Terminal class="w-3 h-3 text-indigo-400" />
-						pnpm i palette
-					</div>
+						{#if isInstallCopied}
+							<CheckCircle2 class="w-3 h-3 text-indigo-400" />
+						{:else}
+							<Terminal class="w-3 h-3 text-indigo-400" />
+						{/if}
+						{isInstallCopied ? "Copied" : installCommand}
+					</button>
 				</div>
 			</div>
 		</div>
@@ -634,8 +664,15 @@
 				Read the docs <ArrowRight class="w-4 h-4" />
 			</button>
 			<button
+				type="button"
+				onclick={handleCopyInstallCommand}
 				class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
-				<Terminal class="w-4 h-4" /> pnpm i palette
+				{#if isInstallCopied}
+					<CheckCircle2 class="w-4 h-4" />
+				{:else}
+					<Terminal class="w-4 h-4" />
+				{/if}
+				{isInstallCopied ? "Copied" : installCommand}
 			</button>
 		</div>
 	</section>
@@ -699,9 +736,13 @@
 										<button
 											type="button"
 											aria-label={`Copy ${field.label} hex`}
-											onclick={() => handleCopySeed(seeds[field.key])}
+											onclick={() => handleCopySeed(field.key, seeds[field.key])}
 											class="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg bg-slate-950 text-slate-200 transition-colors hover:bg-slate-900">
-											<Copy class="w-3.5 h-3.5" />
+											{#if copiedSeedRole === field.key}
+												<CheckCircle2 class="w-3.5 h-3.5" />
+											{:else}
+												<Copy class="w-3.5 h-3.5" />
+											{/if}
 										</button>
 									</div>
 									{#if activeColorField === field.key}
@@ -714,11 +755,15 @@
 														bind:this={saturationValueElement}
 														onpointerdown={beginSaturationValueDrag}
 														class="relative h-48 w-full cursor-crosshair overflow-hidden rounded-xl border border-white/10 touch-none"
-														style={`background:
-															linear-gradient(to top, rgb(0 0 0), transparent),
-															linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
+													>
 														<div
-															class="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
+															class="absolute inset-px rounded-[0.65rem]"
+															style={`background:
+																linear-gradient(to top, rgb(0 0 0), transparent),
+																linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
+														</div>
+														<div
+															class="pointer-events-none absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
 															style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
 														</div>
 													</div>
@@ -727,19 +772,16 @@
 														<div
 															bind:this={hueTrackElement}
 															onpointerdown={beginHueDrag}
-															class="relative h-4 w-full cursor-ew-resize rounded-full border border-white/10 touch-none"
-															style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
+															class="relative h-4 w-full cursor-ew-resize overflow-hidden rounded-full border border-white/10 touch-none">
 															<div
-																class="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-slate-950 shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
+																class="absolute inset-px rounded-full"
+																style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
+															</div>
+															<div
+																class="pointer-events-none absolute top-1/2 z-10 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-slate-950 shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
 																style={`left: ${(pickerHue / 360) * 100}%;`}>
 															</div>
 														</div>
-													</div>
-													<div class="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950 px-3 py-2">
-														<div
-															class="h-8 w-8 shrink-0 rounded-lg border border-white/10"
-															style={`background-color: ${pickerSwatchColor};`}></div>
-														<div class="font-mono text-sm text-slate-200">{seeds[field.key]}</div>
 													</div>
 												</div>
 											</div>
@@ -762,21 +804,24 @@
 							</button>
 							{#if isSchemeOpen}
 								<div
-									bind:this={schemeMenuElement}
-									class={`scheme-menu-scrollbar absolute left-0 right-0 z-20 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 p-2 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] ${schemeMenuDirection === "up" ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
-									style={`max-height: ${schemeMenuMaxHeight}px;`}>
-									{#each supportedSchemes as scheme}
-										<button
-											type="button"
-											onclick={() => selectScheme(scheme)}
-											class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-												demoScheme === scheme
-													? "bg-slate-700 text-white"
-													: "text-slate-300 hover:bg-slate-700/80 hover:text-white"
-											}`}>
-											{formatSchemeLabel(scheme)}
-										</button>
-									{/each}
+									class={`absolute left-0 right-0 z-20 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] ${schemeMenuDirection === "up" ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}>
+									<div
+										bind:this={schemeMenuElement}
+										class="scheme-menu-scrollbar overflow-y-auto p-2"
+										style={`max-height: ${schemeMenuMaxHeight}px;`}>
+										{#each supportedSchemes as scheme}
+											<button
+												type="button"
+												onclick={() => selectScheme(scheme)}
+												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+													demoScheme === scheme
+														? "bg-slate-700 text-white"
+														: "text-slate-300 hover:bg-slate-700/80 hover:text-white"
+												}`}>
+												{formatSchemeLabel(scheme)}
+											</button>
+										{/each}
+									</div>
 								</div>
 							{/if}
 						</div>
@@ -945,7 +990,7 @@
 			</div>
 
 			<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-				<div class="bg-slate-950 rounded-3xl p-8 border border-white/10">
+				<div class="flex flex-col bg-slate-950 rounded-3xl p-8 border border-white/10">
 					<h3 class="text-xl font-semibold mb-2">Open Source</h3>
 					<div class="flex items-baseline gap-1 mb-6">
 						<span class="text-4xl font-bold">$0</span>
@@ -960,16 +1005,18 @@
 							</li>
 						{/each}
 					</ul>
-					<a
-						href="https://github.com/jacoblockett/palette"
-						class="block mt-auto text-center w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors">
-						View on GitHub
-					</a>
-					<p class="text-slate-400 mt-4 text-xs">* If you consider a lone dev a community</p>
+					<div class="mt-auto">
+						<a
+							href="https://github.com/jacoblockett/palette"
+							class="block text-center w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors">
+							View on GitHub
+						</a>
+						<p class="text-slate-400 mt-4 text-xs">* If you consider a lone dev a community</p>
+					</div>
 				</div>
 
 				<div
-					class="bg-gradient-to-b from-indigo-500/10 to-slate-950 rounded-3xl p-8 border border-indigo-500/30 relative">
+					class="relative flex flex-col bg-gradient-to-b from-indigo-500/10 to-slate-950 rounded-3xl p-8 border border-indigo-500/30">
 					<div class="absolute top-0 right-8 transform -translate-y-1/2">
 						<span class="bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
 							Enterprise
@@ -991,12 +1038,14 @@
 							</li>
 						{/each}
 					</ul>
-					<a
-						href="https://github.com/jacoblockett/palette"
-						class="block text-center w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-500/25">
-						Also View on GitHub
-					</a>
-					<p class="text-slate-400 mt-4 text-xs">* Or at least, we'll say we did and never actually do it</p>
+					<div class="mt-auto">
+						<a
+							href="https://github.com/jacoblockett/palette"
+							class="block text-center w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-500/25">
+							Also View on GitHub
+						</a>
+						<p class="text-slate-400 mt-4 text-xs">* Or at least, we'll say we did and never actually do it</p>
+					</div>
 				</div>
 			</div>
 		</div>
