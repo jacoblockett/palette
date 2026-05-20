@@ -849,7 +849,7 @@
 														</div>
 														<div
 															class="pointer-events-none absolute z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
-															style={`left: calc(8px + ((100% - 16px) * ${pickerSaturation})); top: calc(8px + ((100% - 16px) * ${1 - pickerValue}));`}>
+															style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
 														</div>
 													</div>
 													<div class="space-y-2">
@@ -866,7 +866,7 @@
 															</div>
 															<div
 																class="pointer-events-none absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
-																style={`left: calc(8px + ((100% - 16px) * ${pickerHue / 360}));`}>
+																style={`left: ${(pickerHue / 360) * 100}%;`}>
 															</div>
 														</div>
 													</div>
