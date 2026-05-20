@@ -30,18 +30,22 @@
 	let wcag = true
 	let isCopied = false
 	let copiedSeedRole = null
-	let isInstallCopied = false
+	let isNavInstallCopied = false
+	let isHeroInstallCopied = false
 	let activeColorField = null
 	let isSchemeOpen = false
 	let pickerHue = 218
 	let pickerSaturation = 0.75
 	let pickerValue = 0.96
+	let codeGlowX = 50
+	let codeGlowY = 50
 	let colorHistory = [cloneSeeds(initialSeeds)]
 	let colorHistoryIndex = 0
 	let pendingHistorySnapshot = null
 	let activeDragTarget = null
 	let saturationValueElement
 	let hueTrackElement
+	let codePreviewElement
 	let schemeTriggerElement
 	let schemeMenuElement
 	let schemeMenuDirection = "down"
@@ -374,11 +378,25 @@
 		}, 1200)
 	}
 
-	async function handleCopyInstallCommand() {
+	async function handleCopyInstallCommand(target) {
 		await navigator.clipboard.writeText(installCommand)
-		isInstallCopied = true
+
+		if (target === "nav") {
+			isNavInstallCopied = true
+		}
+
+		if (target === "hero") {
+			isHeroInstallCopied = true
+		}
+
 		setTimeout(() => {
-			isInstallCopied = false
+			if (target === "nav") {
+				isNavInstallCopied = false
+			}
+
+			if (target === "hero") {
+				isHeroInstallCopied = false
+			}
 		}, 1200)
 	}
 
@@ -578,6 +596,16 @@
 		}
 	}
 
+	function handleCodePreviewPointerMove(event) {
+		if (!codePreviewElement) {
+			return
+		}
+
+		const rect = codePreviewElement.getBoundingClientRect()
+		codeGlowX = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100)
+		codeGlowY = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100)
+	}
+
 	function handleCopyCode() {
 		const code = `import palette from '@jacoblockett/palette';\n\nconst theme = palette({\n  text: '${seeds.text}',\n  background: '${seeds.background}',\n  primary: '${seeds.primary}',\n  secondary: '${seeds.secondary}',\n  accent: '${seeds.accent}',\n  scheme: '${demoScheme}',\n  wcag: ${wcag}\n});\nconsole.log(theme);`
 		navigator.clipboard.writeText(code)
@@ -674,25 +702,25 @@
 					<button
 						aria-label="Toggle color mode"
 						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800">
-						<Moon class="w-4 h-4" />
+						<Moon class="w-5 h-5" />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition-colors hover:bg-slate-800">
-						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 fill-current" role="img">
+						class="inline-flex h-10 w-10 items-center justify-center text-slate-400 transition-colors hover:text-white">
+						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
 					</a>
 					<button
 						type="button"
 						aria-label="Copy install command"
-						onclick={handleCopyInstallCommand}
+						onclick={() => handleCopyInstallCommand("nav")}
 						class="relative hidden h-10 sm:inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-4 text-xs font-mono text-slate-300 transition-colors hover:bg-slate-800">
 						<span
-							class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isInstallCopied ? "opacity-100" : "opacity-0"}`}>
-							Copied
+							class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isNavInstallCopied ? "opacity-100" : "opacity-0"}`}>
+							Copied!
 						</span>
 						<span class="flex items-center gap-2">
 							<Terminal class="w-3 h-3 text-indigo-400" />
@@ -726,11 +754,11 @@
 			</button>
 			<button
 				type="button"
-				onclick={handleCopyInstallCommand}
+				onclick={() => handleCopyInstallCommand("hero")}
 				class="relative flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
 				<span
-					class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isInstallCopied ? "opacity-100" : "opacity-0"}`}>
-					Copied
+					class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isHeroInstallCopied ? "opacity-100" : "opacity-0"}`}>
+					Copied!
 				</span>
 				<Terminal class="w-4 h-4" />
 				{installCommand}
@@ -816,17 +844,17 @@
 													<div
 														bind:this={saturationValueElement}
 														onpointerdown={beginSaturationValueDrag}
-														class="relative h-48 w-full overflow-hidden rounded-xl border border-white/10 touch-none"
+														class="relative h-48 w-full rounded-xl border border-white/10 touch-none"
 													>
 														<div
-															class="absolute inset-px rounded-[0.65rem]"
+															class="absolute inset-px overflow-hidden rounded-[0.65rem]"
 															style={`background:
 																linear-gradient(to top, rgb(0 0 0), transparent),
 																linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
 														</div>
 														<div
-															class="pointer-events-none absolute z-10 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
-															style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
+															class="pointer-events-none absolute z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
+															style={`left: calc(8px + ((100% - 16px) * ${pickerSaturation})); top: calc(8px + ((100% - 16px) * ${1 - pickerValue}));`}>
 														</div>
 													</div>
 													<div class="space-y-2">
@@ -843,7 +871,7 @@
 															</div>
 															<div
 																class="pointer-events-none absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
-																style={`left: ${(pickerHue / 360) * 100}%;`}>
+																style={`left: calc(8px + ((100% - 16px) * ${pickerHue / 360}));`}>
 															</div>
 														</div>
 													</div>
@@ -904,9 +932,10 @@
 					</div>
 				</div>
 
-				<div class="relative group">
+				<div bind:this={codePreviewElement} onpointermove={handleCodePreviewPointerMove} class="relative group">
 					<div
-						class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 transition-opacity duration-1000 group-hover:opacity-40">
+						class="pointer-events-none absolute -inset-6 rounded-[2rem] opacity-70 blur-2xl transition-opacity duration-200 group-hover:opacity-100"
+						style={`background: radial-gradient(circle at ${codeGlowX}% ${codeGlowY}%, rgb(99 102 241 / 0.55) 0%, rgb(168 85 247 / 0.35) 28%, transparent 68%);`}>
 					</div>
 					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
 						<div class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/10">
