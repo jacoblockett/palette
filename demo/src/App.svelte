@@ -32,7 +32,8 @@
 	let copiedSeedRole = null
 	let isNavInstallCopied = false
 	let isHeroInstallCopied = false
-	let expandedPreviewShades = null
+	let isLightPreviewShadesExpanded = false
+	let isDarkPreviewShadesExpanded = false
 	let activeColorField = null
 	let isSchemeOpen = false
 	let pickerHue = 218
@@ -101,6 +102,8 @@
 	]
 	const installCommand = "pnpm i @jacoblockett/palette"
 	const previewShadeSteps = ["10", "25", "50", "75", "100", "125", "150", "175", "200"]
+	const previewShadeButtonClass =
+		"inline-flex items-center rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-slate-300"
 
 	const features = [
 		{
@@ -605,11 +608,23 @@
 	}
 
 	function togglePreviewShades(mode) {
-		expandedPreviewShades = expandedPreviewShades === mode ? null : mode
+		if (mode === "light") {
+			isLightPreviewShadesExpanded = !isLightPreviewShadesExpanded
+		}
+
+		if (mode === "dark") {
+			isDarkPreviewShadesExpanded = !isDarkPreviewShadesExpanded
+		}
 	}
 
-	function hidePreviewShades() {
-		expandedPreviewShades = null
+	function hidePreviewShades(mode) {
+		if (mode === "light") {
+			isLightPreviewShadesExpanded = false
+		}
+
+		if (mode === "dark") {
+			isDarkPreviewShadesExpanded = false
+		}
 	}
 
 	function getPreviewShadeValue(mode, role, step) {
@@ -949,7 +964,7 @@
 								{isCopied ? "Copied" : "Copy"}
 							</button>
 						</div>
-						<div class="max-h-[36rem] overflow-x-auto overflow-y-auto p-4 text-sm font-mono text-slate-300 sm:p-6">
+						<div class="code-preview-scrollbar max-h-[36rem] overflow-x-auto overflow-y-auto p-4 text-sm font-mono text-slate-300 sm:p-6">
 							<div class="text-slate-500">// 1. Import the totally-not-already-taken package name</div>
 							<div class="mb-4 text-purple-400">
 								import <span class="text-white">palette</span> from
@@ -1003,17 +1018,13 @@
 								<div class="pl-8">
 									"accent": "<span class="text-yellow-300">{generatedPalette.light.accent}</span>",
 								</div>
-								<div class="pl-8">
-									"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
-									<button
-										type="button"
-										onclick={() => togglePreviewShades("light")}
-										class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
-										{expandedPreviewShades === "light" ? "Hide" : "Expand"}
-									</button>
-								</div>
-								{#if expandedPreviewShades === "light"}
-									<div class="pl-8">"shades": &#123;</div>
+								{#if isLightPreviewShadesExpanded}
+									<div class="pl-8 flex items-center gap-2">
+										<button type="button" onclick={() => hidePreviewShades("light")} class={previewShadeButtonClass}>
+											Hide
+										</button>
+										"shades": &#123;
+									</div>
 									{#each seedFields as field}
 										<div class="pl-12">"{field.key}": &#123;</div>
 										{#each previewShadeSteps as step}
@@ -1022,13 +1033,12 @@
 										<div class="pl-12">&#125;,</div>
 									{/each}
 									<div class="pl-8">&#125;,</div>
-									<div class="pl-8">
-										<button
-											type="button"
-											onclick={hidePreviewShades}
-											class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
-											Hide
+								{:else}
+									<div class="pl-8 flex items-center gap-2">
+										<button type="button" onclick={() => togglePreviewShades("light")} class={previewShadeButtonClass}>
+											Expand
 										</button>
+										"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
 									</div>
 								{/if}
 								<div class="pl-4">&#125;,</div>
@@ -1042,17 +1052,13 @@
 									"secondary": "<span class="text-yellow-300">{generatedPalette.dark.secondary}</span>",
 								</div>
 								<div class="pl-8">"accent": "<span class="text-yellow-300">{generatedPalette.dark.accent}</span>",</div>
-								<div class="pl-8">
-									"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
-									<button
-										type="button"
-										onclick={() => togglePreviewShades("dark")}
-										class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
-										{expandedPreviewShades === "dark" ? "Hide" : "Expand"}
-									</button>
-								</div>
-								{#if expandedPreviewShades === "dark"}
-									<div class="pl-8">"shades": &#123;</div>
+								{#if isDarkPreviewShadesExpanded}
+									<div class="pl-8 flex items-center gap-2">
+										<button type="button" onclick={() => hidePreviewShades("dark")} class={previewShadeButtonClass}>
+											Hide
+										</button>
+										"shades": &#123;
+									</div>
 									{#each seedFields as field}
 										<div class="pl-12">"{field.key}": &#123;</div>
 										{#each previewShadeSteps as step}
@@ -1060,14 +1066,13 @@
 										{/each}
 										<div class="pl-12">&#125;,</div>
 									{/each}
-									<div class="pl-8">&#125;,</div>
-									<div class="pl-8">
-										<button
-											type="button"
-											onclick={hidePreviewShades}
-											class="ml-2 rounded-full border border-slate-700 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-300">
-											Hide
+									<div class="pl-8">&#125;</div>
+								{:else}
+									<div class="pl-8 flex items-center gap-2">
+										<button type="button" onclick={() => togglePreviewShades("dark")} class={previewShadeButtonClass}>
+											Expand
 										</button>
+										"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;
 									</div>
 								{/if}
 								<div class="pl-4">&#125;</div>
@@ -1232,6 +1237,34 @@
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
 		background: #64748b;
+	}
+
+	.code-preview-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: #334155 #0d1117;
+	}
+
+	.code-preview-scrollbar::-webkit-scrollbar {
+		width: 10px;
+		height: 10px;
+	}
+
+	.code-preview-scrollbar::-webkit-scrollbar-track {
+		background: #0d1117;
+	}
+
+	.code-preview-scrollbar::-webkit-scrollbar-thumb {
+		background: #334155;
+		border: 2px solid #0d1117;
+		border-radius: 9999px;
+	}
+
+	.code-preview-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: #475569;
+	}
+
+	.code-preview-scrollbar::-webkit-scrollbar-corner {
+		background: #0d1117;
 	}
 
 	.testimonials-track {
