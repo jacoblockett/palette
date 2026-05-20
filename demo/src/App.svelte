@@ -992,10 +992,16 @@
 								<div class="pl-8">"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;</div>
 								<div class="pl-4">&#125;,</div>
 								<div class="pl-4">"dark": &#123;</div>
+								<div class="pl-8">"text": "<span class="text-yellow-300">{generatedPalette.dark.text}</span>",</div>
 								<div class="pl-8">
 									"background": "<span class="text-yellow-300">{generatedPalette.dark.background}</span>",
 								</div>
-								<div class="pl-8 text-slate-500">...</div>
+								<div class="pl-8">"primary": "<span class="text-yellow-300">{generatedPalette.dark.primary}</span>",</div>
+								<div class="pl-8">
+									"secondary": "<span class="text-yellow-300">{generatedPalette.dark.secondary}</span>",
+								</div>
+								<div class="pl-8">"accent": "<span class="text-yellow-300">{generatedPalette.dark.accent}</span>",</div>
+								<div class="pl-8">"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;</div>
 								<div class="pl-4">&#125;</div>
 								&#125;
 							</div>
