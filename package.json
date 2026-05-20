@@ -1,7 +1,7 @@
 {
 	"name": "@jacoblockett/palette",
-	"version": "1.0.0",
-	"description": "A contrast-aware semantic UI palette generator based on seed colors.",
+	"version": "2.0.0",
+	"description": "A five-role, seedable color palette generator for light and dark UI themes.",
 	"main": "dist/index.cjs",
 	"module": "dist/index.mjs",
 	"exports": {
@@ -20,9 +20,8 @@
 		"url": "git+https://github.com/jacoblockett/palette.git"
 	},
 	"scripts": {
-		"build": "rollup -c",
-		"dev:1": "vite --host 0.0.0.0 --open /demo/index.html",
-		"dev:2": "vite --host 0.0.0.0 --open /demo/index_v2.html",
+		"build": "cross-env NODE_ENV=production rollup -c",
+		"dev": "vite --host 0.0.0.0 --open /demo/index.html",
 		"format": "prettier --write src demo scripts"
 	},
 	"keywords": [
