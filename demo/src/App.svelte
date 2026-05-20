@@ -97,7 +97,7 @@
 		"enterprise",
 		"luxury"
 	]
-	const installCommand = "pnpm i palette"
+	const installCommand = "pnpm i @jacoblockett/palette"
 
 	const features = [
 		{
@@ -670,7 +670,7 @@
 						<a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
 					</div>
 				</div>
-				<div class="flex items-center gap-4">
+				<div class="flex items-center gap-2">
 					<button
 						aria-label="Toggle color mode"
 						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800">
@@ -680,7 +680,7 @@
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="text-slate-400 hover:text-white transition-colors">
+						class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition-colors hover:bg-slate-800">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -689,13 +689,15 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={handleCopyInstallCommand}
-						class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs font-mono text-slate-300">
-						{#if isInstallCopied}
-							<CheckCircle2 class="w-3 h-3 text-indigo-400" />
-						{:else}
+						class="relative hidden h-10 sm:inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-4 text-xs font-mono text-slate-300 transition-colors hover:bg-slate-800">
+						<span
+							class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isInstallCopied ? "opacity-100" : "opacity-0"}`}>
+							Copied
+						</span>
+						<span class="flex items-center gap-2">
 							<Terminal class="w-3 h-3 text-indigo-400" />
-						{/if}
-						{isInstallCopied ? "Copied" : installCommand}
+							{installCommand}
+						</span>
 					</button>
 				</div>
 			</div>
@@ -725,13 +727,13 @@
 			<button
 				type="button"
 				onclick={handleCopyInstallCommand}
-				class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
-				{#if isInstallCopied}
-					<CheckCircle2 class="w-4 h-4" />
-				{:else}
-					<Terminal class="w-4 h-4" />
-				{/if}
-				{isInstallCopied ? "Copied" : installCommand}
+				class="relative flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
+				<span
+					class={`pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 -translate-y-full rounded-full border border-white/10 bg-slate-950 px-2.5 py-1 text-xs text-slate-200 shadow-lg transition-opacity ${isInstallCopied ? "opacity-100" : "opacity-0"}`}>
+					Copied
+				</span>
+				<Terminal class="w-4 h-4" />
+				{installCommand}
 			</button>
 		</div>
 	</section>
@@ -814,7 +816,7 @@
 													<div
 														bind:this={saturationValueElement}
 														onpointerdown={beginSaturationValueDrag}
-														class="relative h-48 w-full cursor-crosshair overflow-hidden rounded-xl border border-white/10 touch-none"
+														class="relative h-48 w-full overflow-hidden rounded-xl border border-white/10 touch-none"
 													>
 														<div
 															class="absolute inset-px rounded-[0.65rem]"
@@ -832,15 +834,15 @@
 														<div
 															bind:this={hueTrackElement}
 															onpointerdown={beginHueDrag}
-															class="relative h-7 w-full cursor-ew-resize overflow-visible touch-none">
-															<div class="absolute inset-x-0 top-1/2 h-4 -translate-y-1/2 overflow-hidden rounded-full border border-white/10">
+															class="relative h-4 w-full overflow-visible touch-none">
+															<div class="absolute inset-0 overflow-hidden rounded-full border border-white/10">
 																<div
 																	class="absolute inset-px rounded-full"
 																	style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
 																</div>
 															</div>
 															<div
-																class="pointer-events-none absolute top-1/2 z-10 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
+																class="pointer-events-none absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
 																style={`left: ${(pickerHue / 360) * 100}%;`}>
 															</div>
 														</div>
@@ -904,7 +906,7 @@
 
 				<div class="relative group">
 					<div
-						class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200">
+						class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 transition-opacity duration-1000 group-hover:opacity-40">
 					</div>
 					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
 						<div class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/10">
