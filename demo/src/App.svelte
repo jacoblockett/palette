@@ -1,4 +1,5 @@
 <script>
+	import { tick } from "svelte"
 	import {
 		ArrowRight,
 		CheckCircle2,
@@ -39,6 +40,10 @@
 	let activeDragTarget = null
 	let saturationValueElement
 	let hueTrackElement
+	let schemeTriggerElement
+	let schemeMenuElement
+	let schemeMenuDirection = "down"
+	let schemeMenuMaxHeight = 288
 
 	let generatedPalette
 
@@ -365,7 +370,10 @@
 			return
 		}
 
-		updateSeed(activeColorField, hsvToHex(pickerHue, pickerSaturation, pickerValue), { fromPicker: true, sanitize: false })
+		updateSeed(activeColorField, hsvToHex(pickerHue, pickerSaturation, pickerValue), {
+			fromPicker: true,
+			sanitize: false
+		})
 	}
 
 	function clamp(value, min, max) {
@@ -463,6 +471,36 @@
 		isSchemeOpen = false
 	}
 
+	async function updateSchemeMenuPlacement() {
+		if (!isSchemeOpen || !schemeTriggerElement) {
+			return
+		}
+
+		await tick()
+
+		const triggerRect = schemeTriggerElement.getBoundingClientRect()
+		const menuHeight = Math.min(schemeMenuElement?.scrollHeight ?? 288, 288)
+		const spaceAbove = Math.max(triggerRect.top - 12, 0)
+		const spaceBelow = Math.max(window.innerHeight - triggerRect.bottom - 12, 0)
+
+		if (spaceBelow < menuHeight && spaceAbove >= spaceBelow) {
+			schemeMenuDirection = "up"
+			schemeMenuMaxHeight = Math.max(0, Math.min(288, spaceAbove))
+			return
+		}
+
+		schemeMenuDirection = "down"
+		schemeMenuMaxHeight = Math.max(0, Math.min(288, spaceBelow))
+	}
+
+	async function toggleSchemeMenu() {
+		isSchemeOpen = !isSchemeOpen
+
+		if (isSchemeOpen) {
+			await updateSchemeMenuPlacement()
+		}
+	}
+
 	function handleSchemeFocusOut(event) {
 		if (!event.currentTarget.contains(event.relatedTarget)) {
 			isSchemeOpen = false
@@ -526,7 +564,11 @@
 	$: pickerHueColor = `hsl(${pickerHue} 100% 50%)`
 </script>
 
-<svelte:window onpointermove={handlePointerMove} onpointerup={handlePointerUp} />
+<svelte:window
+	onpointermove={handlePointerMove}
+	onpointerup={handlePointerUp}
+	onresize={() => isSchemeOpen && updateSchemeMenuPlacement()}
+	onscroll={() => isSchemeOpen && updateSchemeMenuPlacement()} />
 
 <div class="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-indigo-500/30">
 	<nav class="fixed w-full z-50 top-0 border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
@@ -534,7 +576,8 @@
 			<div class="flex justify-between h-16 items-center">
 				<div class="flex items-center gap-8">
 					<div class="flex items-center gap-2">
-						<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+						<div
+							class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
 							<Palette class="w-5 h-5 text-white" />
 						</div>
 						<span class="font-bold text-xl tracking-tight">Palette</span>
@@ -556,15 +599,12 @@
 						target="_blank"
 						rel="noreferrer"
 						class="text-slate-400 hover:text-white transition-colors">
-						<svg
-							viewBox="0 0 24 24"
-							aria-hidden="true"
-							class="w-5 h-5 fill-current"
-							role="img">
+						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-5 h-5 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
 					</a>
-					<div class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs font-mono text-slate-300">
+					<div
+						class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs font-mono text-slate-300">
 						<Terminal class="w-3 h-3 text-indigo-400" />
 						pnpm i palette
 					</div>
@@ -574,11 +614,13 @@
 	</nav>
 
 	<section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
-		<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-sm font-medium mb-8 border border-indigo-500/20">
+		<div
+			class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-sm font-medium mb-8 border border-indigo-500/20">
 			<span class="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
 			A five-role, seedable color palette generator.
 		</div>
-		<h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+		<h1
+			class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
 			Enterprise-grade colors. <br class="hidden md:block" />
 			Zero cost.
 		</h1>
@@ -587,10 +629,12 @@
 			roles and 20 shades automatically? Welcome to the future.
 		</p>
 		<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-			<button class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-full font-semibold transition-all shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)]">
+			<button
+				class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-full font-semibold transition-all shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)]">
 				Read the docs <ArrowRight class="w-4 h-4" />
 			</button>
-			<button class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
+			<button
+				class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
 				<Terminal class="w-4 h-4" /> pnpm i palette
 			</button>
 		</div>
@@ -598,17 +642,14 @@
 
 	<section id="demo" class="py-20 bg-slate-900 border-y border-white/5">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="grid md:grid-cols-2 gap-12 items-center">
+			<div class="mb-8">
+				<h2 class="text-3xl font-bold mb-4">Playground</h2>
+				<p class="text-slate-400 leading-relaxed">Go ahead. Change the colors. I dare you.</p>
+			</div>
+			<div class="grid gap-8 items-start lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:gap-12">
 				<div>
-					<h2 class="text-3xl font-bold mb-4">Webscale color generation.</h2>
-					<p class="text-slate-400 mb-8 leading-relaxed">
-						Experience the paradigm-shifting synergy of passing a single seed color to automatically calculate text,
-						background, primary, secondary, and accent roles for both light and dark modes.
-					</p>
-
 					<div class="space-y-6 bg-slate-950 p-6 rounded-2xl border border-white/10">
-						<div class="flex items-center justify-between gap-4">
-							<div class="text-sm font-medium text-slate-300">Real-time input</div>
+						<div class="flex items-center justify-center gap-4">
 							<div class="flex items-center gap-2">
 								<button
 									type="button"
@@ -642,53 +683,8 @@
 							</div>
 						</div>
 
-						<div class={`grid overflow-hidden transition-all duration-300 ease-out ${activeColorField ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
-							<div class="overflow-hidden">
-								<div class="rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
-									<div class="flex items-center justify-between gap-4 mb-4">
-										<div>
-											<div class="text-sm font-medium text-white">
-												{activeColorField ? `${seedFields.find(field => field.key === activeColorField)?.label} Picker` : "Color Picker"}
-											</div>
-											<div class="text-xs text-slate-500">
-												{activeColorField ? seeds[activeColorField] : "Select a color field to edit it."}
-											</div>
-										</div>
-										<div class="h-10 w-10 rounded-xl border border-white/10 shadow-inner" style={`background-color: ${pickerSwatchColor};`}></div>
-									</div>
-									<div class="space-y-4">
-										<div
-											bind:this={saturationValueElement}
-											onpointerdown={beginSaturationValueDrag}
-											class="relative h-48 w-full cursor-crosshair overflow-hidden rounded-xl border border-white/10 touch-none"
-											style={`background:
-												linear-gradient(to top, rgb(0 0 0), transparent),
-												linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
-											<div
-												class="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
-												style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
-											</div>
-										</div>
-										<div class="space-y-2">
-											<div class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Hue</div>
-											<div
-												bind:this={hueTrackElement}
-												onpointerdown={beginHueDrag}
-												class="relative h-4 w-full cursor-ew-resize rounded-full border border-white/10 touch-none"
-												style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
-												<div
-													class="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-slate-950 shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
-													style={`left: ${(pickerHue / 360) * 100}%;`}>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-
 						<div class="grid gap-4 sm:grid-cols-2">
-							{#each seedFields as field}
+							{#each seedFields as field, index}
 								<div class="relative" onfocusout={handleSeedFieldFocusOut}>
 									<label class="mb-2 block text-sm font-medium text-slate-400">{field.label}</label>
 									<div class="relative">
@@ -698,7 +694,7 @@
 											onfocus={() => activateColorField(field.key)}
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
-											class="w-full rounded-xl border border-white/10 px-4 py-3 pr-12 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
+											class="h-12 w-full rounded-xl border border-white/10 px-4 pr-12 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
 											style={`background-color: ${seeds[field.key]}; color: ${getReadableTextColor(seeds[field.key])};`} />
 										<button
 											type="button"
@@ -708,6 +704,47 @@
 											<Copy class="w-3.5 h-3.5" />
 										</button>
 									</div>
+									{#if activeColorField === field.key}
+										<div
+											class={`absolute top-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] ${index % 2 === 0 ? "left-0" : "right-0"}`}>
+											<div
+												class="rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
+												<div class="space-y-4">
+													<div
+														bind:this={saturationValueElement}
+														onpointerdown={beginSaturationValueDrag}
+														class="relative h-48 w-full cursor-crosshair overflow-hidden rounded-xl border border-white/10 touch-none"
+														style={`background:
+															linear-gradient(to top, rgb(0 0 0), transparent),
+															linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
+														<div
+															class="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
+															style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
+														</div>
+													</div>
+													<div class="space-y-2">
+														<div class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Hue</div>
+														<div
+															bind:this={hueTrackElement}
+															onpointerdown={beginHueDrag}
+															class="relative h-4 w-full cursor-ew-resize rounded-full border border-white/10 touch-none"
+															style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
+															<div
+																class="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-slate-950 shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
+																style={`left: ${(pickerHue / 360) * 100}%;`}>
+															</div>
+														</div>
+													</div>
+													<div class="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950 px-3 py-2">
+														<div
+															class="h-8 w-8 shrink-0 rounded-lg border border-white/10"
+															style={`background-color: ${pickerSwatchColor};`}></div>
+														<div class="font-mono text-sm text-slate-200">{seeds[field.key]}</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									{/if}
 								</div>
 							{/each}
 						</div>
@@ -715,14 +752,19 @@
 						<div class="relative" tabindex="-1" onfocusout={handleSchemeFocusOut}>
 							<label class="block text-sm font-medium text-slate-400 mb-2">Scheme</label>
 							<button
+								bind:this={schemeTriggerElement}
 								type="button"
-								onclick={() => (isSchemeOpen = !isSchemeOpen)}
-								class="w-full flex items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+								onclick={toggleSchemeMenu}
+								class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 text-sm text-white transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
 								<span>{formatSchemeLabel(demoScheme)}</span>
-								<ChevronDown class={`w-4 h-4 text-slate-400 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`} />
+								<ChevronDown
+									class={`w-4 h-4 text-slate-400 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`} />
 							</button>
 							{#if isSchemeOpen}
-								<div class="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 max-h-72 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 p-2 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
+								<div
+									bind:this={schemeMenuElement}
+									class={`scheme-menu-scrollbar absolute left-0 right-0 z-20 overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 p-2 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] ${schemeMenuDirection === "up" ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
+									style={`max-height: ${schemeMenuMaxHeight}px;`}>
 									{#each supportedSchemes as scheme}
 										<button
 											type="button"
@@ -744,7 +786,9 @@
 								type="button"
 								onclick={() => (wcag = !wcag)}
 								class={`w-12 h-6 rounded-full transition-colors relative ${wcag ? "bg-indigo-500" : "bg-slate-700"}`}>
-								<div class={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${wcag ? "translate-x-7" : "translate-x-1"}`}></div>
+								<div
+									class={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${wcag ? "translate-x-7" : "translate-x-1"}`}>
+								</div>
 							</button>
 							<label class="text-sm font-medium text-slate-400">Strict WCAG Checks</label>
 						</div>
@@ -752,7 +796,9 @@
 				</div>
 
 				<div class="relative group">
-					<div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+					<div
+						class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200">
+					</div>
 					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
 						<div class="flex items-center justify-between px-4 py-3 bg-white/5 border-b border-white/10">
 							<div class="flex gap-2">
@@ -761,7 +807,9 @@
 								<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
 							</div>
 							<div class="text-sm text-slate-400">Don't worry, I don't actually use Unix</div>
-							<button onclick={handleCopyCode} class="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium">
+							<button
+								onclick={handleCopyCode}
+								class="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium">
 								{#if isCopied}
 									<CheckCircle2 class="w-3.5 h-3.5 text-green-400" />
 								{:else}
@@ -773,7 +821,8 @@
 						<div class="p-4 sm:p-6 text-sm font-mono text-slate-300 overflow-x-auto">
 							<div class="text-slate-500">// 1. Import the totally-not-already-taken-package-name</div>
 							<div class="mb-4 text-purple-400">
-								import <span class="text-white">palette</span> from <span class="text-green-400">"@jacoblockett/palette"</span>
+								import <span class="text-white">palette</span> from
+								<span class="text-green-400">"@jacoblockett/palette"</span>
 								<div class="text-slate-500">// const palette = require("@jacoblockett/palette")</div>
 								<div class="text-slate-500 mb-2">// for those of you who can't let go</div>
 							</div>
@@ -784,13 +833,15 @@
 									<span class="text-slate-300"> text:</span> <span class="text-green-400">"{seeds.text}"</span>,
 								</div>
 								<div class="pl-4">
-									<span class="text-slate-300"> background:</span> <span class="text-green-400">"{seeds.background}"</span>,
+									<span class="text-slate-300"> background:</span>
+									<span class="text-green-400">"{seeds.background}"</span>,
 								</div>
 								<div class="pl-4">
 									<span class="text-slate-300"> primary:</span> <span class="text-green-400">"{seeds.primary}"</span>,
 								</div>
 								<div class="pl-4">
-									<span class="text-slate-300"> secondary:</span> <span class="text-green-400">"{seeds.secondary}"</span>,
+									<span class="text-slate-300"> secondary:</span>
+									<span class="text-green-400">"{seeds.secondary}"</span>,
 								</div>
 								<div class="pl-4">
 									<span class="text-slate-300"> accent:</span> <span class="text-green-400">"{seeds.accent}"</span>,
@@ -799,7 +850,8 @@
 									<span class="text-slate-300"> scheme:</span> <span class="text-green-400">"{demoScheme}"</span>,
 								</div>
 								<div class="pl-4">
-									<span class="text-slate-300"> wcag:</span> <span class="text-yellow-400">{wcag ? "true" : "false"}</span>
+									<span class="text-slate-300"> wcag:</span>
+									<span class="text-yellow-400">{wcag ? "true" : "false"}</span>
 								</div>
 								&#125;)
 							</div>
@@ -808,14 +860,24 @@
 								&#123;
 								<div class="pl-4">"light": &#123;</div>
 								<div class="pl-8">"text": "<span class="text-yellow-300">{generatedPalette.light.text}</span>",</div>
-								<div class="pl-8">"background": "<span class="text-yellow-300">{generatedPalette.light.background}</span>",</div>
-								<div class="pl-8">"primary": "<span class="text-yellow-300">{generatedPalette.light.primary}</span>",</div>
-								<div class="pl-8">"secondary": "<span class="text-yellow-300">{generatedPalette.light.secondary}</span>",</div>
-								<div class="pl-8">"accent": "<span class="text-yellow-300">{generatedPalette.light.accent}</span>",</div>
+								<div class="pl-8">
+									"background": "<span class="text-yellow-300">{generatedPalette.light.background}</span>",
+								</div>
+								<div class="pl-8">
+									"primary": "<span class="text-yellow-300">{generatedPalette.light.primary}</span>",
+								</div>
+								<div class="pl-8">
+									"secondary": "<span class="text-yellow-300">{generatedPalette.light.secondary}</span>",
+								</div>
+								<div class="pl-8">
+									"accent": "<span class="text-yellow-300">{generatedPalette.light.accent}</span>",
+								</div>
 								<div class="pl-8">"shades": &#123; <span class="text-slate-500">/* 10 to 200 */</span> &#125;</div>
 								<div class="pl-4">&#125;,</div>
 								<div class="pl-4">"dark": &#123;</div>
-								<div class="pl-8">"background": "<span class="text-yellow-300">{generatedPalette.dark.background}</span>",</div>
+								<div class="pl-8">
+									"background": "<span class="text-yellow-300">{generatedPalette.dark.background}</span>",
+								</div>
 								<div class="pl-8 text-slate-500">...</div>
 								<div class="pl-4">&#125;</div>
 								&#125;
@@ -854,8 +916,12 @@
 			</div>
 
 			<div class="testimonials-carousel relative overflow-hidden">
-				<div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-900 to-transparent"></div>
-				<div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-900 to-transparent"></div>
+				<div
+					class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-900 to-transparent">
+				</div>
+				<div
+					class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-900 to-transparent">
+				</div>
 				<div class="testimonials-track flex w-max gap-8">
 					{#each [...testimonials, ...testimonials] as testimonial, idx (idx)}
 						<div class="w-[20rem] shrink-0 rounded-2xl border border-white/10 bg-slate-950 p-8 md:w-[24rem]">
@@ -902,7 +968,8 @@
 					<p class="text-slate-400 mt-4 text-xs">* If you consider a lone dev a community</p>
 				</div>
 
-				<div class="bg-gradient-to-b from-indigo-500/10 to-slate-950 rounded-3xl p-8 border border-indigo-500/30 relative">
+				<div
+					class="bg-gradient-to-b from-indigo-500/10 to-slate-950 rounded-3xl p-8 border border-indigo-500/30 relative">
 					<div class="absolute top-0 right-8 transform -translate-y-1/2">
 						<span class="bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
 							Enterprise
@@ -948,6 +1015,30 @@
 </div>
 
 <style>
+	.scheme-menu-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: #475569 #1e293b;
+	}
+
+	.scheme-menu-scrollbar::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	.scheme-menu-scrollbar::-webkit-scrollbar-track {
+		background: #1e293b;
+		border-radius: 9999px;
+	}
+
+	.scheme-menu-scrollbar::-webkit-scrollbar-thumb {
+		background: #475569;
+		border: 2px solid #1e293b;
+		border-radius: 9999px;
+	}
+
+	.scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: #64748b;
+	}
+
 	.testimonials-track {
 		animation: testimonials-scroll 36s linear infinite;
 	}
