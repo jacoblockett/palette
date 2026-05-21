@@ -20,15 +20,11 @@
 	} from "@lucide/svelte"
 	import { siGithub } from "simple-icons"
 
-	const initialScheme = "random"
-	const initialWcag = false
-	const initialColorMode = "dark"
-
-	let activeColorMode = initialColorMode
+	let activeColorMode = "dark"
 	let theme = palette()
-	let seeds = cloneSeeds(theme[initialColorMode])
-	let demoScheme = initialScheme
-	let wcag = initialWcag
+	let seeds = cloneSeeds(theme["dark"])
+	let demoScheme = "random"
+	let wcag = false
 	let isCopied = false
 	let copiedSeedRole = null
 	let lockedSeedRoles = {}
@@ -165,6 +161,45 @@
 			role: "Calendar-based life form"
 		}
 	]
+
+	function updateTheme(newTheme) {
+		if (newTheme.light && newTheme.dark) {
+			theme = newTheme
+			return
+		}
+
+		const colors = theme[activeColorMode]
+		const [role, value] = Object.entries(newTheme)[0]
+		const shades = newTheme.background
+			? palette.shades({
+					background: newTheme.background,
+					colors: {
+						text: colors.text,
+						background: newTheme.background,
+						primary: colors.primary,
+						secondary: colors.secondary,
+						accent: colors.accent
+					}
+				})
+			: {
+					...colors.shades,
+					...palette.shades({
+						background: colors.background,
+						colors: {
+							[role]: value
+						}
+					})
+				}
+
+		theme = {
+			...theme,
+			[activeColorMode]: {
+				...colors,
+				[role]: value,
+				shades
+			}
+		}
+	}
 
 	function cloneSeeds(source) {
 		return {
@@ -593,7 +628,9 @@
 			return ["text", "background"]
 		}
 
-		const contrastMatch = errorMessage.match(/^palette ([a-z]+) seed #[0-9a-f]{6} must meet 4\.5 contrast against background #[0-9a-f]{6}\.$/)
+		const contrastMatch = errorMessage.match(
+			/^palette ([a-z]+) seed #[0-9a-f]{6} must meet 4\.5 contrast against background #[0-9a-f]{6}\.$/
+		)
 
 		if (contrastMatch) {
 			return [contrastMatch[1], "background"]
@@ -822,81 +859,80 @@
 	}
 
 	function buildCodePreviewLines() {
-		return buildPaletteCode().split("\n").map(line => {
-			const indent = line.match(/^\t*/)?.[0].length ?? 0
-			const trimmedLine = line.slice(indent)
+		return buildPaletteCode()
+			.split("\n")
+			.map(line => {
+				const indent = line.match(/^\t*/)?.[0].length ?? 0
+				const trimmedLine = line.slice(indent)
 
-			if (trimmedLine === "") {
-				return { indent, segments: [] }
-			}
+				if (trimmedLine === "") {
+					return { indent, segments: [] }
+				}
 
-			if (trimmedLine.startsWith("import ")) {
+				if (trimmedLine.startsWith("import ")) {
+					return {
+						indent,
+						segments: [
+							{ text: "import ", className: "text-purple-400" },
+							{ text: "palette", className: "text-white" },
+							{ text: " from ", className: "text-purple-400" },
+							{ text: trimmedLine.slice("import palette from ".length), className: "text-green-400" }
+						]
+					}
+				}
+
+				if (trimmedLine === "const theme = palette()") {
+					return {
+						indent,
+						segments: [
+							{ text: "const ", className: "text-purple-400" },
+							{ text: "theme", className: "text-white" },
+							{ text: " = ", className: "text-purple-400" },
+							{ text: "palette", className: "text-blue-300" },
+							{ text: "()", className: "text-purple-400" }
+						]
+					}
+				}
+
+				if (trimmedLine === "const theme = palette({") {
+					return {
+						indent,
+						segments: [
+							{ text: "const ", className: "text-purple-400" },
+							{ text: "theme", className: "text-white" },
+							{ text: " = ", className: "text-purple-400" },
+							{ text: "palette", className: "text-blue-300" },
+							{ text: "({", className: "text-purple-400" }
+						]
+					}
+				}
+
+				if (trimmedLine === "})") {
+					return {
+						indent,
+						segments: [{ text: "})", className: "text-purple-400" }]
+					}
+				}
+
+				const optionMatch = trimmedLine.match(/^([a-z]+): (.+?)(,?)$/)
+
+				if (optionMatch) {
+					const [, key, value, comma] = optionMatch
+					const valueClassName = value === "true" || value === "false" ? "text-yellow-400" : "text-green-400"
+					const segments = [createCodeSegmentsForText(`${key}: `), { text: value, className: valueClassName }]
+
+					if (comma) {
+						segments.push(createCodeSegmentsForText(comma))
+					}
+
+					return { indent, segments }
+				}
+
 				return {
 					indent,
-					segments: [
-						{ text: "import ", className: "text-purple-400" },
-						{ text: "palette", className: "text-white" },
-						{ text: " from ", className: "text-purple-400" },
-						{ text: trimmedLine.slice('import palette from '.length), className: "text-green-400" }
-					]
+					segments: [createCodeSegmentsForText(trimmedLine)]
 				}
-			}
-
-			if (trimmedLine === "const theme = palette()") {
-				return {
-					indent,
-					segments: [
-						{ text: "const ", className: "text-purple-400" },
-						{ text: "theme", className: "text-white" },
-						{ text: " = ", className: "text-purple-400" },
-						{ text: "palette", className: "text-blue-300" },
-						{ text: "()", className: "text-purple-400" }
-					]
-				}
-			}
-
-			if (trimmedLine === "const theme = palette({") {
-				return {
-					indent,
-					segments: [
-						{ text: "const ", className: "text-purple-400" },
-						{ text: "theme", className: "text-white" },
-						{ text: " = ", className: "text-purple-400" },
-						{ text: "palette", className: "text-blue-300" },
-						{ text: "({", className: "text-purple-400" }
-					]
-				}
-			}
-
-			if (trimmedLine === "})") {
-				return {
-					indent,
-					segments: [{ text: "})", className: "text-purple-400" }]
-				}
-			}
-
-			const optionMatch = trimmedLine.match(/^([a-z]+): (.+?)(,?)$/)
-
-			if (optionMatch) {
-				const [, key, value, comma] = optionMatch
-				const valueClassName = value === "true" || value === "false" ? "text-yellow-400" : "text-green-400"
-				const segments = [
-					createCodeSegmentsForText(`${key}: `),
-					{ text: value, className: valueClassName }
-				]
-
-				if (comma) {
-					segments.push(createCodeSegmentsForText(comma))
-				}
-
-				return { indent, segments }
-			}
-
-			return {
-				indent,
-				segments: [createCodeSegmentsForText(trimmedLine)]
-			}
-		})
+			})
 	}
 
 	$: codePreviewLines = buildCodePreviewLines()
@@ -1343,9 +1379,7 @@
 									class={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${wcag ? "translate-x-7" : "translate-x-1"}`}>
 								</div>
 							</button>
-							<label
-								class="text-sm font-medium"
-								style="color: color-mix(in srgb, var(--theme-text) 68%, transparent);">
+							<label class="text-sm font-medium" style="color: color-mix(in srgb, var(--theme-text) 68%, transparent);">
 								Strict WCAG Checks
 							</label>
 						</div>
@@ -1507,7 +1541,9 @@
 					</p>
 					<ul class="space-y-4 mb-8">
 						{#each openSourceFeatures as item, i (i)}
-							<li class="flex items-center gap-3 text-sm" style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
+							<li
+								class="flex items-center gap-3 text-sm"
+								style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
 								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary);" />
 								{item}
 							</li>
@@ -1546,7 +1582,9 @@
 					</p>
 					<ul class="space-y-4 mb-8">
 						{#each enterpriseFeatures as item, i (i)}
-							<li class="flex items-center gap-3 text-sm" style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
+							<li
+								class="flex items-center gap-3 text-sm"
+								style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
 								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-secondary);" />
 								{item}
 							</li>
