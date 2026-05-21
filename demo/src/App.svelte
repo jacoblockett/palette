@@ -105,6 +105,8 @@
 		"luxury"
 	]
 	const installCommand = "pnpm i @jacoblockett/palette"
+	const fixedNavbarHeight = 64
+	const colorPickerViewportBuffer = 24
 	const previewShadeSteps = ["10", "25", "50", "75", "100", "125", "150", "175", "200"]
 	const previewShadeControlGutterClass = "inline-flex w-16 shrink-0 justify-end pr-2"
 	const previewShadeCodeColumnClass = "min-w-0"
@@ -360,9 +362,9 @@
 			return
 		}
 
-		const viewportPadding = 16
 		const rect = colorPickerPopoverElement.getBoundingClientRect()
-		const overflowTop = rect.top - viewportPadding
+		const usableViewportTop = fixedNavbarHeight + colorPickerViewportBuffer
+		const overflowTop = rect.top - usableViewportTop
 
 		if (overflowTop < 0) {
 			window.scrollBy({
