@@ -8,10 +8,12 @@
 		Copy,
 		Dices,
 		Layers,
+		Lock,
 		Moon,
 		Palette,
 		Redo2,
 		Terminal,
+		Unlock,
 		Undo2,
 		Zap
 	} from "@lucide/svelte"
@@ -30,6 +32,7 @@
 	let wcag = true
 	let isCopied = false
 	let copiedSeedRole = null
+	let lockedSeedRoles = {}
 	let isNavInstallCopied = false
 	let isHeroInstallCopied = false
 	let isLightPreviewShadesExpanded = false
@@ -496,6 +499,17 @@
 		event.preventDefault()
 	}
 
+	function isSeedLocked(role) {
+		return lockedSeedRoles[role] === true
+	}
+
+	function toggleSeedLock(role) {
+		lockedSeedRoles = {
+			...lockedSeedRoles,
+			[role]: !isSeedLocked(role)
+		}
+	}
+
 	function getReadableTextColor(hex) {
 		const rgb = hexToRgb(hex)
 
@@ -506,6 +520,18 @@
 		const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255
 
 		return luminance > 0.62 ? "#0f172a" : "#f8fafc"
+	}
+
+	function getSeedActionHoverColor(hex) {
+		const rgb = hexToRgb(hex)
+
+		if (!rgb) {
+			return "rgba(248, 250, 252, 0.18)"
+		}
+
+		const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255
+
+		return luminance > 0.62 ? "rgba(15, 23, 42, 0.16)" : "rgba(248, 250, 252, 0.18)"
 	}
 
 	function formatSchemeLabel(scheme) {
@@ -735,13 +761,10 @@
 	function randomizeSeeds() {
 		commitColorChangeSession()
 
-		const nextSeeds = {
-			text: createRandomHex(),
-			background: createRandomHex(),
-			primary: createRandomHex(),
-			secondary: createRandomHex(),
-			accent: createRandomHex()
-		}
+		const nextSeeds = seedFields.reduce((next, field) => {
+			next[field.key] = isSeedLocked(field.key) ? seeds[field.key] : createRandomHex()
+			return next
+		}, {})
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 		nextHistory.push(cloneSeeds(nextSeeds))
@@ -927,19 +950,34 @@
 											onfocus={() => activateColorField(field.key)}
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
-											class="h-12 w-full rounded-xl border border-white/10 px-4 pr-12 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
+											class="h-12 w-full rounded-xl border border-white/10 px-4 pr-20 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
 											style={`background-color: ${seeds[field.key]}; color: ${getReadableTextColor(seeds[field.key])};`} />
-										<button
-											type="button"
-											aria-label={`Copy ${field.label} hex`}
-											onclick={() => handleCopySeed(field.key, seeds[field.key])}
-											class="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg bg-slate-950 text-slate-200 transition-colors hover:bg-slate-900">
-											{#if copiedSeedRole === field.key}
-												<CheckCircle2 class="w-3.5 h-3.5" />
-											{:else}
-												<Copy class="w-3.5 h-3.5" />
-											{/if}
-										</button>
+										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center gap-1">
+											<button
+												type="button"
+												aria-label={`${isSeedLocked(field.key) ? "Unlock" : "Lock"} ${field.label} hex`}
+												onclick={() => toggleSeedLock(field.key)}
+												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors hover:bg-[var(--seed-action-hover)]"
+												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
+												{#if isSeedLocked(field.key)}
+													<Lock class="w-3.5 h-3.5 fill-current" />
+												{:else}
+													<Unlock class="w-3.5 h-3.5 fill-current" />
+												{/if}
+											</button>
+											<button
+												type="button"
+												aria-label={`Copy ${field.label} hex`}
+												onclick={() => handleCopySeed(field.key, seeds[field.key])}
+												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors hover:bg-[var(--seed-action-hover)]"
+												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
+												{#if copiedSeedRole === field.key}
+													<CheckCircle2 class="w-3.5 h-3.5 fill-current" />
+												{:else}
+													<Copy class="w-3.5 h-3.5 fill-current" />
+												{/if}
+											</button>
+										</div>
 									</div>
 									{#if activeColorField === field.key}
 										<div
