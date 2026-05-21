@@ -976,7 +976,7 @@
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
 											class="h-12 w-full rounded-xl border border-white/10 px-4 pr-20 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
 											style={`background-color: ${seeds[field.key]}; color: ${getReadableTextColor(seeds[field.key])};`} />
-										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center gap-1">
+										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center">
 											<button
 												type="button"
 												aria-label={`${isSeedLocked(field.key) ? "Unlock" : "Lock"} ${field.label} hex`}
