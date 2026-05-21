@@ -43,6 +43,7 @@
 	let isDarkPreviewShadesExpanded = false
 	let activeColorField = null
 	let activeColorMode = "light"
+	let currentThemePalette = initialGeneratedPalette
 	let generatedPalette = initialGeneratedPalette
 	let paletteErrorMessage = null
 	let paletteErrorRoles = []
@@ -207,6 +208,7 @@
 			activeColorMode,
 			demoScheme,
 			wcag,
+			currentThemePalette: cloneGeneratedPalette(currentThemePalette),
 			generatedPalette: cloneGeneratedPalette(generatedPalette),
 			paletteErrorMessage,
 			paletteErrorRoles: [...paletteErrorRoles]
@@ -219,6 +221,7 @@
 		activeColorMode = snapshot.activeColorMode
 		demoScheme = snapshot.demoScheme
 		wcag = snapshot.wcag
+		currentThemePalette = cloneGeneratedPalette(snapshot.currentThemePalette)
 		generatedPalette = cloneGeneratedPalette(snapshot.generatedPalette)
 		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
 		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
@@ -394,6 +397,27 @@
 		}
 	}
 
+	function buildPaletteFromCurrentInputs() {
+		return palette({
+			text: seeds.text,
+			background: seeds.background,
+			primary: seeds.primary,
+			secondary: seeds.secondary,
+			accent: seeds.accent,
+			wcag: false
+		})
+	}
+
+	function syncCurrentThemePaletteFromSeeds() {
+		if (Object.values(seeds).some(value => !isValidHex(value))) {
+			return
+		}
+
+		try {
+			currentThemePalette = buildPaletteFromCurrentInputs()
+		} catch {}
+	}
+
 	async function scrollActiveColorPickerIntoView() {
 		await tick()
 
@@ -436,6 +460,7 @@
 		beginColorChangeSession()
 		clearPaletteError()
 		updateSeed(role, value)
+		syncCurrentThemePaletteFromSeeds()
 	}
 
 	function handleSeedFieldFocusOut(event) {
@@ -486,6 +511,7 @@
 			fromPicker: true,
 			sanitize: false
 		})
+		syncCurrentThemePaletteFromSeeds()
 	}
 
 	function clamp(value, min, max) {
@@ -640,37 +666,30 @@
 		return luminance > 0.62 ? "rgba(15, 23, 42, 0.16)" : "rgba(248, 250, 252, 0.18)"
 	}
 
-	$: activeGeneratedPalette = generatedPalette[activeColorMode]
-	$: activeThemeRoles = {
-		text: seeds.text,
-		background: seeds.background,
-		primary: seeds.primary,
-		secondary: seeds.secondary,
-		accent: seeds.accent
-	}
+	$: activeThemePalette = currentThemePalette[activeColorMode]
 
 	function getThemeShade(role, step) {
-		return activeGeneratedPalette?.shades?.[role]?.[step] ?? activeThemeRoles[role]
+		return activeThemePalette.shades[role][step]
 	}
 
 	function getThemeRole(role) {
-		return activeThemeRoles[role]
+		return activeThemePalette[role]
 	}
 
 	$: themeStyle = [
-		`--theme-text: ${getThemeRole("text")}`,
-		`--theme-background: ${getThemeRole("background")}`,
-		`--theme-primary: ${getThemeRole("primary")}`,
-		`--theme-secondary: ${getThemeRole("secondary")}`,
-		`--theme-accent: ${getThemeRole("accent")}`,
-		`--theme-background-soft: ${getThemeShade("background", activeColorMode === "light" ? "25" : "150")}`,
-		`--theme-background-panel: ${getThemeShade("background", activeColorMode === "light" ? "50" : "125")}`,
-		`--theme-background-raised: ${getThemeShade("background", activeColorMode === "light" ? "75" : "110")}`,
-		`--theme-border: ${getThemeShade("background", activeColorMode === "light" ? "150" : "75")}`,
-		`--theme-primary-soft: ${getThemeShade("primary", activeColorMode === "light" ? "25" : "150")}`,
-		`--theme-primary-hover: ${getThemeShade("primary", activeColorMode === "light" ? "125" : "75")}`,
-		`--theme-secondary-soft: ${getThemeShade("secondary", activeColorMode === "light" ? "25" : "150")}`,
-		`--theme-accent-soft: ${getThemeShade("accent", activeColorMode === "light" ? "25" : "150")}`
+		`--theme-text: ${activeThemePalette.text}`,
+		`--theme-background: ${activeThemePalette.background}`,
+		`--theme-primary: ${activeThemePalette.primary}`,
+		`--theme-secondary: ${activeThemePalette.secondary}`,
+		`--theme-accent: ${activeThemePalette.accent}`,
+		`--theme-background-soft: ${activeThemePalette.shades.background["25"]}`,
+		`--theme-background-panel: ${activeThemePalette.shades.background["50"]}`,
+		`--theme-background-raised: ${activeThemePalette.shades.background["75"]}`,
+		`--theme-border: ${activeThemePalette.shades.background["150"]}`,
+		`--theme-primary-soft: ${activeThemePalette.shades.primary["25"]}`,
+		`--theme-primary-hover: ${activeThemePalette.shades.primary["125"]}`,
+		`--theme-secondary-soft: ${activeThemePalette.shades.secondary["25"]}`,
+		`--theme-accent-soft: ${activeThemePalette.shades.accent["25"]}`
 	].join("; ")
 
 	function formatSchemeLabel(scheme) {
@@ -929,7 +948,7 @@
 	}
 
 	function getActivePreviewShadeValue(role, step) {
-		return generatedPalette[activeColorMode]?.shades?.[role]?.[step] ?? seeds[role]
+		return currentThemePalette[activeColorMode]?.shades?.[role]?.[step] ?? seeds[role]
 	}
 
 	function createRandomHex() {
@@ -944,6 +963,7 @@
 		try {
 			const nextGeneratedPalette = palette(buildPaletteOptions())
 			generatedPalette = nextGeneratedPalette
+			currentThemePalette = nextGeneratedPalette
 			setSeedsState(getPaletteRoles(activeColorMode, nextGeneratedPalette))
 			clearPaletteError()
 
@@ -960,7 +980,7 @@
 		const nextMode = activeColorMode === "light" ? "dark" : "light"
 
 		activeColorMode = nextMode
-		setSeedsState(getPaletteRoles(nextMode, generatedPalette))
+		setSeedsState(getPaletteRoles(nextMode, currentThemePalette))
 		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
@@ -1040,17 +1060,17 @@
 					<div
 						class="hidden md:flex gap-8 text-sm font-medium"
 						style="color: color-mix(in srgb, var(--theme-text) 74%, transparent);">
-						<a href="#playground" class="hover:text-white transition-colors">Playground</a>
-						<a href="#features" class="hover:text-white transition-colors">Features</a>
-						<a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a>
-						<a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
+						<a href="#playground" class="transition-opacity hover:opacity-100">Playground</a>
+						<a href="#features" class="transition-opacity hover:opacity-100">Features</a>
+						<a href="#testimonials" class="transition-opacity hover:opacity-100">Testimonials</a>
+						<a href="#pricing" class="transition-opacity hover:opacity-100">Pricing</a>
 					</div>
 				</div>
 				<div class="flex items-center gap-2">
 					<button
 						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 						onclick={toggleActiveColorMode}
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-slate-800"
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--theme-background-panel)]"
 						style="color: var(--theme-text);">
 						<Moon />
 					</button>
@@ -1058,7 +1078,7 @@
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-slate-800"
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--theme-background-panel)]"
 						style="color: var(--theme-text);">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
@@ -1068,7 +1088,7 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border px-4 text-xs font-mono transition-colors hover:bg-slate-800"
+						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border px-4 text-xs font-mono transition-colors hover:bg-[var(--theme-background-panel)]"
 						style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 						<span
 							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
@@ -1106,7 +1126,7 @@
 			<button
 				type="button"
 				onclick={() => handleCopyInstallCommand("hero")}
-				class="relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold transition-colors border font-mono text-sm"
+				class="relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border font-mono text-sm font-semibold transition-colors hover:bg-[var(--theme-background-panel)]"
 				style="background-color: var(--theme-background-raised); color: var(--theme-text); border-color: var(--theme-border);">
 				<span
 					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
@@ -1140,7 +1160,7 @@
 									type="button"
 									aria-label="Randomize colors"
 									onclick={randomizeSeeds}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800"
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)]"
 									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Dices class="w-4 h-4" />
 								</button>
@@ -1149,7 +1169,7 @@
 									aria-label="Undo color change"
 									onclick={undoColorChange}
 									disabled={colorHistoryIndex === 0}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)] disabled:cursor-not-allowed disabled:opacity-40"
 									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Undo2 class="w-4 h-4" />
 								</button>
@@ -1158,7 +1178,7 @@
 									aria-label="Redo color change"
 									onclick={redoColorChange}
 									disabled={colorHistoryIndex >= colorHistory.length - 1}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)] disabled:cursor-not-allowed disabled:opacity-40"
 									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Redo2 class="w-4 h-4" />
 								</button>
@@ -1166,7 +1186,7 @@
 									type="button"
 									aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 									onclick={toggleActiveColorMode}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800"
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)]"
 									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Moon class="w-4 h-4" />
 								</button>
@@ -1290,11 +1310,12 @@
 								bind:this={schemeTriggerElement}
 								type="button"
 								onclick={toggleSchemeMenu}
-								class="flex h-12 w-full items-center justify-between rounded-xl border px-4 text-sm transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								class="flex h-12 w-full items-center justify-between rounded-xl border px-4 text-sm transition-colors hover:bg-[var(--theme-background-panel)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
 								style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 								<span>{formatSchemeLabel(demoScheme)}</span>
 								<ChevronDown
-									class={`w-4 h-4 text-slate-400 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`} />
+									class={`w-4 h-4 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`}
+									style="color: color-mix(in srgb, var(--theme-text) 58%, transparent);" />
 							</button>
 							{#if isSchemeOpen}
 								<div
@@ -1310,8 +1331,8 @@
 												onclick={() => selectScheme(scheme)}
 												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
 													demoScheme === scheme
-														? "bg-slate-700 text-white"
-														: "hover:bg-slate-700/80 hover:text-white"
+														? "bg-[var(--theme-background-panel)] text-[var(--theme-text)]"
+														: "hover:bg-[var(--theme-background-panel)] hover:text-[var(--theme-text)]"
 												}`}>
 												{formatSchemeLabel(scheme)}
 											</button>
@@ -1412,7 +1433,7 @@
 		<div class="grid md:grid-cols-3 gap-8">
 			{#each features as feature, idx (idx)}
 				<div
-					class="rounded-2xl border p-8 transition-colors hover:bg-slate-800/80"
+					class="rounded-2xl border p-8 transition-colors hover:bg-[var(--theme-background-raised)]"
 					style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
 					<div
 						class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border"
@@ -1490,7 +1511,7 @@
 					<h3 class="text-xl font-semibold mb-2">Open Source</h3>
 					<div class="flex items-baseline gap-1 mb-6">
 						<span class="text-4xl font-bold">$0</span>
-						<span class="text-slate-400">/forever</span>
+						<span style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">/forever</span>
 					</div>
 					<p class="mb-8" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
 						Perfect for developers who know how to use a package manager.
@@ -1506,7 +1527,7 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block text-center w-full py-3 rounded-xl font-medium transition-colors"
+							class="block w-full rounded-xl py-3 text-center font-medium transition-colors hover:bg-[var(--theme-background-panel)]"
 							style="background-color: var(--theme-background-raised); color: var(--theme-text);">
 							View on GitHub
 						</a>
@@ -1529,7 +1550,7 @@
 					<h3 class="text-xl font-semibold mb-2">Enterprise</h3>
 					<div class="flex items-baseline gap-1 mb-6">
 						<span class="text-4xl font-bold">$0</span>
-						<span class="text-slate-400">/forever</span>
+						<span style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">/forever</span>
 					</div>
 					<p class="mb-8" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
 						The exact same code, but you wear a suit while running it. Or maybe not. Idk what your dresscode looks like.
@@ -1545,7 +1566,7 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block text-center w-full py-3 rounded-xl font-medium transition-colors shadow-lg shadow-indigo-500/25"
+							class="block w-full rounded-xl py-3 text-center font-medium transition-colors shadow-lg shadow-indigo-500/25 hover:bg-[var(--theme-primary-hover)]"
 							style="background-color: var(--theme-primary); color: var(--theme-background);">
 							Also View on GitHub
 						</a>
@@ -1566,8 +1587,8 @@
 			<span class="font-semibold" style="color: var(--theme-text);">Palette</span>
 		</div>
 		<div class="flex justify-center gap-6">
-			<a href="https://github.com/jacoblockett/palette" class="hover:text-white transition-colors">Documentation</a>
-			<a href="https://github.com/jacoblockett/palette" class="hover:text-white transition-colors">GitHub</a>
+			<a href="https://github.com/jacoblockett/palette" class="transition-opacity hover:opacity-100">Documentation</a>
+			<a href="https://github.com/jacoblockett/palette" class="transition-opacity hover:opacity-100">GitHub</a>
 		</div>
 	</footer>
 </div>
