@@ -1079,6 +1079,7 @@
 
 <div
 	bind:this={appElement}
+	data-theme={activeColorMode}
 	class="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)] selection:bg-indigo-500/30">
 	<nav
 		class="fixed top-0 z-50 w-full border-b backdrop-blur-md"
