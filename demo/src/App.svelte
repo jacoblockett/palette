@@ -40,6 +40,7 @@
 	let pickerSaturation = 0.75
 	let pickerValue = 0.96
 	let activeDragTarget = null
+	let appElement
 	let colorPickerPopoverElement
 	let saturationValueElement
 	let hueTrackElement
@@ -88,6 +89,7 @@
 	const paletteErrorBorderColor = "#ef4444"
 	const paletteErrorMessageBackground = "rgba(239, 68, 68, 0.14)"
 	const previewShadeSteps = ["10", "25", "50", "75", "100", "125", "150", "175", "200"]
+	const themeShadeStops = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 	const previewShadeControlGutterClass = "inline-flex w-16 shrink-0 justify-end pr-2"
 	const previewShadeCodeColumnClass = "min-w-0"
 	const previewShadeButtonClass =
@@ -164,6 +166,7 @@
 	function updateTheme(newTheme) {
 		if (newTheme.light && newTheme.dark) {
 			theme = newTheme
+			applyThemeVariables()
 			return
 		}
 
@@ -172,7 +175,13 @@
 		const nextModeTheme = {
 			...colors,
 			[role]: value,
-			shades: cloneGeneratedPalette(colors.shades)
+			shades: {
+				text: { ...colors.shades.text },
+				background: { ...colors.shades.background },
+				primary: { ...colors.shades.primary },
+				secondary: { ...colors.shades.secondary },
+				accent: { ...colors.shades.accent }
+			}
 		}
 
 		if (role === "background") {
@@ -205,6 +214,35 @@
 			...theme,
 			[activeColorMode]: nextModeTheme
 		}
+		applyThemeVariables()
+	}
+
+	function applyThemeVariables() {
+		if (!appElement) {
+			return
+		}
+
+		const activeTheme = theme[activeColorMode]
+		appElement.style.setProperty("--theme-text", activeTheme.text)
+		appElement.style.setProperty("--theme-background", activeTheme.background)
+		appElement.style.setProperty("--theme-primary", activeTheme.primary)
+		appElement.style.setProperty("--theme-secondary", activeTheme.secondary)
+		appElement.style.setProperty("--theme-accent", activeTheme.accent)
+
+		for (const role of ["text", "background", "primary", "secondary", "accent"]) {
+			for (const stop of themeShadeStops) {
+				appElement.style.setProperty(`--theme-${role}-${stop}`, activeTheme.shades[role][stop])
+			}
+		}
+
+		appElement.style.setProperty("--theme-background-soft", activeTheme.shades.background["25"])
+		appElement.style.setProperty("--theme-background-panel", activeTheme.shades.background["50"])
+		appElement.style.setProperty("--theme-background-raised", activeTheme.shades.background["75"])
+		appElement.style.setProperty("--theme-border", activeTheme.shades.background["150"])
+		appElement.style.setProperty("--theme-primary-soft", activeTheme.shades.primary["25"])
+		appElement.style.setProperty("--theme-primary-hover", activeTheme.shades.primary["125"])
+		appElement.style.setProperty("--theme-secondary-soft", activeTheme.shades.secondary["25"])
+		appElement.style.setProperty("--theme-accent-soft", activeTheme.shades.accent["25"])
 	}
 
 	function cloneGeneratedPalette(source) {
@@ -683,22 +721,6 @@
 		return theme[activeColorMode][role]
 	}
 
-	$: themeStyle = [
-		`--theme-text: ${getThemeRole("text")}`,
-		`--theme-background: ${getThemeRole("background")}`,
-		`--theme-primary: ${getThemeRole("primary")}`,
-		`--theme-secondary: ${getThemeRole("secondary")}`,
-		`--theme-accent: ${getThemeRole("accent")}`,
-		`--theme-background-soft: ${getThemeShade("background", "25")}`,
-		`--theme-background-panel: ${getThemeShade("background", "50")}`,
-		`--theme-background-raised: ${getThemeShade("background", "75")}`,
-		`--theme-border: ${getThemeShade("background", "150")}`,
-		`--theme-primary-soft: ${getThemeShade("primary", "25")}`,
-		`--theme-primary-hover: ${getThemeShade("primary", "125")}`,
-		`--theme-secondary-soft: ${getThemeShade("secondary", "25")}`,
-		`--theme-accent-soft: ${getThemeShade("accent", "25")}`
-	].join("; ")
-
 	function formatSchemeLabel(scheme) {
 		return scheme
 			.split("-")
@@ -1036,6 +1058,7 @@
 	$: pickerHueColor = `hsl(${pickerHue} 100% 50%)`
 
 	onMount(() => {
+		updateTheme(theme)
 		window.addEventListener("wheel", handleSchemeWheel, { passive: false })
 		window.addEventListener("touchmove", handleSchemeTouchMove, { passive: false })
 		window.addEventListener("keydown", handleSchemeKeydown)
@@ -1055,8 +1078,8 @@
 	onscroll={() => isSchemeOpen && updateSchemeMenuPlacement()} />
 
 <div
-	class="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)] selection:bg-indigo-500/30"
-	style={themeStyle}>
+	bind:this={appElement}
+	class="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)] selection:bg-indigo-500/30">
 	<nav
 		class="fixed top-0 z-50 w-full border-b backdrop-blur-md"
 		style="background-color: color-mix(in srgb, var(--theme-background) 82%, transparent); border-color: color-mix(in srgb, var(--theme-border) 72%, transparent);">
