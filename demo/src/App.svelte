@@ -46,6 +46,7 @@
 	let colorHistoryIndex = 0
 	let pendingHistorySnapshot = null
 	let activeDragTarget = null
+	let colorPickerPopoverElement
 	let saturationValueElement
 	let hueTrackElement
 	let schemeTriggerElement
@@ -352,7 +353,26 @@
 		}
 	}
 
-	function activateColorField(role) {
+	async function scrollActiveColorPickerIntoView() {
+		await tick()
+
+		if (!colorPickerPopoverElement) {
+			return
+		}
+
+		const viewportPadding = 16
+		const rect = colorPickerPopoverElement.getBoundingClientRect()
+		const overflowTop = rect.top - viewportPadding
+
+		if (overflowTop < 0) {
+			window.scrollBy({
+				top: overflowTop,
+				behavior: "smooth"
+			})
+		}
+	}
+
+	async function activateColorField(role) {
 		if (activeColorField !== role) {
 			commitColorChangeSession()
 		}
@@ -362,6 +382,8 @@
 		if (isValidHex(seeds[role])) {
 			syncPickerFromHex(seeds[role])
 		}
+
+		await scrollActiveColorPickerIntoView()
 	}
 
 	function handleSeedTextInput(role, value) {
@@ -981,7 +1003,8 @@
 									</div>
 									{#if activeColorField === field.key}
 										<div
-											class={`absolute top-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] ${index % 2 === 0 ? "left-0" : "right-0"}`}>
+											bind:this={colorPickerPopoverElement}
+											class={`absolute bottom-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] ${index % 2 === 0 ? "left-0" : "right-0"}`}>
 											<div
 												onpointerdown={handleColorPickerPointerDown}
 												class="rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
