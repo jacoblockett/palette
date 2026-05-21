@@ -208,11 +208,36 @@
 	}
 
 	function cloneGeneratedPalette(source) {
-		if (typeof structuredClone === "function") {
-			return structuredClone(source)
+		return {
+			light: {
+				text: source.light.text,
+				background: source.light.background,
+				primary: source.light.primary,
+				secondary: source.light.secondary,
+				accent: source.light.accent,
+				shades: {
+					text: { ...source.light.shades.text },
+					background: { ...source.light.shades.background },
+					primary: { ...source.light.shades.primary },
+					secondary: { ...source.light.shades.secondary },
+					accent: { ...source.light.shades.accent }
+				}
+			},
+			dark: {
+				text: source.dark.text,
+				background: source.dark.background,
+				primary: source.dark.primary,
+				secondary: source.dark.secondary,
+				accent: source.dark.accent,
+				shades: {
+					text: { ...source.dark.shades.text },
+					background: { ...source.dark.shades.background },
+					primary: { ...source.dark.shades.primary },
+					secondary: { ...source.dark.shades.secondary },
+					accent: { ...source.dark.shades.accent }
+				}
+			}
 		}
-
-		return JSON.parse(JSON.stringify(source))
 	}
 
 	function cloneTheme(source) {
