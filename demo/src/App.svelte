@@ -960,9 +960,9 @@
 												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors hover:bg-[var(--seed-action-hover)]"
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if isSeedLocked(field.key)}
-													<Lock class="w-3.5 h-3.5 fill-current" />
+													<Lock class="w-3.5 h-3.5" />
 												{:else}
-													<Unlock class="w-3.5 h-3.5 fill-current" />
+													<Unlock class="w-3.5 h-3.5" />
 												{/if}
 											</button>
 											<button
@@ -972,9 +972,9 @@
 												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors hover:bg-[var(--seed-action-hover)]"
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if copiedSeedRole === field.key}
-													<CheckCircle2 class="w-3.5 h-3.5 fill-current" />
+													<CheckCircle2 class="w-3.5 h-3.5" />
 												{:else}
-													<Copy class="w-3.5 h-3.5 fill-current" />
+													<Copy class="w-3.5 h-3.5" />
 												{/if}
 											</button>
 										</div>
