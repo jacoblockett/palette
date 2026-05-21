@@ -388,6 +388,11 @@
 		await scrollActiveColorPickerIntoView()
 	}
 
+	async function handleSeedInputFocus(role, event) {
+		await activateColorField(role)
+		event.currentTarget.select()
+	}
+
 	function handleSeedTextInput(role, value) {
 		beginColorChangeSession()
 		updateSeed(role, value)
@@ -967,11 +972,11 @@
 							{#each seedFields as field, index}
 								<div class="relative" onfocusout={handleSeedFieldFocusOut}>
 									<label class="mb-2 block text-sm font-medium text-slate-400">{field.label}</label>
-									<div class="relative">
+									<div class="relative group">
 										<input
 											type="text"
 											value={seeds[field.key]}
-											onfocus={() => activateColorField(field.key)}
+											onfocus={event => handleSeedInputFocus(field.key, event)}
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
 											class="h-12 w-full rounded-xl border border-white/10 px-4 pr-20 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -981,7 +986,7 @@
 												type="button"
 												aria-label={`${isSeedLocked(field.key) ? "Unlock" : "Lock"} ${field.label} hex`}
 												onclick={() => toggleSeedLock(field.key)}
-												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors hover:bg-[var(--seed-action-hover)]"
+												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 ${isSeedLocked(field.key) ? "opacity-100" : "opacity-0"}`}
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if isSeedLocked(field.key)}
 													<Lock class="w-3.5 h-3.5" />
@@ -993,7 +998,7 @@
 												type="button"
 												aria-label={`Copy ${field.label} hex`}
 												onclick={() => handleCopySeed(field.key, seeds[field.key])}
-												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors hover:bg-[var(--seed-action-hover)]"
+												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if copiedSeedRole === field.key}
 													<CheckCircle2 class="w-3.5 h-3.5" />
