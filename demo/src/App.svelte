@@ -27,13 +27,9 @@
 		secondary: "#9b5a43",
 		accent: "#9c661d"
 	}
-	const initialScheme = "triadic"
-	const initialWcag = true
-	const initialGeneratedPalette = palette({
-		...initialSeeds,
-		scheme: initialScheme,
-		wcag: initialWcag
-	})
+	const initialScheme = "random"
+	const initialWcag = false
+	const initialGeneratedPalette = palette()
 
 	let seeds = getPaletteRoles("light", initialGeneratedPalette)
 	let demoScheme = initialScheme
@@ -48,7 +44,8 @@
 	let activeColorField = null
 	let activeColorMode = "light"
 	let generatedPalette = initialGeneratedPalette
-	let paletteError = null
+	let paletteErrorMessage = null
+	let paletteErrorRoles = []
 	let isSchemeOpen = false
 	let pickerHue = 218
 	let pickerSaturation = 0.75
@@ -99,6 +96,8 @@
 	const installCommand = "pnpm i @jacoblockett/palette"
 	const fixedNavbarHeight = 64
 	const colorPickerViewportBuffer = 24
+	const paletteErrorBorderColor = "#ef4444"
+	const paletteErrorMessageBackground = "rgba(239, 68, 68, 0.14)"
 	const previewShadeSteps = ["10", "25", "50", "75", "100", "125", "150", "175", "200"]
 	const previewShadeControlGutterClass = "inline-flex w-16 shrink-0 justify-end pr-2"
 	const previewShadeCodeColumnClass = "min-w-0"
@@ -208,7 +207,9 @@
 			activeColorMode,
 			demoScheme,
 			wcag,
-			generatedPalette: cloneGeneratedPalette(generatedPalette)
+			generatedPalette: cloneGeneratedPalette(generatedPalette),
+			paletteErrorMessage,
+			paletteErrorRoles: [...paletteErrorRoles]
 		}
 	}
 
@@ -219,7 +220,8 @@
 		demoScheme = snapshot.demoScheme
 		wcag = snapshot.wcag
 		generatedPalette = cloneGeneratedPalette(snapshot.generatedPalette)
-		paletteError = snapshot.paletteError ?? null
+		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
+		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
 
 		if (activeColorField && isValidHex(seeds[activeColorField])) {
 			syncPickerFromHex(seeds[activeColorField])
@@ -432,6 +434,7 @@
 
 	function handleSeedTextInput(role, value) {
 		beginColorChangeSession()
+		clearPaletteError()
 		updateSeed(role, value)
 	}
 
@@ -478,6 +481,7 @@
 			return
 		}
 
+		clearPaletteError()
 		updateSeed(activeColorField, hsvToHex(pickerHue, pickerSaturation, pickerValue), {
 			fromPicker: true,
 			sanitize: false
@@ -565,11 +569,46 @@
 		event.preventDefault()
 	}
 
+	function clearPaletteError() {
+		paletteErrorMessage = null
+		paletteErrorRoles = []
+	}
+
+	function getPaletteErrorRoles(errorMessage) {
+		if (errorMessage === "palette text and background cannot be the same color.") {
+			return ["text", "background"]
+		}
+
+		const contrastMatch = errorMessage.match(/^palette ([a-z]+) seed #[0-9a-f]{6} must meet 4\.5 contrast against background #[0-9a-f]{6}\.$/)
+
+		if (contrastMatch) {
+			return [contrastMatch[1], "background"]
+		}
+
+		if (errorMessage === "palette seed values must be 6-digit hex colors.") {
+			return seedFields
+				.filter(field => lockedSeedRoles[field.key] && !isValidHex(seeds[field.key]))
+				.map(field => field.key)
+		}
+
+		return []
+	}
+
+	function setPaletteGenerationError(error) {
+		paletteErrorMessage = error.message
+		paletteErrorRoles = getPaletteErrorRoles(error.message)
+	}
+
+	function hasPaletteError(role) {
+		return paletteErrorRoles.includes(role)
+	}
+
 	function toggleSeedLock(role) {
 		lockedSeedRoles = {
 			...lockedSeedRoles,
 			[role]: !lockedSeedRoles[role]
 		}
+		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 		nextHistory.push(createPlaygroundSnapshot())
@@ -644,6 +683,7 @@
 	function selectScheme(scheme) {
 		demoScheme = scheme
 		isSchemeOpen = false
+		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 		nextHistory.push(createPlaygroundSnapshot())
@@ -905,14 +945,14 @@
 			const nextGeneratedPalette = palette(buildPaletteOptions())
 			generatedPalette = nextGeneratedPalette
 			setSeedsState(getPaletteRoles(activeColorMode, nextGeneratedPalette))
-			paletteError = null
+			clearPaletteError()
 
 			const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 			nextHistory.push(createPlaygroundSnapshot())
 			colorHistory = nextHistory
 			colorHistoryIndex = nextHistory.length - 1
 		} catch (error) {
-			paletteError = error.message
+			setPaletteGenerationError(error)
 		}
 	}
 
@@ -921,7 +961,7 @@
 
 		activeColorMode = nextMode
 		setSeedsState(getPaletteRoles(nextMode, generatedPalette))
-		paletteError = null
+		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 		nextHistory.push(createPlaygroundSnapshot())
@@ -931,6 +971,7 @@
 
 	function toggleWcag() {
 		wcag = !wcag
+		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 		nextHistory.push(createPlaygroundSnapshot())
@@ -1147,7 +1188,9 @@
 											onfocus={event => handleSeedInputFocus(field.key, event)}
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
-											class="h-12 w-full rounded-xl border border-white/10 px-4 pr-20 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500"
+											class={`h-12 w-full rounded-xl border px-4 pr-20 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+												hasPaletteError(field.key) ? "border-red-500 ring-2 ring-red-500/70" : "border-white/10"
+											}`}
 											style={`background-color: ${seeds[field.key]}; color: ${getReadableTextColor(seeds[field.key])};`} />
 										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center">
 											<button
@@ -1229,6 +1272,13 @@
 								</div>
 							{/each}
 						</div>
+						{#if paletteErrorMessage}
+							<div
+								class="mr-auto rounded-xl border px-3 py-2 text-sm"
+								style={`color: ${paletteErrorBorderColor}; border-color: ${paletteErrorBorderColor}; background-color: ${paletteErrorMessageBackground};`}>
+								{paletteErrorMessage}
+							</div>
+						{/if}
 
 						<div class="relative" tabindex="-1" onfocusout={handleSchemeFocusOut}>
 							<label
@@ -1287,13 +1337,6 @@
 								Strict WCAG Checks
 							</label>
 						</div>
-						{#if paletteError}
-							<div
-								class="rounded-xl px-3 py-2 text-sm"
-								style="color: var(--theme-accent); background-color: var(--theme-accent-soft);">
-								{paletteError}
-							</div>
-						{/if}
 					</div>
 				</div>
 
