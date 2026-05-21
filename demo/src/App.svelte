@@ -986,7 +986,7 @@
 												type="button"
 												aria-label={`${isSeedLocked(field.key) ? "Unlock" : "Lock"} ${field.label} hex`}
 												onclick={() => toggleSeedLock(field.key)}
-												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 ${isSeedLocked(field.key) ? "opacity-100" : "opacity-0"}`}
+												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] group-hover:opacity-100 focus-visible:opacity-100 ${isSeedLocked(field.key) ? "opacity-100" : "opacity-0"}`}
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if isSeedLocked(field.key)}
 													<Lock class="w-3.5 h-3.5" />
@@ -998,7 +998,7 @@
 												type="button"
 												aria-label={`Copy ${field.label} hex`}
 												onclick={() => handleCopySeed(field.key, seeds[field.key])}
-												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
+												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] group-hover:opacity-100 focus-visible:opacity-100"
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if copiedSeedRole === field.key}
 													<CheckCircle2 class="w-3.5 h-3.5" />
