@@ -44,11 +44,7 @@
 	let activeColorField = null
 	let activeColorMode = "light"
 	let generatedPalette = initialGeneratedPalette
-	let currentThemeShades = palette.shades({
-		background: seeds.background,
-		colors: cloneSeeds(seeds),
-		wcag: false
-	})
+	let liveThemeShades = generatedPalette[activeColorMode].shades
 	let paletteErrorMessage = null
 	let paletteErrorRoles = []
 	let isSchemeOpen = false
@@ -212,7 +208,6 @@
 			activeColorMode,
 			demoScheme,
 			wcag,
-			currentThemeShades: cloneGeneratedPalette(currentThemeShades),
 			generatedPalette: cloneGeneratedPalette(generatedPalette),
 			paletteErrorMessage,
 			paletteErrorRoles: [...paletteErrorRoles]
@@ -225,7 +220,6 @@
 		activeColorMode = snapshot.activeColorMode
 		demoScheme = snapshot.demoScheme
 		wcag = snapshot.wcag
-		currentThemeShades = cloneGeneratedPalette(snapshot.currentThemeShades)
 		generatedPalette = cloneGeneratedPalette(snapshot.generatedPalette)
 		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
 		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
@@ -401,26 +395,8 @@
 		}
 	}
 
-	function buildThemeShadesFromSeeds() {
-		return palette.shades({
-			background: seeds.background,
-			colors: cloneSeeds(seeds),
-			wcag: false
-		})
-	}
-
-	function canBuildThemeShadesFromSeeds() {
+	function currentSeedsAreValid() {
 		return seedFields.every(field => isValidHex(seeds[field.key]))
-	}
-
-	function syncThemeShadesFromSeeds() {
-		if (!canBuildThemeShadesFromSeeds()) {
-			return
-		}
-
-		try {
-			currentThemeShades = buildThemeShadesFromSeeds()
-		} catch {}
 	}
 
 	async function scrollActiveColorPickerIntoView() {
@@ -465,7 +441,6 @@
 		beginColorChangeSession()
 		clearPaletteError()
 		updateSeed(role, value)
-		syncThemeShadesFromSeeds()
 	}
 
 	function handleSeedFieldFocusOut(event) {
@@ -516,7 +491,6 @@
 			fromPicker: true,
 			sanitize: false
 		})
-		syncThemeShadesFromSeeds()
 	}
 
 	function clamp(value, min, max) {
@@ -671,12 +645,26 @@
 		return luminance > 0.62 ? "rgba(15, 23, 42, 0.16)" : "rgba(248, 250, 252, 0.18)"
 	}
 
+	$: {
+		try {
+			liveThemeShades = currentSeedsAreValid()
+				? palette.shades({
+						background: seeds.background,
+						colors: cloneSeeds(seeds),
+						wcag: false
+					})
+				: generatedPalette[activeColorMode].shades
+		} catch {
+			liveThemeShades = generatedPalette[activeColorMode].shades
+		}
+	}
+
 	function getThemeShade(role, step) {
-		return currentThemeShades?.[role]?.[step] ?? seeds[role]
+		return liveThemeShades?.[role]?.[step] ?? getThemeRole(role)
 	}
 
 	function getThemeRole(role) {
-		return seeds[role]
+		return isValidHex(seeds[role]) ? seeds[role] : generatedPalette[activeColorMode][role]
 	}
 
 	$: themeStyle = [
@@ -951,7 +939,7 @@
 	}
 
 	function getActivePreviewShadeValue(role, step) {
-		return currentThemeShades?.[role]?.[step] ?? seeds[role]
+		return liveThemeShades?.[role]?.[step] ?? getThemeRole(role)
 	}
 
 	function createRandomHex() {
@@ -967,11 +955,6 @@
 			const nextGeneratedPalette = palette(buildPaletteOptions())
 			generatedPalette = nextGeneratedPalette
 			setSeedsState(getPaletteRoles(activeColorMode, nextGeneratedPalette))
-			currentThemeShades = palette.shades({
-				background: seeds.background,
-				colors: cloneSeeds(seeds),
-				wcag: false
-			})
 			clearPaletteError()
 
 			const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
@@ -988,11 +971,6 @@
 
 		activeColorMode = nextMode
 		setSeedsState(getPaletteRoles(nextMode, generatedPalette))
-		currentThemeShades = palette.shades({
-			background: seeds.background,
-			colors: cloneSeeds(seeds),
-			wcag: false
-		})
 		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
@@ -1220,7 +1198,7 @@
 											onfocus={event => handleSeedInputFocus(field.key, event)}
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
-											class={`h-12 w-full rounded-xl border px-4 pr-20 font-mono text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+											class={`h-12 w-full rounded-xl border px-4 pr-20 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
 												hasPaletteError(field.key) ? "border-red-500 ring-2 ring-red-500/70" : "border-white/10"
 											}`}
 											style={`background-color: ${seeds[field.key]}; color: ${getReadableTextColor(seeds[field.key])};`} />
