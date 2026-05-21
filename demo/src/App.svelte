@@ -22,23 +22,11 @@
 
 	const initialScheme = "random"
 	const initialWcag = false
-	const initialGeneratedPalette = palette()
 	const initialColorMode = "dark"
 
-	function createThemeFromPaletteMode(sourcePalette, mode) {
-		return {
-			text: sourcePalette[mode].text,
-			background: sourcePalette[mode].background,
-			primary: sourcePalette[mode].primary,
-			secondary: sourcePalette[mode].secondary,
-			accent: sourcePalette[mode].accent,
-			shades: cloneGeneratedPalette(sourcePalette[mode].shades)
-		}
-	}
-
 	let activeColorMode = initialColorMode
-	let theme = createThemeFromPaletteMode(initialGeneratedPalette, initialColorMode)
-	let seeds = cloneSeeds(theme)
+	let theme = palette()
+	let seeds = cloneSeeds(theme[initialColorMode])
 	let demoScheme = initialScheme
 	let wcag = initialWcag
 	let isCopied = false
@@ -49,7 +37,7 @@
 	let isLightPreviewShadesExpanded = false
 	let isDarkPreviewShadesExpanded = false
 	let activeColorField = null
-	let lastGeneratedPalette = initialGeneratedPalette
+	let lastGeneratedPalette = theme
 	let paletteErrorMessage = null
 	let paletteErrorRoles = []
 	let isSchemeOpen = false
@@ -197,14 +185,7 @@
 	}
 
 	function cloneTheme(source) {
-		return {
-			text: source.text,
-			background: source.background,
-			primary: source.primary,
-			secondary: source.secondary,
-			accent: source.accent,
-			shades: cloneGeneratedPalette(source.shades)
-		}
+		return cloneGeneratedPalette(source)
 	}
 
 	function createPlaygroundSnapshot() {
@@ -232,8 +213,8 @@
 		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
 		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
 
-		if (activeColorField && isValidHex(theme[activeColorField])) {
-			syncPickerFromHex(theme[activeColorField])
+		if (activeColorField && isValidHex(theme[activeColorMode][activeColorField])) {
+			syncPickerFromHex(theme[activeColorMode][activeColorField])
 		}
 	}
 
@@ -382,7 +363,7 @@
 		pendingHistorySnapshot = null
 	}
 
-	function getThemeRoles(sourceTheme = theme) {
+	function getThemeRoles(sourceTheme = theme[activeColorMode]) {
 		return {
 			text: sourceTheme.text,
 			background: sourceTheme.background,
@@ -409,7 +390,7 @@
 
 	function updateThemeRole(role, value) {
 		const nextTheme = {
-			...theme,
+			...theme[activeColorMode],
 			[role]: value
 		}
 		const nextRoles = getThemeRoles(nextTheme)
@@ -417,10 +398,13 @@
 			? createThemeFromRoles(nextRoles)
 			: {
 					...nextTheme,
-					shades: theme.shades
+					shades: theme[activeColorMode].shades
 				}
 
-		theme = resolvedTheme
+		theme = {
+			...theme,
+			[activeColorMode]: resolvedTheme
+		}
 		seeds = cloneSeeds(resolvedTheme)
 	}
 
@@ -460,8 +444,8 @@
 
 		activeColorField = role
 
-		if (isValidHex(theme[role])) {
-			syncPickerFromHex(theme[role])
+		if (isValidHex(theme[activeColorMode][role])) {
+			syncPickerFromHex(theme[activeColorMode][role])
 		}
 
 		await scrollActiveColorPickerIntoView()
@@ -627,7 +611,7 @@
 
 		if (errorMessage === "palette seed values must be 6-digit hex colors.") {
 			return seedFields
-				.filter(field => lockedSeedRoles[field.key] && !isValidHex(theme[field.key]))
+				.filter(field => lockedSeedRoles[field.key] && !isValidHex(theme[activeColorMode][field.key]))
 				.map(field => field.key)
 		}
 
@@ -681,11 +665,11 @@
 	}
 
 	function getThemeShade(role, step) {
-		return theme.shades[role][step]
+		return theme[activeColorMode].shades[role][step]
 	}
 
 	function getThemeRole(role) {
-		return theme[role]
+		return theme[activeColorMode][role]
 	}
 
 	$: themeStyle = [
@@ -806,8 +790,8 @@
 		const options = {}
 
 		for (const field of seedFields) {
-			if (lockedSeedRoles[field.key] && isValidHex(theme[field.key])) {
-				options[field.key] = theme[field.key]
+			if (lockedSeedRoles[field.key] && isValidHex(theme[activeColorMode][field.key])) {
+				options[field.key] = theme[activeColorMode][field.key]
 			}
 		}
 
@@ -960,7 +944,7 @@
 	}
 
 	function getActivePreviewShadeValue(role, step) {
-		return theme.shades[role][step]
+		return theme[activeColorMode].shades[role][step]
 	}
 
 	function createRandomHex() {
@@ -974,13 +958,12 @@
 
 		try {
 			const nextGeneratedPalette = palette(buildPaletteOptions())
-			const nextTheme = createThemeFromPaletteMode(nextGeneratedPalette, activeColorMode)
 			lastGeneratedPalette = nextGeneratedPalette
-			theme = nextTheme
-			seeds = cloneSeeds(nextTheme)
+			theme = nextGeneratedPalette
+			seeds = cloneSeeds(nextGeneratedPalette[activeColorMode])
 
-			if (activeColorField && isValidHex(nextTheme[activeColorField])) {
-				syncPickerFromHex(nextTheme[activeColorField])
+			if (activeColorField && isValidHex(nextGeneratedPalette[activeColorMode][activeColorField])) {
+				syncPickerFromHex(nextGeneratedPalette[activeColorMode][activeColorField])
 			}
 
 			clearPaletteError()
@@ -996,14 +979,12 @@
 
 	function toggleActiveColorMode() {
 		const nextMode = activeColorMode === "light" ? "dark" : "light"
-		const nextTheme = createThemeFromPaletteMode(lastGeneratedPalette, nextMode)
 
 		activeColorMode = nextMode
-		theme = nextTheme
-		seeds = cloneSeeds(nextTheme)
+		seeds = cloneSeeds(theme[nextMode])
 
-		if (activeColorField && isValidHex(nextTheme[activeColorField])) {
-			syncPickerFromHex(nextTheme[activeColorField])
+		if (activeColorField && isValidHex(theme[nextMode][activeColorField])) {
+			syncPickerFromHex(theme[nextMode][activeColorField])
 		}
 
 		clearPaletteError()
@@ -1226,21 +1207,21 @@
 									<div class="relative group">
 										<input
 											type="text"
-											value={theme[field.key]}
+											value={getThemeRole(field.key)}
 											onfocus={event => handleSeedInputFocus(field.key, event)}
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
 											class={`h-12 w-full rounded-xl border px-4 pr-20 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
 												hasPaletteError(field.key) ? "border-red-500 ring-2 ring-red-500/70" : "border-white/10"
 											}`}
-											style={`background-color: ${theme[field.key]}; color: ${getReadableTextColor(theme[field.key])};`} />
+											style={`background-color: ${getThemeRole(field.key)}; color: ${getReadableTextColor(getThemeRole(field.key))};`} />
 										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center">
 											<button
 												type="button"
 												aria-label={`${lockedSeedRoles[field.key] ? "Unlock" : "Lock"} ${field.label} hex`}
 												onclick={() => toggleSeedLock(field.key)}
 												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)] ${lockedSeedRoles[field.key] ? "opacity-100" : ""}`}
-												style={`--seed-action-color: ${getReadableTextColor(theme[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[field.key])};`}>
+												style={`--seed-action-color: ${getReadableTextColor(getThemeRole(field.key))}; --seed-action-hover: ${getSeedActionHoverColor(getThemeRole(field.key))};`}>
 												{#if lockedSeedRoles[field.key]}
 													<Lock class="w-3.5 h-3.5" />
 												{:else}
@@ -1250,9 +1231,9 @@
 											<button
 												type="button"
 												aria-label={`Copy ${field.label} hex`}
-												onclick={() => handleCopySeed(field.key, theme[field.key])}
+												onclick={() => handleCopySeed(field.key, getThemeRole(field.key))}
 												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)]"
-												style={`--seed-action-color: ${getReadableTextColor(theme[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[field.key])};`}>
+												style={`--seed-action-color: ${getReadableTextColor(getThemeRole(field.key))}; --seed-action-hover: ${getSeedActionHoverColor(getThemeRole(field.key))};`}>
 												{#if copiedSeedRole === field.key}
 													<CheckCircle2 class="w-3.5 h-3.5" />
 												{:else}
