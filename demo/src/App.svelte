@@ -363,49 +363,39 @@
 		pendingHistorySnapshot = null
 	}
 
-	function getThemeRoles(sourceTheme = theme[activeColorMode]) {
-		return {
-			text: sourceTheme.text,
-			background: sourceTheme.background,
-			primary: sourceTheme.primary,
-			secondary: sourceTheme.secondary,
-			accent: sourceTheme.accent
-		}
-	}
-
 	function themeRolesAreValid(sourceRoles) {
 		return seedFields.every(field => isValidHex(sourceRoles[field.key]))
 	}
 
-	function createThemeFromRoles(sourceRoles) {
-		return {
-			...cloneSeeds(sourceRoles),
-			shades: palette.shades({
-				background: sourceRoles.background,
-				colors: sourceRoles,
-				wcag: false
-			})
-		}
-	}
-
 	function updateThemeRole(role, value) {
-		const nextTheme = {
+		const nextModeTheme = {
 			...theme[activeColorMode],
 			[role]: value
 		}
-		const nextRoles = getThemeRoles(nextTheme)
-		const resolvedTheme = themeRolesAreValid(nextRoles)
-			? createThemeFromRoles(nextRoles)
-			: {
-					...nextTheme,
-					shades: theme[activeColorMode].shades
-				}
+		nextModeTheme.shades = cloneGeneratedPalette(theme[activeColorMode].shades)
+
+		if (role === "background" && themeRolesAreValid(nextModeTheme)) {
+			nextModeTheme.shades = palette.shades({
+				background: nextModeTheme.background,
+				colors: cloneSeeds(nextModeTheme),
+				wcag: false
+			})
+		}
+
+		if (role !== "background" && isValidHex(nextModeTheme.background) && isValidHex(value)) {
+			const nextRoleShades = palette.shades({
+				background: nextModeTheme.background,
+				colors: { [role]: value },
+				wcag: false
+			})
+
+			nextModeTheme.shades[role] = nextRoleShades[role]
+		}
 
 		theme = {
 			...theme,
-			[activeColorMode]: resolvedTheme
+			[activeColorMode]: nextModeTheme
 		}
-		seeds = cloneSeeds(resolvedTheme)
 	}
 
 	function updateSeed(role, value, options = {}) {
