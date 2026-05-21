@@ -38,7 +38,6 @@
 	let isLightPreviewShadesExpanded = false
 	let isDarkPreviewShadesExpanded = false
 	let activeColorField = null
-	let hoveredSeedRole = null
 	let isSchemeOpen = false
 	let pickerHue = 218
 	let pickerSaturation = 0.75
@@ -529,26 +528,10 @@
 		event.preventDefault()
 	}
 
-	function isSeedLocked(role) {
-		return lockedSeedRoles[role] === true
-	}
-
-	function showSeedActions(role) {
-		return hoveredSeedRole === role
-	}
-
-	function showSeedLockButton(role) {
-		return showSeedActions(role) || isSeedLocked(role)
-	}
-
-	function showSeedCopyButton(role) {
-		return showSeedActions(role)
-	}
-
 	function toggleSeedLock(role) {
 		lockedSeedRoles = {
 			...lockedSeedRoles,
-			[role]: !isSeedLocked(role)
+			[role]: !lockedSeedRoles[role]
 		}
 	}
 
@@ -804,7 +787,7 @@
 		commitColorChangeSession()
 
 		const nextSeeds = seedFields.reduce((next, field) => {
-			next[field.key] = isSeedLocked(field.key) ? seeds[field.key] : createRandomHex()
+			next[field.key] = lockedSeedRoles[field.key] ? seeds[field.key] : createRandomHex()
 			return next
 		}, {})
 
@@ -985,10 +968,7 @@
 							{#each seedFields as field, index}
 								<div class="relative" onfocusout={handleSeedFieldFocusOut}>
 									<label class="mb-2 block text-sm font-medium text-slate-400">{field.label}</label>
-									<div
-										class="relative"
-										onmouseenter={() => (hoveredSeedRole = field.key)}
-										onmouseleave={() => (hoveredSeedRole = hoveredSeedRole === field.key ? null : hoveredSeedRole)}>
+									<div class="relative group">
 										<input
 											type="text"
 											value={seeds[field.key]}
@@ -1000,11 +980,11 @@
 										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center">
 											<button
 												type="button"
-												aria-label={`${isSeedLocked(field.key) ? "Unlock" : "Lock"} ${field.label} hex`}
+												aria-label={`${lockedSeedRoles[field.key] ? "Unlock" : "Lock"} ${field.label} hex`}
 												onclick={() => toggleSeedLock(field.key)}
-												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] ${showSeedLockButton(field.key) ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)] ${lockedSeedRoles[field.key] ? "opacity-100" : ""}`}
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
-												{#if isSeedLocked(field.key)}
+												{#if lockedSeedRoles[field.key]}
 													<Lock class="w-3.5 h-3.5" />
 												{:else}
 													<Unlock class="w-3.5 h-3.5" />
@@ -1014,7 +994,7 @@
 												type="button"
 												aria-label={`Copy ${field.label} hex`}
 												onclick={() => handleCopySeed(field.key, seeds[field.key])}
-												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors transition-opacity hover:bg-[var(--seed-action-hover)] ${showSeedCopyButton(field.key) ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)]"
 												style={`--seed-action-color: ${getReadableTextColor(seeds[field.key])}; --seed-action-hover: ${getSeedActionHoverColor(seeds[field.key])};`}>
 												{#if copiedSeedRole === field.key}
 													<CheckCircle2 class="w-3.5 h-3.5" />
