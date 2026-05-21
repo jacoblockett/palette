@@ -22,7 +22,6 @@
 
 	let activeColorMode = "dark"
 	let theme = palette()
-	let seeds = cloneSeeds(theme["dark"])
 	let demoScheme = "random"
 	let wcag = false
 	let isCopied = false
@@ -170,44 +169,41 @@
 
 		const colors = theme[activeColorMode]
 		const [role, value] = Object.entries(newTheme)[0]
-		const shades = newTheme.background
-			? palette.shades({
-					background: newTheme.background,
+		const nextModeTheme = {
+			...colors,
+			[role]: value,
+			shades: cloneGeneratedPalette(colors.shades)
+		}
+
+		if (role === "background") {
+			if (seedFields.every(field => isValidHex(nextModeTheme[field.key]))) {
+				nextModeTheme.shades = palette.shades({
+					background: nextModeTheme.background,
 					colors: {
-						text: colors.text,
-						background: newTheme.background,
-						primary: colors.primary,
-						secondary: colors.secondary,
-						accent: colors.accent
-					}
+						text: nextModeTheme.text,
+						background: nextModeTheme.background,
+						primary: nextModeTheme.primary,
+						secondary: nextModeTheme.secondary,
+						accent: nextModeTheme.accent
+					},
+					wcag: false
 				})
-			: {
-					...colors.shades,
-					...palette.shades({
-						background: colors.background,
-						colors: {
-							[role]: value
-						}
-					})
-				}
+			}
+		} else if (isValidHex(nextModeTheme.background) && isValidHex(value)) {
+			const nextRoleShades = palette.shades({
+				background: nextModeTheme.background,
+				colors: {
+					[role]: value
+				},
+				wcag: false
+			})
+
+			nextModeTheme.shades[role] = nextRoleShades[role]
+		}
 
 		theme = {
 			...theme,
-			[activeColorMode]: {
-				...colors,
-				[role]: value,
-				shades
-			}
-		}
-	}
-
-	function cloneSeeds(source) {
-		return {
-			text: source.text,
-			background: source.background,
-			primary: source.primary,
-			secondary: source.secondary,
-			accent: source.accent
+			[activeColorMode]: nextModeTheme
 		}
 	}
 
@@ -226,7 +222,6 @@
 	function createPlaygroundSnapshot() {
 		return {
 			theme: cloneTheme(theme),
-			seeds: cloneSeeds(seeds),
 			lockedSeedRoles: { ...lockedSeedRoles },
 			activeColorMode,
 			demoScheme,
@@ -239,7 +234,6 @@
 
 	function applyPlaygroundSnapshot(snapshot) {
 		theme = cloneTheme(snapshot.theme)
-		seeds = cloneSeeds(snapshot.seeds)
 		lockedSeedRoles = { ...snapshot.lockedSeedRoles }
 		activeColorMode = snapshot.activeColorMode
 		demoScheme = snapshot.demoScheme
@@ -398,45 +392,10 @@
 		pendingHistorySnapshot = null
 	}
 
-	function themeRolesAreValid(sourceRoles) {
-		return seedFields.every(field => isValidHex(sourceRoles[field.key]))
-	}
-
-	function updateThemeRole(role, value) {
-		const nextModeTheme = {
-			...theme[activeColorMode],
-			[role]: value
-		}
-		nextModeTheme.shades = cloneGeneratedPalette(theme[activeColorMode].shades)
-
-		if (role === "background" && themeRolesAreValid(nextModeTheme)) {
-			nextModeTheme.shades = palette.shades({
-				background: nextModeTheme.background,
-				colors: cloneSeeds(nextModeTheme),
-				wcag: false
-			})
-		}
-
-		if (role !== "background" && isValidHex(nextModeTheme.background) && isValidHex(value)) {
-			const nextRoleShades = palette.shades({
-				background: nextModeTheme.background,
-				colors: { [role]: value },
-				wcag: false
-			})
-
-			nextModeTheme.shades[role] = nextRoleShades[role]
-		}
-
-		theme = {
-			...theme,
-			[activeColorMode]: nextModeTheme
-		}
-	}
-
 	function updateSeed(role, value, options = {}) {
 		const nextValue = options.sanitize === false ? value : sanitizeSeedInput(value)
 
-		updateThemeRole(role, nextValue)
+		updateTheme({ [role]: nextValue })
 
 		if (role === activeColorField && !options.fromPicker && isValidHex(nextValue)) {
 			syncPickerFromHex(nextValue)
@@ -985,8 +944,7 @@
 		try {
 			const nextGeneratedPalette = palette(buildPaletteOptions())
 			lastGeneratedPalette = nextGeneratedPalette
-			theme = nextGeneratedPalette
-			seeds = cloneSeeds(nextGeneratedPalette[activeColorMode])
+			updateTheme(nextGeneratedPalette)
 
 			if (activeColorField && isValidHex(nextGeneratedPalette[activeColorMode][activeColorField])) {
 				syncPickerFromHex(nextGeneratedPalette[activeColorMode][activeColorField])
@@ -1007,7 +965,6 @@
 		const nextMode = activeColorMode === "light" ? "dark" : "light"
 
 		activeColorMode = nextMode
-		seeds = cloneSeeds(theme[nextMode])
 
 		if (activeColorField && isValidHex(theme[nextMode][activeColorField])) {
 			syncPickerFromHex(theme[nextMode][activeColorField])
