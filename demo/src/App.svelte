@@ -1,5 +1,6 @@
 <script>
 	import { onMount, tick } from "svelte"
+	import palette from "../../src/index.js"
 	import {
 		ArrowRight,
 		CheckCircle2,
@@ -26,10 +27,17 @@
 		secondary: "#9b5a43",
 		accent: "#9c661d"
 	}
+	const initialScheme = "triadic"
+	const initialWcag = true
+	const initialGeneratedPalette = palette({
+		...initialSeeds,
+		scheme: initialScheme,
+		wcag: initialWcag
+	})
 
-	let seeds = cloneSeeds(initialSeeds)
-	let demoScheme = "triadic"
-	let wcag = true
+	let seeds = getPaletteRoles("light", initialGeneratedPalette)
+	let demoScheme = initialScheme
+	let wcag = initialWcag
 	let isCopied = false
 	let copiedSeedRole = null
 	let lockedSeedRoles = {}
@@ -38,13 +46,13 @@
 	let isLightPreviewShadesExpanded = false
 	let isDarkPreviewShadesExpanded = false
 	let activeColorField = null
+	let activeColorMode = "light"
+	let generatedPalette = initialGeneratedPalette
+	let paletteError = null
 	let isSchemeOpen = false
 	let pickerHue = 218
 	let pickerSaturation = 0.75
 	let pickerValue = 0.96
-	let colorHistory = [cloneSeeds(initialSeeds)]
-	let colorHistoryIndex = 0
-	let pendingHistorySnapshot = null
 	let activeDragTarget = null
 	let colorPickerPopoverElement
 	let saturationValueElement
@@ -53,25 +61,9 @@
 	let schemeMenuElement
 	let schemeMenuDirection = "down"
 	let schemeMenuMaxHeight = 288
-
-	let generatedPalette
-
-	$: generatedPalette = {
-		light: {
-			text: seeds.text,
-			background: seeds.background,
-			primary: seeds.primary,
-			secondary: seeds.secondary,
-			accent: seeds.accent
-		},
-		dark: {
-			text: "#f5e2f0",
-			background: "#10070f",
-			primary: "#d993c4",
-			secondary: "#c18471",
-			accent: "#dfae63"
-		}
-	}
+	let colorHistory = [createPlaygroundSnapshot()]
+	let colorHistoryIndex = 0
+	let pendingHistorySnapshot = null
 
 	const seedFields = [
 		{ key: "text", label: "Text" },
@@ -191,8 +183,51 @@
 		}
 	}
 
-	function seedsAreEqual(first, second) {
-		return seedFields.every(field => first[field.key] === second[field.key])
+	function cloneGeneratedPalette(source) {
+		if (typeof structuredClone === "function") {
+			return structuredClone(source)
+		}
+
+		return JSON.parse(JSON.stringify(source))
+	}
+
+	function getPaletteRoles(mode, sourcePalette) {
+		return {
+			text: sourcePalette[mode].text,
+			background: sourcePalette[mode].background,
+			primary: sourcePalette[mode].primary,
+			secondary: sourcePalette[mode].secondary,
+			accent: sourcePalette[mode].accent
+		}
+	}
+
+	function createPlaygroundSnapshot() {
+		return {
+			seeds: cloneSeeds(seeds),
+			lockedSeedRoles: { ...lockedSeedRoles },
+			activeColorMode,
+			demoScheme,
+			wcag,
+			generatedPalette: cloneGeneratedPalette(generatedPalette)
+		}
+	}
+
+	function applyPlaygroundSnapshot(snapshot) {
+		seeds = cloneSeeds(snapshot.seeds)
+		lockedSeedRoles = { ...snapshot.lockedSeedRoles }
+		activeColorMode = snapshot.activeColorMode
+		demoScheme = snapshot.demoScheme
+		wcag = snapshot.wcag
+		generatedPalette = cloneGeneratedPalette(snapshot.generatedPalette)
+		paletteError = snapshot.paletteError ?? null
+
+		if (activeColorField && isValidHex(seeds[activeColorField])) {
+			syncPickerFromHex(seeds[activeColorField])
+		}
+	}
+
+	function playgroundSnapshotsAreEqual(first, second) {
+		return JSON.stringify(first) === JSON.stringify(second)
 	}
 
 	function isValidHex(hex) {
@@ -315,7 +350,7 @@
 
 	function beginColorChangeSession() {
 		if (pendingHistorySnapshot === null) {
-			pendingHistorySnapshot = cloneSeeds(seeds)
+			pendingHistorySnapshot = createPlaygroundSnapshot()
 		}
 	}
 
@@ -324,9 +359,11 @@
 			return
 		}
 
-		if (!seedsAreEqual(pendingHistorySnapshot, seeds)) {
+		const nextSnapshot = createPlaygroundSnapshot()
+
+		if (!playgroundSnapshotsAreEqual(pendingHistorySnapshot, nextSnapshot)) {
 			const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
-			nextHistory.push(cloneSeeds(seeds))
+			nextHistory.push(nextSnapshot)
 			colorHistory = nextHistory
 			colorHistoryIndex = nextHistory.length - 1
 		}
@@ -533,6 +570,11 @@
 			...lockedSeedRoles,
 			[role]: !lockedSeedRoles[role]
 		}
+
+		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
+		nextHistory.push(createPlaygroundSnapshot())
+		colorHistory = nextHistory
+		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	function getReadableTextColor(hex) {
@@ -559,6 +601,39 @@
 		return luminance > 0.62 ? "rgba(15, 23, 42, 0.16)" : "rgba(248, 250, 252, 0.18)"
 	}
 
+	$: activeGeneratedPalette = generatedPalette[activeColorMode]
+	$: activeThemeRoles = {
+		text: seeds.text,
+		background: seeds.background,
+		primary: seeds.primary,
+		secondary: seeds.secondary,
+		accent: seeds.accent
+	}
+
+	function getThemeShade(role, step) {
+		return activeGeneratedPalette?.shades?.[role]?.[step] ?? activeThemeRoles[role]
+	}
+
+	function getThemeRole(role) {
+		return activeThemeRoles[role]
+	}
+
+	$: themeStyle = [
+		`--theme-text: ${getThemeRole("text")}`,
+		`--theme-background: ${getThemeRole("background")}`,
+		`--theme-primary: ${getThemeRole("primary")}`,
+		`--theme-secondary: ${getThemeRole("secondary")}`,
+		`--theme-accent: ${getThemeRole("accent")}`,
+		`--theme-background-soft: ${getThemeShade("background", activeColorMode === "light" ? "25" : "150")}`,
+		`--theme-background-panel: ${getThemeShade("background", activeColorMode === "light" ? "50" : "125")}`,
+		`--theme-background-raised: ${getThemeShade("background", activeColorMode === "light" ? "75" : "110")}`,
+		`--theme-border: ${getThemeShade("background", activeColorMode === "light" ? "150" : "75")}`,
+		`--theme-primary-soft: ${getThemeShade("primary", activeColorMode === "light" ? "25" : "150")}`,
+		`--theme-primary-hover: ${getThemeShade("primary", activeColorMode === "light" ? "125" : "75")}`,
+		`--theme-secondary-soft: ${getThemeShade("secondary", activeColorMode === "light" ? "25" : "150")}`,
+		`--theme-accent-soft: ${getThemeShade("accent", activeColorMode === "light" ? "25" : "150")}`
+	].join("; ")
+
 	function formatSchemeLabel(scheme) {
 		return scheme
 			.split("-")
@@ -569,6 +644,11 @@
 	function selectScheme(scheme) {
 		demoScheme = scheme
 		isSchemeOpen = false
+
+		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
+		nextHistory.push(createPlaygroundSnapshot())
+		colorHistory = nextHistory
+		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	async function updateSchemeMenuPlacement() {
@@ -651,102 +731,133 @@
 		}
 	}
 
-	$: codePreviewLines = [
-		{
-			indent: 0,
-			segments: [
-				{ text: "import ", className: "text-purple-400" },
-				{ text: "palette", className: "text-white" },
-				{ text: " from ", className: "text-purple-400" },
-				{ text: '"@jacoblockett/palette"', className: "text-green-400" }
-			]
-		},
-		{
-			indent: 0,
-			segments: [{ text: '// const palette = require("@jacoblockett/palette")', className: "text-slate-500" }]
-		},
-		{
-			indent: 0,
-			segments: [{ text: "// for those of you who can't let go", className: "text-slate-500" }]
-		},
-		{
-			indent: 0,
-			segments: []
-		},
-		{
-			indent: 0,
-			segments: [
-				{ text: "const ", className: "text-indigo-300" },
-				{ text: "theme", className: "text-white" },
-				{ text: " = ", className: "text-indigo-300" },
-				{ text: "palette", className: "text-blue-300" },
-				{ text: "({", className: "text-indigo-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "text: ", className: "text-slate-300" },
-				{ text: `"${seeds.text}"`, className: "text-green-400" },
-				{ text: ",", className: "text-slate-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "background: ", className: "text-slate-300" },
-				{ text: `"${seeds.background}"`, className: "text-green-400" },
-				{ text: ",", className: "text-slate-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "primary: ", className: "text-slate-300" },
-				{ text: `"${seeds.primary}"`, className: "text-green-400" },
-				{ text: ",", className: "text-slate-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "secondary: ", className: "text-slate-300" },
-				{ text: `"${seeds.secondary}"`, className: "text-green-400" },
-				{ text: ",", className: "text-slate-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "accent: ", className: "text-slate-300" },
-				{ text: `"${seeds.accent}"`, className: "text-green-400" },
-				{ text: ",", className: "text-slate-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "scheme: ", className: "text-slate-300" },
-				{ text: `"${demoScheme}"`, className: "text-green-400" },
-				{ text: ",", className: "text-slate-300" }
-			]
-		},
-		{
-			indent: 1,
-			segments: [
-				{ text: "wcag: ", className: "text-slate-300" },
-				{ text: wcag ? "true" : "false", className: "text-yellow-400" }
-			]
-		},
-		{
-			indent: 0,
-			segments: [{ text: "})", className: "text-indigo-300" }]
+	function buildPaletteOptions() {
+		const options = {}
+
+		for (const field of seedFields) {
+			if (lockedSeedRoles[field.key] && isValidHex(seeds[field.key])) {
+				options[field.key] = seeds[field.key]
+			}
 		}
-	]
+
+		if (demoScheme !== "random") {
+			options.scheme = demoScheme
+		}
+
+		if (wcag) {
+			options.wcag = true
+		}
+
+		return options
+	}
+
+	function buildPaletteCode() {
+		const options = buildPaletteOptions()
+		const entries = Object.entries(options)
+
+		if (entries.length === 0) {
+			return "import palette from '@jacoblockett/palette'\n\nconst theme = palette()"
+		}
+
+		const optionLines = entries.map(([key, value], index) => {
+			const formattedValue = typeof value === "string" ? `"${value}"` : value ? "true" : "false"
+			const comma = index === entries.length - 1 ? "" : ","
+
+			return `\t${key}: ${formattedValue}${comma}`
+		})
+
+		return `import palette from '@jacoblockett/palette'\n\nconst theme = palette({\n${optionLines.join("\n")}\n})`
+	}
+
+	function createCodeSegmentsForText(text) {
+		return {
+			text,
+			className: "text-slate-300"
+		}
+	}
+
+	function buildCodePreviewLines() {
+		return buildPaletteCode().split("\n").map(line => {
+			const indent = line.match(/^\t*/)?.[0].length ?? 0
+			const trimmedLine = line.slice(indent)
+
+			if (trimmedLine === "") {
+				return { indent, segments: [] }
+			}
+
+			if (trimmedLine.startsWith("import ")) {
+				return {
+					indent,
+					segments: [
+						{ text: "import ", className: "text-purple-400" },
+						{ text: "palette", className: "text-white" },
+						{ text: " from ", className: "text-purple-400" },
+						{ text: trimmedLine.slice('import palette from '.length), className: "text-green-400" }
+					]
+				}
+			}
+
+			if (trimmedLine === "const theme = palette()") {
+				return {
+					indent,
+					segments: [
+						{ text: "const ", className: "text-purple-400" },
+						{ text: "theme", className: "text-white" },
+						{ text: " = ", className: "text-purple-400" },
+						{ text: "palette", className: "text-blue-300" },
+						{ text: "()", className: "text-purple-400" }
+					]
+				}
+			}
+
+			if (trimmedLine === "const theme = palette({") {
+				return {
+					indent,
+					segments: [
+						{ text: "const ", className: "text-purple-400" },
+						{ text: "theme", className: "text-white" },
+						{ text: " = ", className: "text-purple-400" },
+						{ text: "palette", className: "text-blue-300" },
+						{ text: "({", className: "text-purple-400" }
+					]
+				}
+			}
+
+			if (trimmedLine === "})") {
+				return {
+					indent,
+					segments: [{ text: "})", className: "text-purple-400" }]
+				}
+			}
+
+			const optionMatch = trimmedLine.match(/^([a-z]+): (.+?)(,?)$/)
+
+			if (optionMatch) {
+				const [, key, value, comma] = optionMatch
+				const valueClassName = value === "true" || value === "false" ? "text-yellow-400" : "text-green-400"
+				const segments = [
+					createCodeSegmentsForText(`${key}: `),
+					{ text: value, className: valueClassName }
+				]
+
+				if (comma) {
+					segments.push(createCodeSegmentsForText(comma))
+				}
+
+				return { indent, segments }
+			}
+
+			return {
+				indent,
+				segments: [createCodeSegmentsForText(trimmedLine)]
+			}
+		})
+	}
+
+	$: codePreviewLines = buildCodePreviewLines()
 
 	function handleCopyCode() {
-		const code = `import palette from '@jacoblockett/palette'\n\nconst theme = palette({\n\ttext: '${seeds.text}',\n\tbackground: '${seeds.background}',\n\tprimary: '${seeds.primary}',\n\tsecondary: '${seeds.secondary}',\n\taccent: '${seeds.accent}',\n\tscheme: '${demoScheme}',\n\twcag: ${wcag}\n})`
-		navigator.clipboard.writeText(code)
+		navigator.clipboard.writeText(buildPaletteCode())
 		isCopied = true
 		setTimeout(() => {
 			isCopied = false
@@ -777,6 +888,10 @@
 		return generatedPalette[mode]?.shades?.[role]?.[step] ?? generatedPalette[mode]?.[role] ?? "#000000"
 	}
 
+	function getActivePreviewShadeValue(role, step) {
+		return generatedPalette[activeColorMode]?.shades?.[role]?.[step] ?? seeds[role]
+	}
+
 	function createRandomHex() {
 		return `#${Math.floor(Math.random() * 0xffffff)
 			.toString(16)
@@ -786,16 +901,41 @@
 	function randomizeSeeds() {
 		commitColorChangeSession()
 
-		const nextSeeds = seedFields.reduce((next, field) => {
-			next[field.key] = lockedSeedRoles[field.key] ? seeds[field.key] : createRandomHex()
-			return next
-		}, {})
+		try {
+			const nextGeneratedPalette = palette(buildPaletteOptions())
+			generatedPalette = nextGeneratedPalette
+			setSeedsState(getPaletteRoles(activeColorMode, nextGeneratedPalette))
+			paletteError = null
+
+			const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
+			nextHistory.push(createPlaygroundSnapshot())
+			colorHistory = nextHistory
+			colorHistoryIndex = nextHistory.length - 1
+		} catch (error) {
+			paletteError = error.message
+		}
+	}
+
+	function toggleActiveColorMode() {
+		const nextMode = activeColorMode === "light" ? "dark" : "light"
+
+		activeColorMode = nextMode
+		setSeedsState(getPaletteRoles(nextMode, generatedPalette))
+		paletteError = null
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
-		nextHistory.push(cloneSeeds(nextSeeds))
+		nextHistory.push(createPlaygroundSnapshot())
 		colorHistory = nextHistory
 		colorHistoryIndex = nextHistory.length - 1
-		setSeedsState(nextSeeds)
+	}
+
+	function toggleWcag() {
+		wcag = !wcag
+
+		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
+		nextHistory.push(createPlaygroundSnapshot())
+		colorHistory = nextHistory
+		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	function undoColorChange() {
@@ -805,7 +945,7 @@
 
 		pendingHistorySnapshot = null
 		colorHistoryIndex -= 1
-		setSeedsState(colorHistory[colorHistoryIndex])
+		applyPlaygroundSnapshot(colorHistory[colorHistoryIndex])
 	}
 
 	function redoColorChange() {
@@ -815,7 +955,7 @@
 
 		pendingHistorySnapshot = null
 		colorHistoryIndex += 1
-		setSeedsState(colorHistory[colorHistoryIndex])
+		applyPlaygroundSnapshot(colorHistory[colorHistoryIndex])
 	}
 
 	$: pickerHueColor = `hsl(${pickerHue} 100% 50%)`
@@ -839,19 +979,26 @@
 	onresize={() => isSchemeOpen && updateSchemeMenuPlacement()}
 	onscroll={() => isSchemeOpen && updateSchemeMenuPlacement()} />
 
-<div class="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-indigo-500/30">
-	<nav class="fixed w-full z-50 top-0 border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
+<div
+	class="min-h-screen font-sans selection:bg-indigo-500/30"
+	style={`${themeStyle}; background-color: var(--theme-background); color: var(--theme-text);`}>
+	<nav
+		class="fixed w-full z-50 top-0 border-b backdrop-blur-md"
+		style="background-color: color-mix(in srgb, var(--theme-background) 82%, transparent); border-color: color-mix(in srgb, var(--theme-border) 72%, transparent);">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between h-16 items-center">
 				<div class="flex items-center gap-8">
 					<div class="flex items-center gap-2">
 						<div
-							class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-							<Palette class="w-5 h-5 text-white" />
+							class="flex h-8 w-8 items-center justify-center rounded-lg"
+							style="background-image: linear-gradient(to bottom right, var(--theme-primary), var(--theme-accent));">
+							<Palette class="w-5 h-5" style="color: var(--theme-background);" />
 						</div>
 						<span class="font-bold text-xl tracking-tight">Palette</span>
 					</div>
-					<div class="hidden md:flex gap-8 text-sm font-medium text-slate-300">
+					<div
+						class="hidden md:flex gap-8 text-sm font-medium"
+						style="color: color-mix(in srgb, var(--theme-text) 74%, transparent);">
 						<a href="#playground" class="hover:text-white transition-colors">Playground</a>
 						<a href="#features" class="hover:text-white transition-colors">Features</a>
 						<a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a>
@@ -860,15 +1007,18 @@
 				</div>
 				<div class="flex items-center gap-2">
 					<button
-						aria-label="Toggle color mode"
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-colors hover:bg-slate-800">
+						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
+						onclick={toggleActiveColorMode}
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-slate-800"
+						style="color: var(--theme-text);">
 						<Moon />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-colors hover:bg-slate-800">
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-slate-800"
+						style="color: var(--theme-text);">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -877,13 +1027,14 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-4 text-xs font-mono text-slate-300 transition-colors hover:bg-slate-800">
+						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border px-4 text-xs font-mono transition-colors hover:bg-slate-800"
+						style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 						<span
 							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
 							Copied!
 						</span>
 						<span class="flex items-center gap-2">
-							<Terminal class="w-3 h-3 text-indigo-400" />
+							<Terminal class="w-3 h-3" style="color: var(--theme-primary);" />
 							{installCommand}
 						</span>
 					</button>
@@ -894,23 +1045,28 @@
 
 	<section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
 		<h1
-			class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+			class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent"
+			style="background-image: linear-gradient(to right, var(--theme-text), var(--theme-primary), var(--theme-accent));">
 			Enterprise-grade colors. <br class="hidden md:block" />
 			Zero cost.
 		</h1>
-		<p class="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
+		<p
+			class="text-lg md:text-xl max-w-2xl mb-10 leading-relaxed"
+			style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
 			Why pick light and dark mode colors manually when you can install a dependency that mathematically generates all 5
 			roles and 20 shades automatically? Welcome to the future.
 		</p>
 		<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
 			<button
-				class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-full font-semibold transition-all shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)]">
+				class="flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold transition-all shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)]"
+				style="background-color: var(--theme-primary); color: var(--theme-background);">
 				Read the docs <ArrowRight class="w-4 h-4" />
 			</button>
 			<button
 				type="button"
 				onclick={() => handleCopyInstallCommand("hero")}
-				class="relative flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold transition-colors border border-slate-700 font-mono text-sm">
+				class="relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-semibold transition-colors border font-mono text-sm"
+				style="background-color: var(--theme-background-raised); color: var(--theme-text); border-color: var(--theme-border);">
 				<span
 					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
 					Copied!
@@ -921,22 +1077,30 @@
 		</div>
 	</section>
 
-	<section id="playground" class="py-20 bg-slate-900 border-y border-white/5">
+	<section
+		id="playground"
+		class="py-20 border-y"
+		style="background-color: var(--theme-background-soft); border-color: color-mix(in srgb, var(--theme-border) 55%, transparent);">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="mb-8">
 				<h2 class="text-3xl font-bold mb-4">Playground</h2>
-				<p class="text-slate-400 leading-relaxed">Go ahead. Change the colors. I dare you.</p>
+				<p class="leading-relaxed" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
+					Go ahead. Change the colors. I dare you.
+				</p>
 			</div>
 			<div class="grid gap-8 items-start lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:gap-12">
 				<div>
-					<div class="space-y-6 bg-slate-950 p-6 rounded-2xl border border-white/10">
+					<div
+						class="space-y-6 rounded-2xl border p-6"
+						style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
 						<div class="flex items-center justify-center gap-4">
 							<div class="flex items-center gap-2">
 								<button
 									type="button"
 									aria-label="Randomize colors"
 									onclick={randomizeSeeds}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800"
+									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Dices class="w-4 h-4" />
 								</button>
 								<button
@@ -944,7 +1108,8 @@
 									aria-label="Undo color change"
 									onclick={undoColorChange}
 									disabled={colorHistoryIndex === 0}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Undo2 class="w-4 h-4" />
 								</button>
 								<button
@@ -952,13 +1117,16 @@
 									aria-label="Redo color change"
 									onclick={redoColorChange}
 									disabled={colorHistoryIndex >= colorHistory.length - 1}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Redo2 class="w-4 h-4" />
 								</button>
 								<button
 									type="button"
-									aria-label="Toggle color mode"
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-200 transition-colors hover:bg-slate-800">
+									aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
+									onclick={toggleActiveColorMode}
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-slate-800"
+									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Moon class="w-4 h-4" />
 								</button>
 							</div>
@@ -967,7 +1135,11 @@
 						<div class="grid gap-4 sm:grid-cols-2">
 							{#each seedFields as field, index}
 								<div class="relative" onfocusout={handleSeedFieldFocusOut}>
-									<label class="mb-2 block text-sm font-medium text-slate-400">{field.label}</label>
+									<label
+										class="mb-2 block text-sm font-medium"
+										style="color: color-mix(in srgb, var(--theme-text) 68%, transparent);">
+										{field.label}
+									</label>
 									<div class="relative group">
 										<input
 											type="text"
@@ -1010,7 +1182,8 @@
 											class={`absolute bottom-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] ${index % 2 === 0 ? "left-0" : "right-0"}`}>
 											<div
 												onpointerdown={handleColorPickerPointerDown}
-												class="rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
+												class="rounded-2xl border p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]"
+												style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
 												<div class="space-y-4">
 													<div
 														bind:this={saturationValueElement}
@@ -1028,7 +1201,11 @@
 														</div>
 													</div>
 													<div class="space-y-2">
-														<div class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Hue</div>
+														<div
+															class="text-xs font-medium uppercase tracking-[0.18em]"
+															style="color: color-mix(in srgb, var(--theme-text) 58%, transparent);">
+															Hue
+														</div>
 														<div
 															bind:this={hueTrackElement}
 															onpointerdown={beginHueDrag}
@@ -1054,19 +1231,25 @@
 						</div>
 
 						<div class="relative" tabindex="-1" onfocusout={handleSchemeFocusOut}>
-							<label class="block text-sm font-medium text-slate-400 mb-2">Scheme</label>
+							<label
+								class="block text-sm font-medium mb-2"
+								style="color: color-mix(in srgb, var(--theme-text) 68%, transparent);">
+								Scheme
+							</label>
 							<button
 								bind:this={schemeTriggerElement}
 								type="button"
 								onclick={toggleSchemeMenu}
-								class="flex h-12 w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 text-sm text-white transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+								class="flex h-12 w-full items-center justify-between rounded-xl border px-4 text-sm transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 								<span>{formatSchemeLabel(demoScheme)}</span>
 								<ChevronDown
 									class={`w-4 h-4 text-slate-400 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`} />
 							</button>
 							{#if isSchemeOpen}
 								<div
-									class={`absolute left-0 right-0 z-20 overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] ${schemeMenuDirection === "up" ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}>
+									class={`absolute left-0 right-0 z-20 overflow-hidden rounded-xl border shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] ${schemeMenuDirection === "up" ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}
+									style="background-color: var(--theme-background-raised); border-color: var(--theme-border);">
 									<div
 										bind:this={schemeMenuElement}
 										class="scheme-menu-scrollbar overflow-y-auto p-2"
@@ -1078,7 +1261,7 @@
 												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
 													demoScheme === scheme
 														? "bg-slate-700 text-white"
-														: "text-slate-300 hover:bg-slate-700/80 hover:text-white"
+														: "hover:bg-slate-700/80 hover:text-white"
 												}`}>
 												{formatSchemeLabel(scheme)}
 											</button>
@@ -1091,34 +1274,54 @@
 						<div class="flex items-center gap-3 pt-2">
 							<button
 								type="button"
-								onclick={() => (wcag = !wcag)}
-								class={`w-12 h-6 rounded-full transition-colors relative ${wcag ? "bg-indigo-500" : "bg-slate-700"}`}>
+								onclick={toggleWcag}
+								class="w-12 h-6 rounded-full transition-colors relative"
+								style={`background-color: ${wcag ? "var(--theme-primary)" : "var(--theme-border)"};`}>
 								<div
 									class={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${wcag ? "translate-x-7" : "translate-x-1"}`}>
 								</div>
 							</button>
-							<label class="text-sm font-medium text-slate-400">Strict WCAG Checks</label>
+							<label
+								class="text-sm font-medium"
+								style="color: color-mix(in srgb, var(--theme-text) 68%, transparent);">
+								Strict WCAG Checks
+							</label>
 						</div>
+						{#if paletteError}
+							<div
+								class="rounded-xl px-3 py-2 text-sm"
+								style="color: var(--theme-accent); background-color: var(--theme-accent-soft);">
+								{paletteError}
+							</div>
+						{/if}
 					</div>
 				</div>
 
 				<div class="relative">
 					<div
-						class="pointer-events-none absolute -inset-2 bg-gradient-to-br from-indigo-500/25 via-purple-500/15 to-blue-500/10 blur-3xl">
+						class="pointer-events-none absolute -inset-2 blur-3xl"
+						style={`background-image: linear-gradient(to bottom right, ${getActivePreviewShadeValue("primary", activeColorMode === "light" ? "25" : "150")}, ${getActivePreviewShadeValue("secondary", activeColorMode === "light" ? "25" : "150")}, ${getActivePreviewShadeValue("accent", activeColorMode === "light" ? "25" : "150")});`}>
 					</div>
-					<div class="relative bg-[#0d1117] rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-						<div class="relative flex items-center px-4 py-3 bg-white/5 border-b border-white/10">
+					<div
+						class="relative overflow-hidden rounded-2xl border shadow-2xl"
+						style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
+						<div
+							class="relative flex items-center border-b px-4 py-3"
+							style="background-color: var(--theme-background-raised); border-color: var(--theme-border);">
 							<div class="relative z-10 flex gap-2">
 								<div class="w-3 h-3 rounded-full bg-red-500/80"></div>
 								<div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
 								<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
 							</div>
-							<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-slate-400">
+							<div
+								class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm"
+								style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">
 								Don't worry, I don't actually use Unix
 							</div>
 							<button
 								onclick={handleCopyCode}
-								class="relative z-10 ml-auto flex w-16 items-center gap-1.5 text-xs font-medium text-slate-400">
+								class="relative z-10 ml-auto flex w-16 items-center gap-1.5 text-xs font-medium"
+								style="color: var(--theme-primary);">
 								{#if isCopied}
 									<CheckCircle2 class="w-3.5 h-3.5 text-green-400" />
 								{:else}
@@ -1127,7 +1330,9 @@
 								{isCopied ? "Copied" : "Copy"}
 							</button>
 						</div>
-						<div class="overflow-x-auto overflow-y-auto px-4 py-4 text-sm font-mono text-slate-300 sm:px-6 sm:py-6">
+						<div
+							class="overflow-x-auto overflow-y-auto px-4 py-4 text-sm font-mono sm:px-6 sm:py-6"
+							style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
 							<div class="flex min-w-max flex-col">
 								{#each codePreviewLines as line, index}
 									<div class="grid grid-cols-[2rem_minmax(0,1fr)] leading-6">
@@ -1156,27 +1361,43 @@
 	<section id="features" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 		<div class="text-center mb-16">
 			<h2 class="text-3xl md:text-4xl font-bold mb-4">Features that sound cool.</h2>
-			<p class="text-slate-400 text-lg">This section has never been useful... like, ever.</p>
+			<p class="text-lg" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
+				This section has never been useful... like, ever.
+			</p>
 		</div>
 
 		<div class="grid md:grid-cols-3 gap-8">
 			{#each features as feature, idx (idx)}
-				<div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:bg-slate-800/80 transition-colors">
-					<div class="w-12 h-12 bg-slate-950 rounded-xl flex items-center justify-center border border-white/5 mb-6">
-						<svelte:component this={feature.icon} class={feature.iconClass} />
+				<div
+					class="rounded-2xl border p-8 transition-colors hover:bg-slate-800/80"
+					style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
+					<div
+						class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border"
+						style="background-color: var(--theme-background-raised); border-color: color-mix(in srgb, var(--theme-border) 55%, transparent);">
+						<svelte:component
+							this={feature.icon}
+							class={feature.iconClass}
+							style={`color: ${idx === 0 ? "var(--theme-primary)" : idx === 1 ? "var(--theme-secondary)" : "var(--theme-accent)"}`} />
 					</div>
 					<h3 class="text-xl font-bold mb-3">{feature.title}</h3>
-					<p class="text-slate-400 leading-relaxed">{feature.desc}</p>
+					<p class="leading-relaxed" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
+						{feature.desc}
+					</p>
 				</div>
 			{/each}
 		</div>
 	</section>
 
-	<section id="testimonials" class="py-24 bg-slate-900 border-y border-white/5">
+	<section
+		id="testimonials"
+		class="py-24 border-y"
+		style="background-color: var(--theme-background-soft); border-color: color-mix(in srgb, var(--theme-border) 55%, transparent);">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16">
 				<h2 class="text-3xl md:text-4xl font-bold mb-4">Testimonials from real-ish people.</h2>
-				<p class="text-slate-400 text-lg">Social proof, because apparently software needs witnesses now.</p>
+				<p class="text-lg" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
+					Social proof, because apparently software needs witnesses now.
+				</p>
 			</div>
 
 			<div class="testimonials-carousel relative overflow-hidden">
@@ -1188,11 +1409,17 @@
 				</div>
 				<div class="testimonials-track flex w-max gap-8">
 					{#each [...testimonials, ...testimonials] as testimonial, idx (idx)}
-						<div class="w-[20rem] shrink-0 rounded-2xl border border-white/10 bg-slate-950 p-8 md:w-[24rem]">
-							<p class="mb-6 text-slate-300 leading-relaxed">"{testimonial.quote}"</p>
+						<div
+							class="w-[20rem] shrink-0 rounded-2xl border p-8 md:w-[24rem]"
+							style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
+							<p class="mb-6 leading-relaxed" style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
+								"{testimonial.quote}"
+							</p>
 							<div>
-								<div class="font-semibold text-white">{testimonial.name}</div>
-								<div class="text-sm text-slate-500">{testimonial.role}</div>
+								<div class="font-semibold">{testimonial.name}</div>
+								<div class="text-sm" style="color: color-mix(in srgb, var(--theme-text) 56%, transparent);">
+									{testimonial.role}
+								</div>
 							</div>
 						</div>
 					{/each}
@@ -1201,25 +1428,34 @@
 		</div>
 	</section>
 
-	<section id="pricing" class="py-24 bg-slate-900 border-t border-white/5">
+	<section
+		id="pricing"
+		class="py-24 border-t"
+		style="background-color: var(--theme-background-soft); border-color: color-mix(in srgb, var(--theme-border) 55%, transparent);">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16">
 				<h2 class="text-3xl md:text-4xl font-bold mb-4">Pricing that scales with you.</h2>
-				<p class="text-slate-400 text-lg">By which we mean it's literally just open source.</p>
+				<p class="text-lg" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
+					By which we mean it's literally just open source.
+				</p>
 			</div>
 
 			<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-				<div class="flex flex-col bg-slate-950 rounded-3xl p-8 border border-white/10">
+				<div
+					class="flex flex-col rounded-3xl border p-8"
+					style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
 					<h3 class="text-xl font-semibold mb-2">Open Source</h3>
 					<div class="flex items-baseline gap-1 mb-6">
 						<span class="text-4xl font-bold">$0</span>
 						<span class="text-slate-400">/forever</span>
 					</div>
-					<p class="text-slate-400 mb-8">Perfect for developers who know how to use a package manager.</p>
+					<p class="mb-8" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
+						Perfect for developers who know how to use a package manager.
+					</p>
 					<ul class="space-y-4 mb-8">
 						{#each openSourceFeatures as item, i (i)}
-							<li class="flex items-center gap-3 text-sm text-slate-300">
-								<CheckCircle2 class="w-4 h-4 text-indigo-400" />
+							<li class="flex items-center gap-3 text-sm" style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
+								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary);" />
 								{item}
 							</li>
 						{/each}
@@ -1227,17 +1463,23 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block text-center w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors">
+							class="block text-center w-full py-3 rounded-xl font-medium transition-colors"
+							style="background-color: var(--theme-background-raised); color: var(--theme-text);">
 							View on GitHub
 						</a>
-						<p class="text-slate-400 mt-4 text-xs">* If you consider a lone dev a community</p>
+						<p class="mt-4 text-xs" style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">
+							* If you consider a lone dev a community
+						</p>
 					</div>
 				</div>
 
 				<div
-					class="relative flex flex-col bg-gradient-to-b from-indigo-500/10 to-slate-950 rounded-3xl p-8 border border-indigo-500/30">
+					class="relative flex flex-col rounded-3xl border p-8"
+					style="background: linear-gradient(to bottom, color-mix(in srgb, var(--theme-primary) 14%, transparent), var(--theme-background-panel)); border-color: color-mix(in srgb, var(--theme-primary) 35%, var(--theme-border));">
 					<div class="absolute top-0 right-8 transform -translate-y-1/2">
-						<span class="bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+						<span
+							class="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide"
+							style="background-color: var(--theme-primary); color: var(--theme-background);">
 							Enterprise
 						</span>
 					</div>
@@ -1246,13 +1488,13 @@
 						<span class="text-4xl font-bold">$0</span>
 						<span class="text-slate-400">/forever</span>
 					</div>
-					<p class="text-slate-400 mb-8">
+					<p class="mb-8" style="color: color-mix(in srgb, var(--theme-text) 72%, transparent);">
 						The exact same code, but you wear a suit while running it. Or maybe not. Idk what your dresscode looks like.
 					</p>
 					<ul class="space-y-4 mb-8">
 						{#each enterpriseFeatures as item, i (i)}
-							<li class="flex items-center gap-3 text-sm text-slate-300">
-								<CheckCircle2 class="w-4 h-4 text-indigo-400" />
+							<li class="flex items-center gap-3 text-sm" style="color: color-mix(in srgb, var(--theme-text) 78%, transparent);">
+								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-secondary);" />
 								{item}
 							</li>
 						{/each}
@@ -1260,20 +1502,25 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block text-center w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors shadow-lg shadow-indigo-500/25">
+							class="block text-center w-full py-3 rounded-xl font-medium transition-colors shadow-lg shadow-indigo-500/25"
+							style="background-color: var(--theme-primary); color: var(--theme-background);">
 							Also View on GitHub
 						</a>
-						<p class="text-slate-400 mt-4 text-xs">* Or at least, we'll say we did and never actually do it</p>
+						<p class="mt-4 text-xs" style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">
+							* Or at least, we'll say we did and never actually do it
+						</p>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<footer class="py-12 border-t border-white/10 bg-slate-950 text-center text-slate-400 text-sm">
+	<footer
+		class="py-12 border-t text-center text-sm"
+		style="background-color: var(--theme-background-panel); border-color: color-mix(in srgb, var(--theme-border) 65%, transparent); color: color-mix(in srgb, var(--theme-text) 68%, transparent);">
 		<div class="flex items-center justify-center gap-2 mb-4">
-			<Palette class="w-5 h-5 text-indigo-400" />
-			<span class="font-semibold text-white">Palette</span>
+			<Palette class="w-5 h-5" style="color: var(--theme-accent);" />
+			<span class="font-semibold" style="color: var(--theme-text);">Palette</span>
 		</div>
 		<div class="flex justify-center gap-6">
 			<a href="https://github.com/jacoblockett/palette" class="hover:text-white transition-colors">Documentation</a>
