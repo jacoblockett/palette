@@ -43,8 +43,12 @@
 	let isDarkPreviewShadesExpanded = false
 	let activeColorField = null
 	let activeColorMode = "light"
-	let currentThemePalette = initialGeneratedPalette
 	let generatedPalette = initialGeneratedPalette
+	let currentThemeShades = palette.shades({
+		background: seeds.background,
+		colors: cloneSeeds(seeds),
+		wcag: false
+	})
 	let paletteErrorMessage = null
 	let paletteErrorRoles = []
 	let isSchemeOpen = false
@@ -208,7 +212,7 @@
 			activeColorMode,
 			demoScheme,
 			wcag,
-			currentThemePalette: cloneGeneratedPalette(currentThemePalette),
+			currentThemeShades: cloneGeneratedPalette(currentThemeShades),
 			generatedPalette: cloneGeneratedPalette(generatedPalette),
 			paletteErrorMessage,
 			paletteErrorRoles: [...paletteErrorRoles]
@@ -221,7 +225,7 @@
 		activeColorMode = snapshot.activeColorMode
 		demoScheme = snapshot.demoScheme
 		wcag = snapshot.wcag
-		currentThemePalette = cloneGeneratedPalette(snapshot.currentThemePalette)
+		currentThemeShades = cloneGeneratedPalette(snapshot.currentThemeShades)
 		generatedPalette = cloneGeneratedPalette(snapshot.generatedPalette)
 		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
 		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
@@ -397,24 +401,25 @@
 		}
 	}
 
-	function buildPaletteFromCurrentInputs() {
-		return palette({
-			text: seeds.text,
+	function buildThemeShadesFromSeeds() {
+		return palette.shades({
 			background: seeds.background,
-			primary: seeds.primary,
-			secondary: seeds.secondary,
-			accent: seeds.accent,
+			colors: cloneSeeds(seeds),
 			wcag: false
 		})
 	}
 
-	function syncCurrentThemePaletteFromSeeds() {
-		if (Object.values(seeds).some(value => !isValidHex(value))) {
+	function canBuildThemeShadesFromSeeds() {
+		return seedFields.every(field => isValidHex(seeds[field.key]))
+	}
+
+	function syncThemeShadesFromSeeds() {
+		if (!canBuildThemeShadesFromSeeds()) {
 			return
 		}
 
 		try {
-			currentThemePalette = buildPaletteFromCurrentInputs()
+			currentThemeShades = buildThemeShadesFromSeeds()
 		} catch {}
 	}
 
@@ -460,7 +465,7 @@
 		beginColorChangeSession()
 		clearPaletteError()
 		updateSeed(role, value)
-		syncCurrentThemePaletteFromSeeds()
+		syncThemeShadesFromSeeds()
 	}
 
 	function handleSeedFieldFocusOut(event) {
@@ -511,7 +516,7 @@
 			fromPicker: true,
 			sanitize: false
 		})
-		syncCurrentThemePaletteFromSeeds()
+		syncThemeShadesFromSeeds()
 	}
 
 	function clamp(value, min, max) {
@@ -666,30 +671,28 @@
 		return luminance > 0.62 ? "rgba(15, 23, 42, 0.16)" : "rgba(248, 250, 252, 0.18)"
 	}
 
-	$: activeThemePalette = currentThemePalette[activeColorMode]
-
 	function getThemeShade(role, step) {
-		return activeThemePalette.shades[role][step]
+		return currentThemeShades?.[role]?.[step] ?? seeds[role]
 	}
 
 	function getThemeRole(role) {
-		return activeThemePalette[role]
+		return seeds[role]
 	}
 
 	$: themeStyle = [
-		`--theme-text: ${activeThemePalette.text}`,
-		`--theme-background: ${activeThemePalette.background}`,
-		`--theme-primary: ${activeThemePalette.primary}`,
-		`--theme-secondary: ${activeThemePalette.secondary}`,
-		`--theme-accent: ${activeThemePalette.accent}`,
-		`--theme-background-soft: ${activeThemePalette.shades.background["25"]}`,
-		`--theme-background-panel: ${activeThemePalette.shades.background["50"]}`,
-		`--theme-background-raised: ${activeThemePalette.shades.background["75"]}`,
-		`--theme-border: ${activeThemePalette.shades.background["150"]}`,
-		`--theme-primary-soft: ${activeThemePalette.shades.primary["25"]}`,
-		`--theme-primary-hover: ${activeThemePalette.shades.primary["125"]}`,
-		`--theme-secondary-soft: ${activeThemePalette.shades.secondary["25"]}`,
-		`--theme-accent-soft: ${activeThemePalette.shades.accent["25"]}`
+		`--theme-text: ${getThemeRole("text")}`,
+		`--theme-background: ${getThemeRole("background")}`,
+		`--theme-primary: ${getThemeRole("primary")}`,
+		`--theme-secondary: ${getThemeRole("secondary")}`,
+		`--theme-accent: ${getThemeRole("accent")}`,
+		`--theme-background-soft: ${getThemeShade("background", "25")}`,
+		`--theme-background-panel: ${getThemeShade("background", "50")}`,
+		`--theme-background-raised: ${getThemeShade("background", "75")}`,
+		`--theme-border: ${getThemeShade("background", "150")}`,
+		`--theme-primary-soft: ${getThemeShade("primary", "25")}`,
+		`--theme-primary-hover: ${getThemeShade("primary", "125")}`,
+		`--theme-secondary-soft: ${getThemeShade("secondary", "25")}`,
+		`--theme-accent-soft: ${getThemeShade("accent", "25")}`
 	].join("; ")
 
 	function formatSchemeLabel(scheme) {
@@ -948,7 +951,7 @@
 	}
 
 	function getActivePreviewShadeValue(role, step) {
-		return currentThemePalette[activeColorMode]?.shades?.[role]?.[step] ?? seeds[role]
+		return currentThemeShades?.[role]?.[step] ?? seeds[role]
 	}
 
 	function createRandomHex() {
@@ -963,8 +966,12 @@
 		try {
 			const nextGeneratedPalette = palette(buildPaletteOptions())
 			generatedPalette = nextGeneratedPalette
-			currentThemePalette = nextGeneratedPalette
 			setSeedsState(getPaletteRoles(activeColorMode, nextGeneratedPalette))
+			currentThemeShades = palette.shades({
+				background: seeds.background,
+				colors: cloneSeeds(seeds),
+				wcag: false
+			})
 			clearPaletteError()
 
 			const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
@@ -980,7 +987,12 @@
 		const nextMode = activeColorMode === "light" ? "dark" : "light"
 
 		activeColorMode = nextMode
-		setSeedsState(getPaletteRoles(nextMode, currentThemePalette))
+		setSeedsState(getPaletteRoles(nextMode, generatedPalette))
+		currentThemeShades = palette.shades({
+			background: seeds.background,
+			colors: cloneSeeds(seeds),
+			wcag: false
+		})
 		clearPaletteError()
 
 		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
@@ -1070,16 +1082,16 @@
 					<button
 						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 						onclick={toggleActiveColorMode}
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--theme-background-panel)]"
-						style="color: var(--theme-text);">
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--control-hover-background)]"
+						style="--control-hover-background: var(--theme-background-raised); color: var(--theme-text);">
 						<Moon />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--theme-background-panel)]"
-						style="color: var(--theme-text);">
+						class="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[var(--control-hover-background)]"
+						style="--control-hover-background: var(--theme-background-raised); color: var(--theme-text);">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -1088,8 +1100,8 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border px-4 text-xs font-mono transition-colors hover:bg-[var(--theme-background-panel)]"
-						style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
+						class="relative ml-2 hidden h-10 sm:inline-flex items-center justify-center rounded-full border px-4 text-xs font-mono transition-colors hover:bg-[var(--control-hover-background)]"
+						style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 						<span
 							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
 							Copied!
@@ -1126,8 +1138,8 @@
 			<button
 				type="button"
 				onclick={() => handleCopyInstallCommand("hero")}
-				class="relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border font-mono text-sm font-semibold transition-colors hover:bg-[var(--theme-background-panel)]"
-				style="background-color: var(--theme-background-raised); color: var(--theme-text); border-color: var(--theme-border);">
+				class="relative flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border font-mono text-sm font-semibold transition-colors hover:bg-[var(--control-hover-background)]"
+				style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); color: var(--theme-text); border-color: var(--theme-border);">
 				<span
 					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-sm font-semibold text-slate-100 shadow-xl transition-all duration-150 ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
 					Copied!
@@ -1160,8 +1172,8 @@
 									type="button"
 									aria-label="Randomize colors"
 									onclick={randomizeSeeds}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)]"
-									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--control-hover-background)]"
+									style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Dices class="w-4 h-4" />
 								</button>
 								<button
@@ -1169,8 +1181,8 @@
 									aria-label="Undo color change"
 									onclick={undoColorChange}
 									disabled={colorHistoryIndex === 0}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)] disabled:cursor-not-allowed disabled:opacity-40"
-									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--control-hover-background)] disabled:cursor-not-allowed disabled:opacity-40"
+									style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Undo2 class="w-4 h-4" />
 								</button>
 								<button
@@ -1178,16 +1190,16 @@
 									aria-label="Redo color change"
 									onclick={redoColorChange}
 									disabled={colorHistoryIndex >= colorHistory.length - 1}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)] disabled:cursor-not-allowed disabled:opacity-40"
-									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--control-hover-background)] disabled:cursor-not-allowed disabled:opacity-40"
+									style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Redo2 class="w-4 h-4" />
 								</button>
 								<button
 									type="button"
 									aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 									onclick={toggleActiveColorMode}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--theme-background-panel)]"
-									style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-[var(--control-hover-background)]"
+									style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 									<Moon class="w-4 h-4" />
 								</button>
 							</div>
@@ -1310,8 +1322,8 @@
 								bind:this={schemeTriggerElement}
 								type="button"
 								onclick={toggleSchemeMenu}
-								class="flex h-12 w-full items-center justify-between rounded-xl border px-4 text-sm transition-colors hover:bg-[var(--theme-background-panel)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
-								style="background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
+								class="flex h-12 w-full items-center justify-between rounded-xl border px-4 text-sm transition-colors hover:bg-[var(--control-hover-background)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); border-color: var(--theme-border); color: var(--theme-text);">
 								<span>{formatSchemeLabel(demoScheme)}</span>
 								<ChevronDown
 									class={`w-4 h-4 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`}
@@ -1332,8 +1344,9 @@
 												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
 													demoScheme === scheme
 														? "bg-[var(--theme-background-panel)] text-[var(--theme-text)]"
-														: "hover:bg-[var(--theme-background-panel)] hover:text-[var(--theme-text)]"
-												}`}>
+														: "hover:bg-[var(--control-hover-background)] hover:text-[var(--theme-text)]"
+												}`}
+												style="--control-hover-background: var(--theme-border);">
 												{formatSchemeLabel(scheme)}
 											</button>
 										{/each}
@@ -1433,8 +1446,8 @@
 		<div class="grid md:grid-cols-3 gap-8">
 			{#each features as feature, idx (idx)}
 				<div
-					class="rounded-2xl border p-8 transition-colors hover:bg-[var(--theme-background-raised)]"
-					style="background-color: var(--theme-background-panel); border-color: var(--theme-border);">
+					class="rounded-2xl border p-8 transition-colors hover:bg-[var(--surface-hover-background)]"
+					style="--surface-hover-background: var(--theme-background-raised); background-color: var(--theme-background-panel); border-color: var(--theme-border);">
 					<div
 						class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border"
 						style="background-color: var(--theme-background-raised); border-color: color-mix(in srgb, var(--theme-border) 55%, transparent);">
@@ -1466,10 +1479,12 @@
 
 			<div class="testimonials-carousel relative overflow-hidden">
 				<div
-					class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-900 to-transparent">
+					class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16"
+					style="background-image: linear-gradient(to right, var(--theme-background-soft), transparent);">
 				</div>
 				<div
-					class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-900 to-transparent">
+					class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16"
+					style="background-image: linear-gradient(to left, var(--theme-background-soft), transparent);">
 				</div>
 				<div class="testimonials-track flex w-max gap-8">
 					{#each [...testimonials, ...testimonials] as testimonial, idx (idx)}
@@ -1527,8 +1542,8 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl py-3 text-center font-medium transition-colors hover:bg-[var(--theme-background-panel)]"
-							style="background-color: var(--theme-background-raised); color: var(--theme-text);">
+							class="block w-full rounded-xl py-3 text-center font-medium transition-colors hover:bg-[var(--control-hover-background)]"
+							style="--control-hover-background: var(--theme-border); background-color: var(--theme-background-raised); color: var(--theme-text);">
 							View on GitHub
 						</a>
 						<p class="mt-4 text-xs" style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">
@@ -1566,8 +1581,8 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl py-3 text-center font-medium transition-colors shadow-lg shadow-indigo-500/25 hover:bg-[var(--theme-primary-hover)]"
-							style="background-color: var(--theme-primary); color: var(--theme-background);">
+							class="block w-full rounded-xl py-3 text-center font-medium transition-colors shadow-lg shadow-indigo-500/25 hover:bg-[var(--control-hover-background)]"
+							style="--control-hover-background: var(--theme-primary-hover); background-color: var(--theme-primary); color: var(--theme-background);">
 							Also View on GitHub
 						</a>
 						<p class="mt-4 text-xs" style="color: color-mix(in srgb, var(--theme-text) 62%, transparent);">
@@ -1596,7 +1611,7 @@
 <style>
 	.scheme-menu-scrollbar {
 		scrollbar-width: thin;
-		scrollbar-color: #475569 #1e293b;
+		scrollbar-color: var(--theme-border) var(--theme-background-panel);
 	}
 
 	.scheme-menu-scrollbar::-webkit-scrollbar {
@@ -1604,18 +1619,18 @@
 	}
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-track {
-		background: #1e293b;
+		background: var(--theme-background-panel);
 		border-radius: 9999px;
 	}
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-thumb {
-		background: #475569;
-		border: 2px solid #1e293b;
+		background: var(--theme-border);
+		border: 2px solid var(--theme-background-panel);
 		border-radius: 9999px;
 	}
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: #64748b;
+		background: var(--theme-primary);
 	}
 
 	.testimonials-track {
