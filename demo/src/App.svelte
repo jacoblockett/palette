@@ -868,10 +868,10 @@
 					return {
 						indent,
 						segments: [
-							{ text: "import ", className: "text-[var(--theme-primary)]" },
-							{ text: "palette", className: "text-[var(--theme-secondary)]" },
-							{ text: " from ", className: "text-[var(--theme-primary)]" },
-							{ text: trimmedLine.slice("import palette from ".length), className: "text-[var(--theme-accent)]" }
+							{ text: "import ", className: "text-[var(--theme-primary-110)]" },
+							{ text: "palette", className: "text-[var(--theme-text)]" },
+							{ text: " from ", className: "text-[var(--theme-primary-110)]" },
+							{ text: trimmedLine.slice("import palette from ".length), className: "text-[var(--theme-accent-110)]" }
 						]
 					}
 				}
@@ -880,11 +880,11 @@
 					return {
 						indent,
 						segments: [
-							{ text: "const ", className: "text-[var(--theme-primary)]" },
+							{ text: "const ", className: "text-[var(--theme-primary-110)]" },
 							{ text: "theme", className: "text-[var(--theme-text)]" },
-							{ text: " = ", className: "text-[var(--theme-primary)]" },
-							{ text: "palette", className: "text-[var(--theme-secondary)]" },
-							{ text: "()", className: "text-[var(--theme-text-100)]" }
+							{ text: " = ", className: "text-[var(--theme-primary-110)]" },
+							{ text: "palette", className: "text-[var(--theme-text)]" },
+							{ text: "()", className: "text-[var(--theme-text-120)]" }
 						]
 					}
 				}
@@ -893,11 +893,11 @@
 					return {
 						indent,
 						segments: [
-							{ text: "const ", className: "text-[var(--theme-primary)]" },
+							{ text: "const ", className: "text-[var(--theme-primary-110)]" },
 							{ text: "theme", className: "text-[var(--theme-text)]" },
-							{ text: " = ", className: "text-[var(--theme-primary)]" },
-							{ text: "palette", className: "text-[var(--theme-secondary)]" },
-							{ text: "({", className: "text-[var(--theme-text-100)]" }
+							{ text: " = ", className: "text-[var(--theme-primary-110)]" },
+							{ text: "palette", className: "text-[var(--theme-text)]" },
+							{ text: "({", className: "text-[var(--theme-text-120)]" }
 						]
 					}
 				}
@@ -905,7 +905,7 @@
 				if (trimmedLine === "})") {
 					return {
 						indent,
-						segments: [{ text: "})", className: "text-[var(--theme-text-100)]" }]
+						segments: [{ text: "})", className: "text-[var(--theme-text-120)]" }]
 					}
 				}
 
@@ -913,14 +913,15 @@
 
 				if (optionMatch) {
 					const [, key, value, comma] = optionMatch
-					const valueClassName = value === "true" || value === "false" ? "text-[var(--theme-primary-110)]" : "text-[var(--theme-accent)]"
+					const valueClassName =
+						value === "true" || value === "false" ? "text-[var(--theme-secondary-110)]" : "text-[var(--theme-accent-110)]"
 					const segments = [
 						{ text: `${key}: `, className: "text-[var(--theme-text)]" },
 						{ text: value, className: valueClassName }
 					]
 
 					if (comma) {
-						segments.push({ text: comma, className: "text-[var(--theme-text-100)]" })
+						segments.push({ text: comma, className: "text-[var(--theme-text-120)]" })
 					}
 
 					return { indent, segments }
@@ -1082,8 +1083,8 @@
 					<div class="flex items-center gap-2">
 						<div
 							class="flex h-8 w-8 items-center justify-center rounded-lg"
-							style="background-image: linear-gradient(to bottom right, var(--theme-primary), var(--theme-accent));">
-							<Palette class="w-5 h-5" style="color: var(--theme-background);" />
+							style="background-image: linear-gradient(to bottom right, var(--theme-primary-90), var(--theme-accent-90));">
+							<Palette class="w-5 h-5" style="color: var(--theme-text);" />
 						</div>
 						<span class="font-bold text-xl tracking-tight">Palette</span>
 					</div>
@@ -1098,14 +1099,14 @@
 					<button
 						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 						onclick={toggleActiveColorMode}
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-30)] md:inline-flex">
+						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-40)] md:inline-flex">
 						<Moon />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-30)] md:inline-flex">
+						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-40)] md:inline-flex">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -1114,7 +1115,7 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative ml-2 hidden h-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] px-4 font-mono text-[var(--theme-text)] text-xs transition-colors hover:bg-[var(--theme-background-40)] sm:inline-flex">
+						class="relative ml-2 hidden h-10 items-center justify-center rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-4 font-mono text-[var(--theme-text)] text-xs transition-colors hover:bg-[var(--theme-background-40)] sm:inline-flex">
 						<span
 							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
 							Copied!
@@ -1132,7 +1133,7 @@
 	<section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
 		<h1
 			class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent"
-			style="background-image: linear-gradient(to right, var(--theme-text), var(--theme-primary), var(--theme-accent));">
+			style="background-image: linear-gradient(to right, var(--theme-text), var(--theme-primary-110), var(--theme-accent-110));">
 			Enterprise-grade colors. <br class="hidden md:block" />
 			Zero cost.
 		</h1>
@@ -1150,7 +1151,7 @@
 			<button
 				type="button"
 				onclick={() => handleCopyInstallCommand("hero")}
-				class="relative flex items-center justify-center gap-2 rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] px-8 py-3.5 font-mono text-[var(--theme-text)] text-sm font-semibold transition-colors hover:bg-[var(--theme-background-40)]">
+				class="relative flex items-center justify-center gap-2 rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-8 py-3.5 font-mono text-[var(--theme-text)] text-sm font-semibold transition-colors hover:bg-[var(--theme-background-40)]">
 				<span
 					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl transition-all duration-150 ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
 					Copied!
@@ -1173,7 +1174,7 @@
 			</div>
 			<div class="grid gap-8 items-start lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:gap-12">
 				<div>
-					<div class="space-y-6 rounded-2xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] p-6">
+					<div class="space-y-6 rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-6">
 						<div class="flex items-center justify-center gap-4">
 							<div class="flex items-center gap-2">
 								<button
@@ -1325,7 +1326,7 @@
 								bind:this={schemeTriggerElement}
 								type="button"
 								onclick={toggleSchemeMenu}
-								class="flex h-12 w-full items-center justify-between rounded-xl border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 text-[var(--theme-text)] text-sm transition-colors hover:bg-[var(--theme-background-50)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]">
+								class="flex h-12 w-full items-center justify-between rounded-xl border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 text-[var(--theme-text)] text-sm transition-colors hover:bg-[var(--theme-background-40)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]">
 								<span>{formatSchemeLabel(demoScheme)}</span>
 								<ChevronDown
 									class={`w-4 h-4 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`}
@@ -1344,7 +1345,7 @@
 												onclick={() => selectScheme(scheme)}
 												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
 													demoScheme === scheme
-														? "bg-[var(--theme-primary-20)] text-[var(--theme-primary)]"
+														? "bg-[var(--theme-primary-20)] text-[var(--theme-primary-110)]"
 														: "hover:bg-[var(--theme-background-40)] hover:text-[var(--theme-text)]"
 												}`}>
 												{formatSchemeLabel(scheme)}
@@ -1373,17 +1374,16 @@
 
 				<div class="relative">
 					<div
-						class="pointer-events-none absolute -inset-2 blur-3xl"
-						style={`background-image: linear-gradient(to bottom right, ${getActivePreviewShadeValue("primary", activeColorMode === "light" ? "80" : "110")}, ${getActivePreviewShadeValue("secondary", activeColorMode === "light" ? "80" : "110")}, ${getActivePreviewShadeValue("accent", activeColorMode === "light" ? "80" : "110")});`}>
+						class="pointer-events-none absolute -inset-1 rounded-3xl bg-[var(--theme-accent)] opacity-[0.14] blur-2xl">
 					</div>
 					<div
-						class="relative overflow-hidden rounded-2xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] shadow-2xl">
+						class="relative overflow-hidden rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] shadow-2xl">
 						<div
 							class="relative flex items-center border-b border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 py-3">
 							<div class="relative z-10 flex gap-2">
-								<div class="h-3 w-3 rounded-full bg-[var(--theme-accent)]"></div>
-								<div class="h-3 w-3 rounded-full bg-[var(--theme-secondary)]"></div>
-								<div class="h-3 w-3 rounded-full bg-[var(--theme-primary)]"></div>
+								<div class="h-3 w-3 rounded-full" style="background-color: #ff5f57;"></div>
+								<div class="h-3 w-3 rounded-full" style="background-color: #febc2e;"></div>
+								<div class="h-3 w-3 rounded-full" style="background-color: #28c840;"></div>
 							</div>
 							<div
 								class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm"
@@ -1440,14 +1440,14 @@
 		<div class="grid md:grid-cols-3 gap-8">
 			{#each features as feature, idx (idx)}
 				<div
-					class="rounded-2xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] p-8 transition-colors hover:bg-[var(--theme-background-40)]">
+					class="rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8 transition-colors hover:bg-[var(--theme-background-30)]">
 					<div
 						class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border"
-						style={`background-color: ${idx === 0 ? "var(--theme-primary-20)" : idx === 1 ? "var(--theme-secondary-20)" : "var(--theme-accent-20)"}; border-color: ${idx === 0 ? "var(--theme-primary-70)" : idx === 1 ? "var(--theme-secondary-70)" : "var(--theme-accent-70)"};`}>
+						style={`background-color: ${idx === 0 ? "var(--theme-primary-20)" : idx === 1 ? "var(--theme-secondary-20)" : "var(--theme-accent-20)"}; border-color: ${idx === 0 ? "var(--theme-primary-60)" : idx === 1 ? "var(--theme-secondary-60)" : "var(--theme-accent-60)"};`}>
 						<svelte:component
 							this={feature.icon}
 							class={feature.iconClass}
-							style={`color: ${idx === 0 ? "var(--theme-primary)" : idx === 1 ? "var(--theme-secondary)" : "var(--theme-accent)"}`} />
+							style={`color: ${idx === 0 ? "var(--theme-primary-110)" : idx === 1 ? "var(--theme-secondary-110)" : "var(--theme-accent-110)"}`} />
 					</div>
 					<h3 class="text-xl font-bold mb-3">{feature.title}</h3>
 					<p class="leading-relaxed text-[var(--theme-text-100)]">
@@ -1481,7 +1481,7 @@
 				<div class="testimonials-track flex w-max gap-8">
 					{#each [...testimonials, ...testimonials] as testimonial, idx (idx)}
 						<div
-							class="w-[20rem] shrink-0 rounded-2xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] p-8 md:w-[24rem]">
+							class="w-[20rem] shrink-0 rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8 md:w-[24rem]">
 							<p class="mb-6 leading-relaxed text-[var(--theme-text-100)]">
 								"{testimonial.quote}"
 							</p>
@@ -1511,7 +1511,7 @@
 
 			<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 				<div
-					class="flex flex-col rounded-3xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] p-8">
+					class="flex flex-col rounded-3xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8">
 					<h3 class="text-xl font-semibold mb-2">Open Source</h3>
 					<div class="flex items-baseline gap-1 mb-6">
 						<span class="text-4xl font-bold">$0</span>
@@ -1525,7 +1525,7 @@
 							<li
 								class="flex items-center gap-3 text-sm"
 								style="color: var(--theme-text-100);">
-								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary);" />
+								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary-110);" />
 								{item}
 							</li>
 						{/each}
@@ -1544,11 +1544,11 @@
 
 				<div
 					class="relative flex flex-col rounded-3xl border p-8"
-					style="background: linear-gradient(to bottom, var(--theme-primary-20), var(--theme-background-20)); border-color: var(--theme-background-70);">
+					style="background: linear-gradient(to bottom, var(--theme-primary-20), var(--theme-background-20)); border-color: var(--theme-background-60);">
 					<div class="absolute top-0 right-8 transform -translate-y-1/2">
 						<span
 							class="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide"
-							style="background-color: var(--theme-primary); color: var(--theme-background);">
+							style="background-color: var(--theme-primary-20); color: var(--theme-primary-110); border: 1px solid var(--theme-primary-60);">
 							Enterprise
 						</span>
 					</div>
@@ -1565,7 +1565,7 @@
 							<li
 								class="flex items-center gap-3 text-sm"
 								style="color: var(--theme-text-100);">
-								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-secondary);" />
+								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary-110);" />
 								{item}
 							</li>
 						{/each}
@@ -1573,7 +1573,7 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] transition-colors shadow-lg shadow-[0_0_32px_-12px_var(--theme-primary-100)] hover:bg-[var(--theme-primary-110)]">
+							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] transition-colors hover:bg-[var(--theme-primary-110)]">
 							Also View on GitHub
 						</a>
 						<p class="mt-4 text-xs text-[var(--theme-text-120)]">
@@ -1620,7 +1620,7 @@
 	}
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: var(--theme-primary);
+		background: var(--theme-primary-90);
 	}
 
 	.testimonials-track {
