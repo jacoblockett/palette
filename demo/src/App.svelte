@@ -288,6 +288,7 @@
 		theme = cloneTheme(snapshot.theme)
 		lockedSeedRoles = { ...snapshot.lockedSeedRoles }
 		activeColorMode = snapshot.activeColorMode
+		applyThemeVariables()
 		demoScheme = snapshot.demoScheme
 		wcag = snapshot.wcag
 		lastGeneratedPalette = cloneGeneratedPalette(snapshot.lastGeneratedPalette)
@@ -1005,6 +1006,7 @@
 		const nextMode = activeColorMode === "light" ? "dark" : "light"
 
 		activeColorMode = nextMode
+		applyThemeVariables()
 
 		if (activeColorField && isValidHex(theme[nextMode][activeColorField])) {
 			syncPickerFromHex(theme[nextMode][activeColorField])
