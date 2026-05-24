@@ -1461,6 +1461,12 @@
 </div>
 
 <style>
+	:global(*),
+	:global(*::before),
+	:global(*::after) {
+		box-sizing: border-box;
+	}
+
 	:global(body) {
 		margin: 0;
 	}
@@ -1510,7 +1516,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		min-height: 4rem;
+		min-height: 4.5rem;
 	}
 
 	.nav-brand-row,
@@ -1545,6 +1551,10 @@
 
 	.nav-brand-row {
 		gap: 2rem;
+	}
+
+	.nav-actions {
+		flex-shrink: 0;
 	}
 
 	.nav-brand {
@@ -1591,6 +1601,11 @@
 		font-size: 0.875rem;
 		font-weight: 500;
 		color: var(--theme-text-90);
+	}
+
+	.nav-link,
+	.footer-link {
+		line-height: 1.4;
 	}
 
 	.nav-link:hover,
@@ -1713,16 +1728,17 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding-top: 8rem;
-		padding-bottom: 5rem;
+		padding-top: 8.5rem;
+		padding-bottom: 6rem;
 		text-align: center;
 	}
 
 	.hero-title {
-		margin: 0 0 1.5rem;
-		font-size: 3rem;
+		max-width: 12ch;
+		margin: 0 0 1.25rem;
+		font-size: clamp(3.25rem, 9vw, 5.5rem);
 		font-weight: 800;
-		line-height: 1.05;
+		line-height: 0.96;
 		letter-spacing: -0.04em;
 		color: transparent;
 		background-image: linear-gradient(to right, var(--theme-text), var(--theme-primary-110), var(--theme-accent-110));
@@ -1743,7 +1759,7 @@
 	}
 
 	.hero-copy {
-		max-width: 42rem;
+		max-width: 46rem;
 		margin: 0 0 2.5rem;
 		font-size: 1.125rem;
 		color: var(--theme-text-100);
@@ -1751,6 +1767,8 @@
 
 	.hero-actions {
 		flex-direction: column;
+		gap: 0.875rem;
+		align-items: stretch;
 		width: 100%;
 	}
 
@@ -1767,11 +1785,13 @@
 		justify-content: center;
 		gap: 0.5rem;
 		border-radius: 999px;
+		line-height: 1;
 		font-weight: 600;
 	}
 
 	.primary-cta,
 	.secondary-cta {
+		min-height: 3.25rem;
 		padding: 0.875rem 2rem;
 	}
 
@@ -1798,7 +1818,7 @@
 	.playground,
 	.testimonial-section,
 	.pricing-section {
-		padding: 5rem 0;
+		padding: 6rem 0;
 		background: var(--theme-background-10);
 	}
 
@@ -1818,19 +1838,23 @@
 	}
 
 	.section-intro {
-		margin-bottom: 2rem;
+		max-width: 42rem;
+		margin-bottom: 3rem;
 	}
 
 	.section-intro-centered {
-		margin-bottom: 4rem;
+		margin-left: auto;
+		margin-right: auto;
+		margin-bottom: 3rem;
 		text-align: center;
 	}
 
 	.section-title {
 		margin: 0 0 1rem;
-		font-size: 1.875rem;
+		font-size: clamp(2rem, 5vw, 3rem);
 		font-weight: 700;
-		line-height: 1.2;
+		line-height: 1.05;
+		letter-spacing: -0.03em;
 	}
 
 	.section-copy {
@@ -1843,7 +1867,7 @@
 	.feature-grid,
 	.pricing-grid {
 		display: grid;
-		gap: 2rem;
+		gap: 2.25rem;
 	}
 
 	.playground-grid {
@@ -1860,13 +1884,14 @@
 	}
 
 	.playground-panel {
-		padding: 1.5rem;
-		border-radius: 1rem;
+		height: 100%;
+		padding: 1.75rem;
+		border-radius: 1.25rem;
 	}
 
 	.toolbar {
-		justify-content: center;
-		margin-bottom: 1.5rem;
+		justify-content: flex-start;
+		margin-bottom: 1.75rem;
 	}
 
 	.toolbar-button {
@@ -1895,7 +1920,7 @@
 
 	.seed-grid {
 		display: grid;
-		gap: 1rem;
+		gap: 1.25rem;
 	}
 
 	.seed-field {
@@ -1926,6 +1951,7 @@
 		padding: 0 5rem 0 1rem;
 		border: 1px solid var(--theme-background-70);
 		border-radius: 0.75rem;
+		line-height: 1;
 		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 		font-size: 0.875rem;
 	}
@@ -2066,6 +2092,7 @@
 		padding: 0.5rem 0.75rem;
 		border: 1px solid;
 		border-radius: 0.75rem;
+		line-height: 1.5;
 		font-size: 0.875rem;
 	}
 
@@ -2131,6 +2158,7 @@
 		display: flex;
 		align-items: center;
 		width: 100%;
+		min-height: 2.5rem;
 		padding: 0.5rem 0.75rem;
 		border: 0;
 		border-radius: 0.5rem;
@@ -2151,7 +2179,7 @@
 
 	.wcag-row {
 		gap: 0.75rem;
-		padding-top: 0.5rem;
+		padding-top: 0.75rem;
 	}
 
 	.wcag-toggle {
@@ -2182,6 +2210,7 @@
 
 	.code-preview-wrap {
 		position: relative;
+		min-height: 100%;
 	}
 
 	.code-preview-glow {
@@ -2197,6 +2226,9 @@
 	.code-preview {
 		position: relative;
 		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		min-height: 100%;
 		border-radius: 1rem;
 		box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
 	}
@@ -2205,7 +2237,8 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		padding: 0.75rem 1rem;
+		min-height: 3.5rem;
+		padding: 0.875rem 1rem;
 		border-bottom: 1px solid var(--theme-background-70);
 		background: var(--theme-background-30);
 	}
@@ -2226,8 +2259,12 @@
 		position: absolute;
 		left: 50%;
 		top: 50%;
+		max-width: calc(100% - 8rem);
+		overflow: hidden;
 		font-size: 0.875rem;
 		color: var(--theme-text-120);
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		transform: translate(-50%, -50%);
 	}
 
@@ -2236,7 +2273,7 @@
 		z-index: 1;
 		margin-left: auto;
 		gap: 0.375rem;
-		width: 4rem;
+		min-width: 4.5rem;
 		padding: 0.375rem 0.75rem;
 		border: 1px solid var(--theme-background-70);
 		border-radius: 999px;
@@ -2253,6 +2290,7 @@
 
 	.code-preview-body {
 		overflow: auto;
+		flex: 1 1 auto;
 		padding: 1rem;
 		color: var(--theme-text);
 		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -2311,19 +2349,31 @@
 	.testimonial-card,
 	.pricing-card {
 		padding: 2rem;
-		border-radius: 1rem;
+		border-radius: 1.25rem;
 	}
 
 	.feature-card:hover {
 		background: var(--theme-background-30);
 	}
 
+	.feature-card,
+	.testimonial-card,
+	.pricing-card {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.feature-card,
+	.pricing-card {
+		height: 100%;
+	}
+
 	.feature-icon-shell {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 3rem;
-		height: 3rem;
+		width: 3.25rem;
+		height: 3.25rem;
 		margin-bottom: 1.5rem;
 		border: 1px solid;
 		border-radius: 0.75rem;
@@ -2355,8 +2405,10 @@
 	.feature-card-title,
 	.pricing-card-title {
 		margin: 0 0 0.75rem;
-		font-size: 1.25rem;
+		font-size: 1.375rem;
 		font-weight: 700;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
 	}
 
 	.feature-card-copy,
@@ -2366,9 +2418,14 @@
 		color: var(--theme-text-100);
 	}
 
+	.feature-card-copy {
+		margin: 0;
+	}
+
 	.testimonials-carousel {
 		position: relative;
 		overflow: hidden;
+		padding: 0.5rem 0;
 	}
 
 	.testimonial-fade {
@@ -2403,17 +2460,24 @@
 
 	.testimonial-card {
 		width: 20rem;
+		justify-content: space-between;
+		min-height: 15rem;
 		flex-shrink: 0;
 	}
 
 	.testimonial-quote,
 	.pricing-copy {
-		margin: 0 0 1.5rem;
+		margin: 0 0 1.75rem;
 		color: var(--theme-text-100);
 	}
 
 	.testimonial-name {
 		font-weight: 600;
+	}
+
+	.testimonial-person {
+		display: grid;
+		gap: 0.375rem;
 	}
 
 	.testimonial-role,
@@ -2425,11 +2489,11 @@
 	.pricing-grid {
 		width: min(100%, 64rem);
 		margin: 0 auto;
+		align-items: stretch;
 	}
 
 	.pricing-card {
-		display: flex;
-		flex-direction: column;
+		gap: 0.375rem;
 		border-radius: 1.5rem;
 	}
 
@@ -2461,14 +2525,16 @@
 	}
 
 	.pricing-price {
-		font-size: 2.25rem;
+		font-size: 2.5rem;
 		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.03em;
 	}
 
 	.pricing-feature-list {
 		display: grid;
 		gap: 1rem;
-		margin: 0 0 2rem;
+		margin: 0 0 2.25rem;
 		padding: 0;
 		list-style: none;
 	}
@@ -2487,11 +2553,13 @@
 
 	.pricing-card-footer {
 		margin-top: auto;
+		padding-top: 0.5rem;
 	}
 
 	.pricing-cta {
 		display: flex;
 		width: 100%;
+		min-height: 3rem;
 		padding: 0.75rem 1rem;
 		border-radius: 0.75rem;
 		background: var(--theme-primary);
@@ -2505,11 +2573,11 @@
 	}
 
 	.pricing-note {
-		margin: 1rem 0 0;
+		margin: 1.25rem 0 0;
 	}
 
 	.app-footer {
-		padding: 3rem 1rem;
+		padding: 3.5rem 1rem;
 		border-top: 1px solid var(--theme-background-60);
 		background: var(--theme-background-20);
 		color: var(--theme-text-100);
@@ -2520,7 +2588,7 @@
 	.footer-brand {
 		justify-content: center;
 		gap: 0.5rem;
-		margin-bottom: 1rem;
+		margin-bottom: 1.25rem;
 	}
 
 	.footer-brand-icon {
@@ -2909,9 +2977,21 @@
 			display: flex;
 		}
 
-		.hero-title,
+		.nav-inner {
+			min-height: 5rem;
+		}
+
+		.hero {
+			padding-top: 10rem;
+			padding-bottom: 7rem;
+		}
+
+		.hero-title {
+			font-size: clamp(4.25rem, 8vw, 6.5rem);
+		}
+
 		.section-title {
-			font-size: 3.5rem;
+			font-size: clamp(2.5rem, 4vw, 3.5rem);
 		}
 
 		.hero-copy,
@@ -2933,6 +3013,7 @@
 
 		.testimonial-card {
 			width: 24rem;
+			min-height: 16rem;
 		}
 	}
 
@@ -2943,6 +3024,10 @@
 
 		.playground-grid {
 			grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+		}
+
+		.playground-panel {
+			padding: 2rem;
 		}
 	}
 
