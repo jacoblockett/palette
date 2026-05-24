@@ -1093,10 +1093,7 @@
 	onresize={() => isSchemeOpen && updateSchemeMenuPlacement()}
 	onscroll={() => isSchemeOpen && updateSchemeMenuPlacement()} />
 
-<div
-	bind:this={appElement}
-	data-theme={activeColorMode}
-	class="app-shell">
+<div bind:this={appElement} data-theme={activeColorMode} class="app-shell">
 	<nav class="app-nav">
 		<div class="page-shell nav-inner">
 			<div class="nav-brand-row">
@@ -1129,7 +1126,11 @@
 						<path d={siGithub.path}></path>
 					</svg>
 				</a>
-				<button type="button" aria-label="Copy install command" onclick={() => handleCopyInstallCommand("nav")} class="install-pill nav-install-pill">
+				<button
+					type="button"
+					aria-label="Copy install command"
+					onclick={() => handleCopyInstallCommand("nav")}
+					class="install-pill nav-install-pill">
 					<span class={`copy-tooltip nav-copy-tooltip ${isNavInstallCopied ? "is-visible" : ""}`}>Copied!</span>
 					<span class="install-pill-content">
 						<Terminal class="install-pill-icon" />
@@ -1174,7 +1175,12 @@
 							<button type="button" aria-label="Randomize colors" onclick={randomizeSeeds} class="toolbar-button">
 								<Dices class="toolbar-icon" />
 							</button>
-							<button type="button" aria-label="Undo color change" onclick={undoColorChange} disabled={colorHistoryIndex === 0} class="toolbar-button">
+							<button
+								type="button"
+								aria-label="Undo color change"
+								onclick={undoColorChange}
+								disabled={colorHistoryIndex === 0}
+								class="toolbar-button">
 								<Undo2 class="toolbar-icon" />
 							</button>
 							<button
@@ -1236,7 +1242,9 @@
 									</div>
 								</div>
 								{#if activeColorField === field.key}
-									<div bind:this={colorPickerPopoverElement} class={`color-picker-wrap ${index % 2 === 0 ? "align-left" : "align-right"}`}>
+									<div
+										bind:this={colorPickerPopoverElement}
+										class={`color-picker-wrap ${index % 2 === 0 ? "align-left" : "align-right"}`}>
 										<div onpointerdown={handleColorPickerPointerDown} class="color-picker">
 											<div class="color-picker-surface">
 												<div
@@ -1286,9 +1294,15 @@
 						</button>
 						{#if isSchemeOpen}
 							<div class={`scheme-menu-wrap ${schemeMenuDirection === "up" ? "direction-up" : "direction-down"}`}>
-								<div bind:this={schemeMenuElement} class="scheme-menu scheme-menu-scrollbar" style={`max-height: ${schemeMenuMaxHeight}px;`}>
+								<div
+									bind:this={schemeMenuElement}
+									class="scheme-menu scheme-menu-scrollbar"
+									style={`max-height: ${schemeMenuMaxHeight}px;`}>
 									{#each supportedSchemes as scheme}
-										<button type="button" onclick={() => selectScheme(scheme)} class={`scheme-option ${demoScheme === scheme ? "is-active" : ""}`}>
+										<button
+											type="button"
+											onclick={() => selectScheme(scheme)}
+											class={`scheme-option ${demoScheme === scheme ? "is-active" : ""}`}>
 											{formatSchemeLabel(scheme)}
 										</button>
 									{/each}
@@ -1697,7 +1711,9 @@
 		color: var(--theme-text);
 		font-size: 0.875rem;
 		font-weight: 600;
-		box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+		box-shadow:
+			0 20px 25px -5px rgb(0 0 0 / 0.1),
+			0 8px 10px -6px rgb(0 0 0 / 0.1);
 		opacity: 0;
 	}
 
@@ -1722,7 +1738,7 @@
 
 	.hero-copy-tooltip {
 		left: 50%;
-		top: -2.5rem;
+		top: -0.5rem;
 		bottom: auto;
 		margin-bottom: 0;
 		transform: translateX(-50%) translateY(-100%);
@@ -2145,7 +2161,16 @@
 		position: absolute;
 		inset: 1px;
 		border-radius: 9999px;
-		background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+		background: linear-gradient(
+			to right,
+			#ff0000 0%,
+			#ffff00 17%,
+			#00ff00 33%,
+			#00ffff 50%,
+			#0000ff 67%,
+			#ff00ff 83%,
+			#ff0000 100%
+		);
 	}
 
 	.color-picker-hue-thumb {
@@ -2737,11 +2762,7 @@
 	}
 
 	.app-shell[data-theme="dark"] .nav-brand-mark {
-		background-image: linear-gradient(
-			to bottom right,
-			var(--theme-dark-primary-110),
-			var(--theme-dark-accent-110)
-		);
+		background-image: linear-gradient(to bottom right, var(--theme-dark-primary-110), var(--theme-dark-accent-110));
 	}
 
 	.app-shell[data-theme="dark"] .nav-brand-icon,
