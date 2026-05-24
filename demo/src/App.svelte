@@ -1220,6 +1220,7 @@
 											aria-label={`${lockedSeedRoles[field.key] ? "Unlock" : "Lock"} ${field.label} hex`}
 											onclick={() => toggleSeedLock(field.key)}
 											class={`seed-action-button lock-button ${lockedSeedRoles[field.key] ? "is-locked" : ""}`}
+											tabindex={lockedSeedRoles[field.key] || activeColorField === field.key ? 0 : -1}
 											style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
 											{#if lockedSeedRoles[field.key]}
 												<Lock class="seed-action-icon" />
@@ -1232,6 +1233,7 @@
 											aria-label={`Copy ${field.label} hex`}
 											onclick={() => handleCopySeed(field.key, theme[activeColorMode][field.key])}
 											class="seed-action-button copy-button"
+											tabindex={activeColorField === field.key ? 0 : -1}
 											style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
 											{#if copiedSeedRole === field.key}
 												<CheckCircle2 class="seed-action-icon" />
@@ -1288,31 +1290,33 @@
 
 					<div class="scheme-field" tabindex="-1" onfocusout={handleSchemeFocusOut}>
 						<label class="scheme-label">Scheme</label>
-						<button
-							bind:this={schemeTriggerElement}
-							type="button"
-							onclick={toggleSchemeMenu}
-							class={`scheme-trigger ${isSchemeOpen ? "is-open" : ""} ${isSchemeOpen && schemeMenuDirection === "up" ? "opens-up" : ""} ${isSchemeOpen && schemeMenuDirection === "down" ? "opens-down" : ""}`}>
-							<span>{formatSchemeLabel(demoScheme)}</span>
-							<ChevronDown class={`scheme-chevron ${isSchemeOpen ? "is-open" : ""}`} />
-						</button>
-						{#if isSchemeOpen}
-							<div class={`scheme-menu-wrap ${schemeMenuDirection === "up" ? "direction-up" : "direction-down"}`}>
-								<div
-									bind:this={schemeMenuElement}
-									class="scheme-menu scheme-menu-scrollbar"
-									style={`max-height: ${schemeMenuMaxHeight}px;`}>
-									{#each supportedSchemes as scheme}
-										<button
-											type="button"
-											onclick={() => selectScheme(scheme)}
-											class={`scheme-option ${demoScheme === scheme ? "is-active" : ""}`}>
-											{formatSchemeLabel(scheme)}
-										</button>
-									{/each}
+						<div class={`scheme-control ${isSchemeOpen ? "is-open" : ""} ${isSchemeOpen && schemeMenuDirection === "up" ? "opens-up" : ""} ${isSchemeOpen && schemeMenuDirection === "down" ? "opens-down" : ""}`}>
+							<button
+								bind:this={schemeTriggerElement}
+								type="button"
+								onclick={toggleSchemeMenu}
+								class={`scheme-trigger ${isSchemeOpen ? "is-open" : ""} ${isSchemeOpen && schemeMenuDirection === "up" ? "opens-up" : ""} ${isSchemeOpen && schemeMenuDirection === "down" ? "opens-down" : ""}`}>
+								<span>{formatSchemeLabel(demoScheme)}</span>
+								<ChevronDown class={`scheme-chevron ${isSchemeOpen ? "is-open" : ""}`} />
+							</button>
+							{#if isSchemeOpen}
+								<div class={`scheme-menu-wrap ${schemeMenuDirection === "up" ? "direction-up" : "direction-down"}`}>
+									<div
+										bind:this={schemeMenuElement}
+										class="scheme-menu scheme-menu-scrollbar"
+										style={`max-height: ${schemeMenuMaxHeight}px;`}>
+										{#each supportedSchemes as scheme}
+											<button
+												type="button"
+												onclick={() => selectScheme(scheme)}
+												class={`scheme-option ${demoScheme === scheme ? "is-active" : ""}`}>
+												{formatSchemeLabel(scheme)}
+											</button>
+										{/each}
+									</div>
 								</div>
-							</div>
-						{/if}
+							{/if}
+						</div>
 					</div>
 
 					<div class="wcag-row">
@@ -1652,7 +1656,8 @@
 		background: transparent;
 	}
 
-	.nav-action-button:hover {
+	.nav-action-button:hover,
+	.nav-action-button:focus-visible {
 		background: var(--theme-primary-80);
 	}
 
@@ -1687,7 +1692,9 @@
 	}
 
 	.install-pill:hover,
-	.secondary-cta:hover {
+	.install-pill:focus-visible,
+	.secondary-cta:hover,
+	.secondary-cta:focus-visible {
 		background: var(--theme-background-40);
 	}
 
@@ -1831,7 +1838,8 @@
 		box-shadow: 0 0 40px -10px var(--theme-primary-100);
 	}
 
-	.primary-cta:hover {
+	.primary-cta:hover,
+	.primary-cta:focus-visible {
 		background: var(--theme-primary-110);
 		box-shadow: 0 0 60px -15px var(--theme-primary-120);
 	}
@@ -1975,7 +1983,9 @@
 	}
 
 	.toolbar-button:hover,
-	.code-preview-copy:hover {
+	.toolbar-button:focus-visible,
+	.code-preview-copy:hover,
+	.code-preview-copy:focus-visible {
 		background: var(--theme-background-50);
 	}
 
@@ -2062,12 +2072,15 @@
 	}
 
 	.seed-input-wrap:hover .seed-action-button,
+	.seed-input-wrap:focus-within .seed-action-button,
 	.seed-action-button.is-locked {
 		opacity: 1;
 	}
 
-	.seed-action-button:hover {
+	.seed-action-button:hover,
+	.seed-action-button:focus-visible {
 		background: var(--seed-action-hover);
+		outline: none;
 	}
 
 	.seed-action-icon {
@@ -2193,8 +2206,14 @@
 		line-height: 1.25rem;
 	}
 
-	.scheme-field {
+	.scheme-control {
 		position: relative;
+		width: 100%;
+		--scheme-control-border: var(--theme-background-70);
+	}
+
+	.scheme-control.is-open {
+		--scheme-control-border: var(--theme-primary);
 	}
 
 	.scheme-trigger {
@@ -2208,7 +2227,7 @@
 		padding-right: 1rem;
 		border-width: 1px;
 		border-style: solid;
-		border-color: var(--theme-background-70);
+		border-color: var(--scheme-control-border);
 		border-radius: 0.75rem;
 		background: var(--theme-background-30);
 		color: var(--theme-text);
@@ -2229,7 +2248,8 @@
 		border-top-right-radius: 0;
 	}
 
-	.scheme-trigger:hover {
+	.scheme-trigger:hover,
+	.scheme-trigger:focus-visible {
 		background: var(--theme-background-40);
 	}
 
@@ -2251,7 +2271,7 @@
 		overflow: hidden;
 		border-width: 1px;
 		border-style: solid;
-		border-color: var(--theme-background-70);
+		border-color: var(--scheme-control-border);
 		border-radius: 0.75rem;
 		background: var(--theme-background-30);
 		box-shadow: 0 16px 32px -28px rgb(0 0 0 / 0.9);
@@ -2287,7 +2307,8 @@
 		text-align: left;
 	}
 
-	.scheme-option:hover {
+	.scheme-option:hover,
+	.scheme-option:focus-visible {
 		background: var(--theme-background-40);
 	}
 
@@ -2697,7 +2718,8 @@
 		text-align: center;
 	}
 
-	.pricing-cta:hover {
+	.pricing-cta:hover,
+	.pricing-cta:focus-visible {
 		background: var(--theme-primary-110);
 	}
 
@@ -2837,10 +2859,15 @@
 	}
 
 	.app-shell[data-theme="dark"] .nav-action-button:hover,
+	.app-shell[data-theme="dark"] .nav-action-button:focus-visible,
 	.app-shell[data-theme="dark"] .toolbar-button:hover,
+	.app-shell[data-theme="dark"] .toolbar-button:focus-visible,
 	.app-shell[data-theme="dark"] .code-preview-copy:hover,
+	.app-shell[data-theme="dark"] .code-preview-copy:focus-visible,
 	.app-shell[data-theme="dark"] .scheme-trigger:hover,
+	.app-shell[data-theme="dark"] .scheme-trigger:focus-visible,
 	.app-shell[data-theme="dark"] .scheme-option:hover,
+	.app-shell[data-theme="dark"] .scheme-option:focus-visible,
 	.app-shell[data-theme="dark"] .feature-card:hover {
 		background: var(--theme-dark-background-140);
 	}
@@ -2859,6 +2886,14 @@
 		background: var(--theme-dark-background-120);
 	}
 
+	.app-shell[data-theme="dark"] .scheme-control {
+		--scheme-control-border: var(--theme-dark-background-150);
+	}
+
+	.app-shell[data-theme="dark"] .scheme-control.is-open {
+		--scheme-control-border: var(--theme-dark-primary);
+	}
+
 	.app-shell[data-theme="dark"] .install-pill,
 	.app-shell[data-theme="dark"] .secondary-cta,
 	.app-shell[data-theme="dark"] .scheme-trigger,
@@ -2869,7 +2904,9 @@
 	}
 
 	.app-shell[data-theme="dark"] .install-pill:hover,
-	.app-shell[data-theme="dark"] .secondary-cta:hover {
+	.app-shell[data-theme="dark"] .install-pill:focus-visible,
+	.app-shell[data-theme="dark"] .secondary-cta:hover,
+	.app-shell[data-theme="dark"] .secondary-cta:focus-visible {
 		background: var(--theme-dark-background-140);
 	}
 
@@ -2906,7 +2943,9 @@
 	}
 
 	.app-shell[data-theme="dark"] .primary-cta:hover,
-	.app-shell[data-theme="dark"] .pricing-cta:hover {
+	.app-shell[data-theme="dark"] .primary-cta:focus-visible,
+	.app-shell[data-theme="dark"] .pricing-cta:hover,
+	.app-shell[data-theme="dark"] .pricing-cta:focus-visible {
 		background: var(--theme-dark-primary-120);
 	}
 
@@ -2951,6 +2990,11 @@
 
 	.app-shell[data-theme="dark"] .scheme-menu-wrap {
 		background: var(--theme-dark-background-130);
+	}
+
+	.app-shell[data-theme="dark"] .scheme-trigger,
+	.app-shell[data-theme="dark"] .scheme-menu-wrap {
+		border-color: var(--scheme-control-border);
 	}
 
 	.app-shell[data-theme="dark"] .seed-input {
