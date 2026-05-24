@@ -1712,11 +1712,27 @@
 		transform: translateX(-50%);
 	}
 
+	.nav-copy-tooltip:not(.is-visible) {
+		transform: translateX(-50%) translateY(-0.25rem);
+	}
+
+	.nav-copy-tooltip.is-visible {
+		transform: translateX(-50%) translateY(0);
+	}
+
 	.hero-copy-tooltip {
 		left: 50%;
 		top: -2.5rem;
 		bottom: auto;
 		margin-bottom: 0;
+		transform: translateX(-50%) translateY(-100%);
+	}
+
+	.hero-copy-tooltip:not(.is-visible) {
+		transform: translateX(-50%) translateY(calc(-100% + 0.25rem));
+	}
+
+	.hero-copy-tooltip.is-visible {
 		transform: translateX(-50%) translateY(-100%);
 	}
 
@@ -1905,6 +1921,9 @@
 	}
 
 	.playground-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
 		padding: 1.5rem;
 		border-radius: 1rem;
 	}
@@ -1913,7 +1932,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-bottom: 1.5rem;
 	}
 
 	.toolbar-group {
@@ -2148,7 +2166,6 @@
 
 	.scheme-field {
 		position: relative;
-		margin-top: 1.5rem;
 	}
 
 	.scheme-trigger {
@@ -2235,7 +2252,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding-top: 0.5rem;
 	}
 
 	.wcag-toggle {
@@ -2274,7 +2290,7 @@
 		border-radius: 1.5rem;
 		background: var(--theme-accent);
 		opacity: 0.14;
-		filter: blur(24px);
+		filter: blur(40px);
 		pointer-events: none;
 	}
 
@@ -2406,8 +2422,6 @@
 		background: var(--theme-background-30);
 	}
 
-	.feature-card,
-	.testimonial-card,
 	.pricing-card {
 		display: flex;
 		flex-direction: column;
@@ -2469,7 +2483,7 @@
 		margin: 0 0 0.75rem;
 		font-size: 1.25rem;
 		font-weight: 700;
-		line-height: 1.15;
+		line-height: 1.75rem;
 	}
 
 	.feature-card-copy,
@@ -2534,9 +2548,7 @@
 		font-weight: 600;
 	}
 
-	.testimonial-role,
-	.pricing-period,
-	.pricing-note {
+	.testimonial-role {
 		font-size: 0.875rem;
 	}
 
@@ -2569,7 +2581,7 @@
 		margin-left: 0;
 		font-size: 1.25rem;
 		font-weight: 600;
-		line-height: 1.15;
+		line-height: 1.75rem;
 	}
 
 	.pricing-price-row {
@@ -2582,7 +2594,7 @@
 	.pricing-price {
 		font-size: 2.25rem;
 		font-weight: 700;
-		line-height: 1;
+		line-height: 2.5rem;
 	}
 
 	.pricing-copy {
@@ -2932,10 +2944,6 @@
 		background: var(--theme-dark-accent-120);
 	}
 
-	.app-shell[data-theme="dark"] .code-preview {
-		box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.55);
-	}
-
 	.app-shell[data-theme="dark"] .code-preview-header {
 		background: var(--theme-dark-background-130);
 	}
@@ -3076,6 +3084,7 @@
 
 		.section-intro-centered .section-title {
 			font-size: 2.25rem;
+			line-height: 2.5rem;
 		}
 
 		.feature-grid {
