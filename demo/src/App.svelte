@@ -109,27 +109,22 @@
 		"200"
 	]
 	const themeShadeStops = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
-	const previewShadeControlGutterClass = "inline-flex w-16 shrink-0 justify-end pr-2"
-	const previewShadeCodeColumnClass = "min-w-0"
-	const previewShadeButtonClass =
-		"inline-flex items-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] px-2 py-0.5 text-xs font-medium normal-case tracking-normal text-[var(--theme-text-100)]"
-
 	const features = [
 		{
 			icon: Layers,
-			iconClass: "w-6 h-6",
+			iconClass: "feature-icon-svg",
 			title: "Seedable Configuration",
 			desc: "Provide zero to five seed colors, and we deterministically hallucinate the rest. Like magic, if you don't understand basic math."
 		},
 		{
 			icon: Zap,
-			iconClass: "w-6 h-6",
+			iconClass: "feature-icon-svg",
 			title: "Aggressive WCAG",
 			desc: "If your input or generated colors fail minimum accessibility checks, we throw an error and crash your app. You're welcome."
 		},
 		{
 			icon: Code,
-			iconClass: "w-6 h-6",
+			iconClass: "feature-icon-svg",
 			title: "Bountiful Schemes",
 			desc: "Whatever color scheme you want, we probably have it. Proprietary, of course. The word means something, right?"
 		}
@@ -865,7 +860,7 @@
 	function createCodeSegmentsForText(text) {
 		return {
 			text,
-			className: "text-[var(--theme-text)]"
+			className: "token-text"
 		}
 	}
 
@@ -884,10 +879,10 @@
 					return {
 						indent,
 						segments: [
-							{ text: "import ", className: "text-[var(--theme-primary-110)]" },
-							{ text: "palette", className: "text-[var(--theme-text)]" },
-							{ text: " from ", className: "text-[var(--theme-primary-110)]" },
-							{ text: trimmedLine.slice("import palette from ".length), className: "text-[var(--theme-accent-110)]" }
+							{ text: "import ", className: "token-keyword" },
+							{ text: "palette", className: "token-identifier" },
+							{ text: " from ", className: "token-keyword" },
+							{ text: trimmedLine.slice("import palette from ".length), className: "token-string" }
 						]
 					}
 				}
@@ -896,11 +891,11 @@
 					return {
 						indent,
 						segments: [
-							{ text: "const ", className: "text-[var(--theme-primary-110)]" },
-							{ text: "theme", className: "text-[var(--theme-text)]" },
-							{ text: " = ", className: "text-[var(--theme-primary-110)]" },
-							{ text: "palette", className: "text-[var(--theme-text)]" },
-							{ text: "()", className: "text-[var(--theme-text-120)]" }
+							{ text: "const ", className: "token-keyword" },
+							{ text: "theme", className: "token-identifier" },
+							{ text: " = ", className: "token-keyword" },
+							{ text: "palette", className: "token-identifier" },
+							{ text: "()", className: "token-punctuation" }
 						]
 					}
 				}
@@ -909,11 +904,11 @@
 					return {
 						indent,
 						segments: [
-							{ text: "const ", className: "text-[var(--theme-primary-110)]" },
-							{ text: "theme", className: "text-[var(--theme-text)]" },
-							{ text: " = ", className: "text-[var(--theme-primary-110)]" },
-							{ text: "palette", className: "text-[var(--theme-text)]" },
-							{ text: "({", className: "text-[var(--theme-text-120)]" }
+							{ text: "const ", className: "token-keyword" },
+							{ text: "theme", className: "token-identifier" },
+							{ text: " = ", className: "token-keyword" },
+							{ text: "palette", className: "token-identifier" },
+							{ text: "({", className: "token-punctuation" }
 						]
 					}
 				}
@@ -921,7 +916,7 @@
 				if (trimmedLine === "})") {
 					return {
 						indent,
-						segments: [{ text: "})", className: "text-[var(--theme-text-120)]" }]
+						segments: [{ text: "})", className: "token-punctuation" }]
 					}
 				}
 
@@ -929,17 +924,14 @@
 
 				if (optionMatch) {
 					const [, key, value, comma] = optionMatch
-					const valueClassName =
-						value === "true" || value === "false"
-							? "text-[var(--theme-secondary-110)]"
-							: "text-[var(--theme-accent-110)]"
+					const valueClassName = value === "true" || value === "false" ? "token-boolean" : "token-string"
 					const segments = [
-						{ text: `${key}: `, className: "text-[var(--theme-text)]" },
+						{ text: `${key}: `, className: "token-identifier" },
 						{ text: value, className: valueClassName }
 					]
 
 					if (comma) {
-						segments.push({ text: comma, className: "text-[var(--theme-text-120)]" })
+						segments.push({ text: comma, className: "token-punctuation" })
 					}
 
 					return { indent, segments }
@@ -1091,334 +1083,240 @@
 <div
 	bind:this={appElement}
 	data-theme={activeColorMode}
-	class="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)] selection:bg-[var(--theme-primary-120)]">
-	<nav
-		class="fixed top-0 z-50 w-full border-b backdrop-blur-md"
-		style="background-color: var(--theme-background); border-color: var(--theme-primary-50);">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="flex justify-between h-16 items-center">
-				<div class="flex items-center gap-8">
-					<div class="flex items-center gap-2">
-						<div
-							class="flex h-8 w-8 items-center justify-center rounded-lg"
-							style="background-image: linear-gradient(to bottom right, var(--theme-primary-90), var(--theme-accent-90));">
-							<Palette class="w-5 h-5" style="color: var(--theme-text);" />
-						</div>
-						<span class="font-bold text-xl tracking-tight">Palette</span>
+	class="app-shell">
+	<nav class="app-nav">
+		<div class="page-shell nav-inner">
+			<div class="nav-brand-row">
+				<div class="nav-brand">
+					<div class="nav-brand-mark">
+						<Palette class="nav-brand-icon" />
 					</div>
-					<div class="hidden gap-8 text-sm font-medium text-[var(--theme-text-90)] md:flex">
-						<a href="#playground" class="hover:text-[var(--theme-primary)]">Playground</a>
-						<a href="#features" class="hover:text-[var(--theme-primary)]">Features</a>
-						<a href="#testimonials" class="hover:text-[var(--theme-primary)]">Testimonials</a>
-						<a href="#pricing" class="hover:text-[var(--theme-primary)]">Pricing</a>
-					</div>
+					<span class="nav-brand-text">Palette</span>
 				</div>
-				<div class="flex items-center gap-2">
-					<button
-						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
-						onclick={toggleActiveColorMode}
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-primary-80)] md:inline-flex">
-						<Moon />
-					</button>
-					<a
-						href="https://github.com/jacoblockett/palette"
-						target="_blank"
-						rel="noreferrer"
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-primary-80)] md:inline-flex">
-						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
-							<path d={siGithub.path}></path>
-						</svg>
-					</a>
-					<button
-						type="button"
-						aria-label="Copy install command"
-						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative ml-2 hidden h-10 items-center justify-center rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-4 font-mono text-[var(--theme-text)] text-xs hover:bg-[var(--theme-background-40)] sm:inline-flex">
-						<span
-							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
-							Copied!
-						</span>
-						<span class="flex items-center gap-2">
-							<Terminal class="w-3 h-3" style="color: var(--theme-primary);" />
-							{installCommand}
-						</span>
-					</button>
+				<div class="nav-link-list">
+					<a href="#playground" class="nav-link">Playground</a>
+					<a href="#features" class="nav-link">Features</a>
+					<a href="#testimonials" class="nav-link">Testimonials</a>
+					<a href="#pricing" class="nav-link">Pricing</a>
 				</div>
+			</div>
+			<div class="nav-actions">
+				<button
+					aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
+					onclick={toggleActiveColorMode}
+					class="icon-button nav-action-button">
+					<Moon class="nav-action-icon" />
+				</button>
+				<a
+					href="https://github.com/jacoblockett/palette"
+					target="_blank"
+					rel="noreferrer"
+					class="icon-button nav-action-button">
+					<svg viewBox="0 0 24 24" aria-hidden="true" class="github-icon" role="img">
+						<path d={siGithub.path}></path>
+					</svg>
+				</a>
+				<button type="button" aria-label="Copy install command" onclick={() => handleCopyInstallCommand("nav")} class="install-pill nav-install-pill">
+					<span class={`copy-tooltip nav-copy-tooltip ${isNavInstallCopied ? "is-visible" : ""}`}>Copied!</span>
+					<span class="install-pill-content">
+						<Terminal class="install-pill-icon" />
+						{installCommand}
+					</span>
+				</button>
 			</div>
 		</div>
 	</nav>
 
-	<section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
-		<h1
-			class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent"
-			style="background-image: linear-gradient(to right, var(--theme-text), var(--theme-primary-110), var(--theme-accent-110));">
-			Enterprise-grade colors. <br class="hidden md:block" />
+	<section class="hero page-shell">
+		<h1 class="hero-title">
+			Enterprise-grade colors. <br class="hero-break" />
 			Zero cost.
 		</h1>
-		<p class="text-lg md:text-xl max-w-2xl mb-10 leading-relaxed" style="color: var(--theme-text-100);">
+		<p class="hero-copy">
 			Why pick light and dark mode colors manually when you can install a dependency that mathematically generates all 5
 			roles and 20 shades automatically? Welcome to the future.
 		</p>
-		<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-			<button
-				class="flex items-center justify-center gap-2 rounded-full bg-[var(--theme-primary)] px-8 py-3.5 font-semibold text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)] shadow-[0_0_40px_-10px_var(--theme-primary-100)] hover:shadow-[0_0_60px_-15px_var(--theme-primary-120)]">
-				Read the docs <ArrowRight class="w-4 h-4" />
+		<div class="hero-actions">
+			<button class="primary-cta">
+				Read the docs <ArrowRight class="cta-icon" />
 			</button>
-			<button
-				type="button"
-				onclick={() => handleCopyInstallCommand("hero")}
-				class="relative flex items-center justify-center gap-2 rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-8 py-3.5 font-mono text-[var(--theme-text)] text-sm font-semibold hover:bg-[var(--theme-background-40)]">
-				<span
-					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
-					Copied!
-				</span>
-				<Terminal class="w-4 h-4" />
+			<button type="button" onclick={() => handleCopyInstallCommand("hero")} class="secondary-cta">
+				<span class={`copy-tooltip hero-copy-tooltip ${isHeroInstallCopied ? "is-visible" : ""}`}>Copied!</span>
+				<Terminal class="cta-icon" />
 				{installCommand}
 			</button>
 		</div>
 	</section>
 
-	<section id="playground" class="border-y border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-20">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="mb-8">
-				<h2 class="text-3xl font-bold mb-4">Playground</h2>
-				<p class="leading-relaxed text-[var(--theme-text-100)]">Go ahead. Change the colors. I dare you.</p>
+	<section id="playground" class="playground">
+		<div class="page-shell">
+			<div class="section-intro">
+				<h2 class="section-title">Playground</h2>
+				<p class="section-copy">Go ahead. Change the colors. I dare you.</p>
 			</div>
-			<div class="grid gap-8 items-start lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:gap-12">
-				<div>
-					<div
-						class="space-y-6 rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-6">
-						<div class="flex items-center justify-center gap-4">
-							<div class="flex items-center gap-2">
-								<button
-									type="button"
-									aria-label="Randomize colors"
-									onclick={randomizeSeeds}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)]">
-									<Dices class="w-4 h-4" />
-								</button>
-								<button
-									type="button"
-									aria-label="Undo color change"
-									onclick={undoColorChange}
-									disabled={colorHistoryIndex === 0}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)] disabled:cursor-not-allowed disabled:opacity-40">
-									<Undo2 class="w-4 h-4" />
-								</button>
-								<button
-									type="button"
-									aria-label="Redo color change"
-									onclick={redoColorChange}
-									disabled={colorHistoryIndex >= colorHistory.length - 1}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)] disabled:cursor-not-allowed disabled:opacity-40">
-									<Redo2 class="w-4 h-4" />
-								</button>
-								<button
-									type="button"
-									aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
-									onclick={toggleActiveColorMode}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)]">
-									<Moon class="w-4 h-4" />
-								</button>
-							</div>
+			<div class="playground-grid">
+				<div class="playground-panel">
+					<div class="toolbar">
+						<div class="toolbar-group">
+							<button type="button" aria-label="Randomize colors" onclick={randomizeSeeds} class="toolbar-button">
+								<Dices class="toolbar-icon" />
+							</button>
+							<button type="button" aria-label="Undo color change" onclick={undoColorChange} disabled={colorHistoryIndex === 0} class="toolbar-button">
+								<Undo2 class="toolbar-icon" />
+							</button>
+							<button
+								type="button"
+								aria-label="Redo color change"
+								onclick={redoColorChange}
+								disabled={colorHistoryIndex >= colorHistory.length - 1}
+								class="toolbar-button">
+								<Redo2 class="toolbar-icon" />
+							</button>
+							<button
+								type="button"
+								aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
+								onclick={toggleActiveColorMode}
+								class="toolbar-button">
+								<Moon class="toolbar-icon" />
+							</button>
 						</div>
+					</div>
 
-						<div class="grid gap-4 sm:grid-cols-2">
-							{#each seedFields as field, index}
-								<div class="relative" onfocusout={handleSeedFieldFocusOut}>
-									<label class="mb-2 block text-sm font-medium" style="color: var(--theme-text-100);">
-										{field.label}
-									</label>
-									<div class="relative group">
-										<input
-											type="text"
-											value={theme[activeColorMode][field.key]}
-											onfocus={event => handleSeedInputFocus(field.key, event)}
-											onclick={() => activateColorField(field.key)}
-											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
-											class={`h-12 w-full rounded-xl border px-4 pr-20 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] ${
-												hasPaletteError(field.key)
-													? "border-[var(--theme-accent)] ring-2 ring-[var(--theme-accent)]"
-													: "border-[var(--theme-background-70)]"
-											}`}
-											style={`background-color: ${theme[activeColorMode][field.key]}; color: ${getReadableTextColor(theme[activeColorMode][field.key])};`} />
-										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center">
-											<button
-												type="button"
-												aria-label={`${lockedSeedRoles[field.key] ? "Unlock" : "Lock"} ${field.label} hex`}
-												onclick={() => toggleSeedLock(field.key)}
-												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)] ${lockedSeedRoles[field.key] ? "opacity-100" : ""}`}
-												style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
-												{#if lockedSeedRoles[field.key]}
-													<Lock class="w-3.5 h-3.5" />
-												{:else}
-													<Unlock class="w-3.5 h-3.5" />
-												{/if}
-											</button>
-											<button
-												type="button"
-												aria-label={`Copy ${field.label} hex`}
-												onclick={() => handleCopySeed(field.key, theme[activeColorMode][field.key])}
-												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)]"
-												style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
-												{#if copiedSeedRole === field.key}
-													<CheckCircle2 class="w-3.5 h-3.5" />
-												{:else}
-													<Copy class="w-3.5 h-3.5" />
-												{/if}
-											</button>
-										</div>
+					<div class="seed-grid">
+						{#each seedFields as field, index}
+							<div class="seed-field" onfocusout={handleSeedFieldFocusOut}>
+								<label class="seed-label">{field.label}</label>
+								<div class="seed-input-wrap">
+									<input
+										type="text"
+										value={theme[activeColorMode][field.key]}
+										onfocus={event => handleSeedInputFocus(field.key, event)}
+										onclick={() => activateColorField(field.key)}
+										oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
+										class={`seed-input ${hasPaletteError(field.key) ? "is-error" : ""}`}
+										style={`background-color: ${theme[activeColorMode][field.key]}; color: ${getReadableTextColor(theme[activeColorMode][field.key])};`} />
+									<div class="seed-action-row">
+										<button
+											type="button"
+											aria-label={`${lockedSeedRoles[field.key] ? "Unlock" : "Lock"} ${field.label} hex`}
+											onclick={() => toggleSeedLock(field.key)}
+											class={`seed-action-button lock-button ${lockedSeedRoles[field.key] ? "is-locked" : ""}`}
+											style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
+											{#if lockedSeedRoles[field.key]}
+												<Lock class="seed-action-icon" />
+											{:else}
+												<Unlock class="seed-action-icon" />
+											{/if}
+										</button>
+										<button
+											type="button"
+											aria-label={`Copy ${field.label} hex`}
+											onclick={() => handleCopySeed(field.key, theme[activeColorMode][field.key])}
+											class="seed-action-button copy-button"
+											style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
+											{#if copiedSeedRole === field.key}
+												<CheckCircle2 class="seed-action-icon" />
+											{:else}
+												<Copy class="seed-action-icon" />
+											{/if}
+										</button>
 									</div>
-									{#if activeColorField === field.key}
-										<div
-											bind:this={colorPickerPopoverElement}
-											class={`absolute bottom-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] ${index % 2 === 0 ? "left-0" : "right-0"}`}>
-											<div
-												onpointerdown={handleColorPickerPointerDown}
-												class="rounded-2xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
-												<div class="space-y-4">
+								</div>
+								{#if activeColorField === field.key}
+									<div bind:this={colorPickerPopoverElement} class={`color-picker-wrap ${index % 2 === 0 ? "align-left" : "align-right"}`}>
+										<div onpointerdown={handleColorPickerPointerDown} class="color-picker">
+											<div class="color-picker-surface">
+												<div
+													bind:this={saturationValueElement}
+													onpointerdown={beginSaturationValueDrag}
+													class="color-picker-canvas">
 													<div
-														bind:this={saturationValueElement}
-														onpointerdown={beginSaturationValueDrag}
-														class="relative h-48 w-full border border-[var(--theme-background-70)] touch-none">
-														<div
-															class="absolute inset-px overflow-hidden"
-															style={`background:
-																linear-gradient(to top, rgb(0 0 0), transparent),
-																linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
-														</div>
-														<div
-															class="pointer-events-none absolute z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.9)]"
-															style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
-														</div>
+														class="color-picker-canvas-fill"
+														style={`background:
+															linear-gradient(to top, rgb(0 0 0), transparent),
+															linear-gradient(to right, rgb(255 255 255), ${pickerHueColor});`}>
 													</div>
-													<div class="space-y-2">
-														<div
-															class="text-xs font-medium uppercase tracking-[0.18em]"
-															style="color: var(--theme-text-120);">
-															Hue
+													<div
+														class="color-picker-thumb"
+														style={`left: ${pickerSaturation * 100}%; top: ${(1 - pickerValue) * 100}%;`}>
+													</div>
+												</div>
+												<div class="color-picker-group">
+													<div class="color-picker-label">Hue</div>
+													<div bind:this={hueTrackElement} onpointerdown={beginHueDrag} class="color-picker-hue">
+														<div class="color-picker-hue-track">
+															<div class="color-picker-hue-fill"></div>
 														</div>
-														<div
-															bind:this={hueTrackElement}
-															onpointerdown={beginHueDrag}
-															class="relative h-4 w-full overflow-visible touch-none">
-															<div
-																class="absolute inset-0 overflow-hidden rounded-full border border-[var(--theme-background-70)]">
-																<div
-																	class="absolute inset-px rounded-full"
-																	style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
-																</div>
-															</div>
-															<div
-																class="pointer-events-none absolute top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-transparent shadow-[0_0_0_1px_rgba(15,23,42,0.85)]"
-																style={`left: ${(pickerHue / 360) * 100}%;`}>
-															</div>
-														</div>
+														<div class="color-picker-hue-thumb" style={`left: ${(pickerHue / 360) * 100}%;`}></div>
 													</div>
 												</div>
 											</div>
 										</div>
-									{/if}
-								</div>
-							{/each}
+									</div>
+								{/if}
+							</div>
+						{/each}
+					</div>
+					{#if paletteErrorMessage}
+						<div
+							class="palette-error"
+							style="color: var(--theme-accent); border-color: var(--theme-accent); background-color: var(--theme-accent-20);">
+							{paletteErrorMessage}
 						</div>
-						{#if paletteErrorMessage}
-							<div
-								class="mr-auto rounded-xl border px-3 py-2 text-sm"
-								style="color: var(--theme-accent); border-color: var(--theme-accent); background-color: var(--theme-accent-20);">
-								{paletteErrorMessage}
+					{/if}
+
+					<div class="scheme-field" tabindex="-1" onfocusout={handleSchemeFocusOut}>
+						<label class="scheme-label">Scheme</label>
+						<button bind:this={schemeTriggerElement} type="button" onclick={toggleSchemeMenu} class="scheme-trigger">
+							<span>{formatSchemeLabel(demoScheme)}</span>
+							<ChevronDown class={`scheme-chevron ${isSchemeOpen ? "is-open" : ""}`} />
+						</button>
+						{#if isSchemeOpen}
+							<div class={`scheme-menu-wrap ${schemeMenuDirection === "up" ? "direction-up" : "direction-down"}`}>
+								<div bind:this={schemeMenuElement} class="scheme-menu scheme-menu-scrollbar" style={`max-height: ${schemeMenuMaxHeight}px;`}>
+									{#each supportedSchemes as scheme}
+										<button type="button" onclick={() => selectScheme(scheme)} class={`scheme-option ${demoScheme === scheme ? "is-active" : ""}`}>
+											{formatSchemeLabel(scheme)}
+										</button>
+									{/each}
+								</div>
 							</div>
 						{/if}
+					</div>
 
-						<div class="relative" tabindex="-1" onfocusout={handleSchemeFocusOut}>
-							<label class="block text-sm font-medium mb-2" style="color: var(--theme-text-100);"> Scheme </label>
-							<button
-								bind:this={schemeTriggerElement}
-								type="button"
-								onclick={toggleSchemeMenu}
-								class="flex h-12 w-full items-center justify-between rounded-xl border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 text-[var(--theme-text)] text-sm hover:bg-[var(--theme-background-40)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]">
-								<span>{formatSchemeLabel(demoScheme)}</span>
-								<ChevronDown
-									class={`w-4 h-4 ${isSchemeOpen ? "rotate-180" : ""}`}
-									style="color: var(--theme-text-120);" />
-							</button>
-							{#if isSchemeOpen}
-								<div
-									class={`absolute left-0 right-0 z-20 overflow-hidden rounded-xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] ${schemeMenuDirection === "up" ? "bottom-[calc(100%+0.5rem)]" : "top-[calc(100%+0.5rem)]"}`}>
-									<div
-										bind:this={schemeMenuElement}
-										class="scheme-menu-scrollbar overflow-y-auto p-2"
-										style={`max-height: ${schemeMenuMaxHeight}px;`}>
-										{#each supportedSchemes as scheme}
-											<button
-												type="button"
-												onclick={() => selectScheme(scheme)}
-												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm ${
-													demoScheme === scheme
-														? "bg-[var(--theme-primary-20)] text-[var(--theme-primary-110)]"
-														: "hover:bg-[var(--theme-background-40)] hover:text-[var(--theme-text)]"
-												}`}>
-												{formatSchemeLabel(scheme)}
-											</button>
-										{/each}
-									</div>
-								</div>
-							{/if}
-						</div>
-
-						<div class="flex items-center gap-3 pt-2">
-							<button
-								type="button"
-								onclick={toggleWcag}
-								class={`relative h-6 w-12 rounded-full ${wcag ? "bg-[var(--theme-primary)]" : "bg-[var(--theme-background-50)]"}`}>
-								<div
-									class={`w-4 h-4 rounded-full bg-[var(--theme-background)] absolute top-1 ${wcag ? "translate-x-7" : "translate-x-1"}`}>
-								</div>
-							</button>
-							<label class="text-sm font-medium" style="color: var(--theme-text-100);"> Strict WCAG Checks </label>
-						</div>
+					<div class="wcag-row">
+						<button type="button" onclick={toggleWcag} class={`wcag-toggle ${wcag ? "is-active" : ""}`}>
+							<div class={`wcag-toggle-thumb ${wcag ? "is-active" : ""}`}></div>
+						</button>
+						<label class="wcag-label">Strict WCAG Checks</label>
 					</div>
 				</div>
 
-				<div class="relative">
-					<div
-						class="pointer-events-none absolute -inset-1 rounded-3xl bg-[var(--theme-accent)] opacity-[0.14] blur-2xl">
-					</div>
-					<div
-						class="relative overflow-hidden rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] shadow-2xl">
-						<div
-							class="relative flex items-center border-b border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 py-3">
-							<div class="relative z-10 flex gap-2">
-								<div class="h-3 w-3 rounded-full" style="background-color: #ff5f57;"></div>
-								<div class="h-3 w-3 rounded-full" style="background-color: #febc2e;"></div>
-								<div class="h-3 w-3 rounded-full" style="background-color: #28c840;"></div>
+				<div class="code-preview-wrap">
+					<div class="code-preview-glow"></div>
+					<div class="code-preview">
+						<div class="code-preview-header">
+							<div class="code-preview-dots">
+								<div class="code-preview-dot" style="background-color: #ff5f57;"></div>
+								<div class="code-preview-dot" style="background-color: #febc2e;"></div>
+								<div class="code-preview-dot" style="background-color: #28c840;"></div>
 							</div>
-							<div
-								class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm"
-								style="color: var(--theme-text-120);">
-								Don't worry, I don't actually use Unix
-							</div>
-							<button
-								onclick={handleCopyCode}
-								class="relative z-10 ml-auto flex w-16 items-center gap-1.5 rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-3 py-1.5 text-xs font-medium text-[var(--theme-primary)] hover:bg-[var(--theme-background-50)]">
+							<div class="code-preview-title">Don't worry, I don't actually use Unix</div>
+							<button onclick={handleCopyCode} class="code-preview-copy">
 								{#if isCopied}
-									<CheckCircle2 class="h-3.5 w-3.5 text-[var(--theme-primary)]" />
+									<CheckCircle2 class="code-preview-copy-icon" />
 								{:else}
-									<Copy class="w-3.5 h-3.5" />
+									<Copy class="code-preview-copy-icon" />
 								{/if}
 								{isCopied ? "Copied" : "Copy"}
 							</button>
 						</div>
-						<div
-							class="overflow-x-auto overflow-y-auto px-4 py-4 text-sm font-mono sm:px-6 sm:py-6"
-							style="color: var(--theme-text);">
-							<div class="flex min-w-max flex-col">
+						<div class="code-preview-body">
+							<div class="code-preview-lines">
 								{#each codePreviewLines as line, index}
-									<div class="grid grid-cols-[2rem_minmax(0,1fr)] leading-6">
-										<div class=" pr-4 text-right text-[var(--theme-text-130)] tabular-nums">
-											{index + 1}
-										</div>
-										<div class="whitespace-pre" style={`padding-left: ${line.indent * 2}rem;`}>
+									<div class="code-preview-line">
+										<div class="code-preview-line-number">{index + 1}</div>
+										<div class="code-preview-line-content" style={`padding-left: ${line.indent * 2}rem;`}>
 											{#if line.segments.length === 0}
 												&nbsp;
 											{:else}
@@ -1437,63 +1335,42 @@
 		</div>
 	</section>
 
-	<section id="features" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-		<div class="text-center mb-16">
-			<h2 class="text-3xl md:text-4xl font-bold mb-4">Features that sound cool.</h2>
-			<p class="text-lg text-[var(--theme-text-100)]">This section has never been useful... like, ever.</p>
+	<section id="features" class="feature-section page-shell">
+		<div class="section-intro section-intro-centered">
+			<h2 class="section-title">Features that sound cool.</h2>
+			<p class="section-copy">This section has never been useful... like, ever.</p>
 		</div>
 
-		<div class="grid md:grid-cols-3 gap-8">
+		<div class="feature-grid">
 			{#each features as feature, idx (idx)}
-				<div
-					class="rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8 hover:bg-[var(--theme-background-30)]">
-					<div
-						class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border"
-						style={`background-color: ${idx === 0 ? "var(--theme-primary-20)" : idx === 1 ? "var(--theme-secondary-20)" : "var(--theme-accent-20)"}; border-color: ${idx === 0 ? "var(--theme-primary-60)" : idx === 1 ? "var(--theme-secondary-60)" : "var(--theme-accent-60)"};`}>
-						<svelte:component
-							this={feature.icon}
-							class={feature.iconClass}
-							style={`color: ${idx === 0 ? "var(--theme-primary-110)" : idx === 1 ? "var(--theme-secondary-110)" : "var(--theme-accent-110)"}`} />
+				<div class="feature-card">
+					<div class={`feature-icon-shell ${idx === 0 ? "is-primary" : idx === 1 ? "is-secondary" : "is-accent"}`}>
+						<svelte:component this={feature.icon} class={feature.iconClass} />
 					</div>
-					<h3 class="text-xl font-bold mb-3">{feature.title}</h3>
-					<p class="leading-relaxed text-[var(--theme-text-100)]">
-						{feature.desc}
-					</p>
+					<h3 class="feature-card-title">{feature.title}</h3>
+					<p class="feature-card-copy">{feature.desc}</p>
 				</div>
 			{/each}
 		</div>
 	</section>
 
-	<section id="testimonials" class="border-y border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-24">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="text-center mb-16">
-				<h2 class="text-3xl md:text-4xl font-bold mb-4">Testimonials from real-ish people.</h2>
-				<p class="text-lg text-[var(--theme-text-100)]">
-					Social proof, because apparently software needs witnesses now.
-				</p>
+	<section id="testimonials" class="testimonial-section">
+		<div class="page-shell">
+			<div class="section-intro section-intro-centered">
+				<h2 class="section-title">Testimonials from real-ish people.</h2>
+				<p class="section-copy">Social proof, because apparently software needs witnesses now.</p>
 			</div>
 
-			<div class="testimonials-carousel relative overflow-hidden">
-				<div
-					class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16"
-					style="background-image: linear-gradient(to right, var(--theme-background-10), transparent);">
-				</div>
-				<div
-					class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16"
-					style="background-image: linear-gradient(to left, var(--theme-background-10), transparent);">
-				</div>
-				<div class="testimonials-track flex w-max gap-8">
+			<div class="testimonials-carousel">
+				<div class="testimonial-fade testimonial-fade-left"></div>
+				<div class="testimonial-fade testimonial-fade-right"></div>
+				<div class="testimonials-track">
 					{#each [...testimonials, ...testimonials] as testimonial, idx (idx)}
-						<div
-							class="w-[20rem] shrink-0 rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8 md:w-[24rem]">
-							<p class="mb-6 leading-relaxed text-[var(--theme-text-100)]">
-								"{testimonial.quote}"
-							</p>
-							<div>
-								<div class="font-semibold">{testimonial.name}</div>
-								<div class="text-sm text-[var(--theme-text-120)]">
-									{testimonial.role}
-								</div>
+						<div class="testimonial-card">
+							<p class="testimonial-quote">"{testimonial.quote}"</p>
+							<div class="testimonial-person">
+								<div class="testimonial-name">{testimonial.name}</div>
+								<div class="testimonial-role">{testimonial.role}</div>
 							</div>
 						</div>
 					{/each}
@@ -1502,95 +1379,1150 @@
 		</div>
 	</section>
 
-	<section id="pricing" class="border-t border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-24">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="text-center mb-16">
-				<h2 class="text-3xl md:text-4xl font-bold mb-4">Pricing that scales with you.</h2>
-				<p class="text-lg text-[var(--theme-text-100)]">By which we mean it's literally just open source.</p>
+	<section id="pricing" class="pricing-section">
+		<div class="page-shell">
+			<div class="section-intro section-intro-centered">
+				<h2 class="section-title">Pricing that scales with you.</h2>
+				<p class="section-copy">By which we mean it's literally just open source.</p>
 			</div>
 
-			<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-				<div
-					class="flex flex-col rounded-3xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8">
-					<h3 class="text-xl font-semibold mb-2">Open Source</h3>
-					<div class="flex items-baseline gap-1 mb-6">
-						<span class="text-4xl font-bold">$0</span>
-						<span class="text-[var(--theme-text-120)]">/forever</span>
+			<div class="pricing-grid">
+				<div class="pricing-card">
+					<h3 class="pricing-card-title">Open Source</h3>
+					<div class="pricing-price-row">
+						<span class="pricing-price">$0</span>
+						<span class="pricing-period">/forever</span>
 					</div>
-					<p class="mb-8 text-[var(--theme-text-100)]">Perfect for developers who know how to use a package manager.</p>
-					<ul class="space-y-4 mb-8">
+					<p class="pricing-copy">Perfect for developers who know how to use a package manager.</p>
+					<ul class="pricing-feature-list">
 						{#each openSourceFeatures as item, i (i)}
-							<li class="flex items-center gap-3 text-sm" style="color: var(--theme-text-100);">
-								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary-110);" />
+							<li class="pricing-feature">
+								<CheckCircle2 class="pricing-check-icon" />
 								{item}
 							</li>
 						{/each}
 					</ul>
-					<div class="mt-auto">
-						<a
-							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)]">
-							View on GitHub
-						</a>
-						<p class="mt-4 text-xs text-[var(--theme-text-120)]">* If you consider a lone dev a community</p>
+					<div class="pricing-card-footer">
+						<a href="https://github.com/jacoblockett/palette" class="pricing-cta">View on GitHub</a>
+						<p class="pricing-note">* If you consider a lone dev a community</p>
 					</div>
 				</div>
 
-				<div
-					class="relative flex flex-col rounded-3xl border p-8"
-					style="background: linear-gradient(to bottom, var(--theme-primary-20), var(--theme-background-20)); border-color: var(--theme-background-60);">
-					<div class="absolute top-0 right-8 transform -translate-y-1/2">
-						<span
-							class="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide"
-							style="background-color: var(--theme-primary-20); color: var(--theme-primary-110); border: 1px solid var(--theme-primary-60);">
-							Enterprise
-						</span>
+				<div class="pricing-card pricing-card-featured">
+					<div class="pricing-badge">Enterprise</div>
+					<h3 class="pricing-card-title">Enterprise</h3>
+					<div class="pricing-price-row">
+						<span class="pricing-price">$0</span>
+						<span class="pricing-period">/forever</span>
 					</div>
-					<h3 class="text-xl font-semibold mb-2">Enterprise</h3>
-					<div class="flex items-baseline gap-1 mb-6">
-						<span class="text-4xl font-bold">$0</span>
-						<span class="text-[var(--theme-text-120)]">/forever</span>
-					</div>
-					<p class="mb-8 text-[var(--theme-text-100)]">
+					<p class="pricing-copy">
 						The exact same code, but you wear a suit while running it. Or maybe not. Idk what your dresscode looks like.
 					</p>
-					<ul class="space-y-4 mb-8">
+					<ul class="pricing-feature-list">
 						{#each enterpriseFeatures as item, i (i)}
-							<li class="flex items-center gap-3 text-sm" style="color: var(--theme-text-100);">
-								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary-110);" />
+							<li class="pricing-feature">
+								<CheckCircle2 class="pricing-check-icon" />
 								{item}
 							</li>
 						{/each}
 					</ul>
-					<div class="mt-auto">
-						<a
-							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)]">
-							Also View on GitHub
-						</a>
-						<p class="mt-4 text-xs text-[var(--theme-text-120)]">
-							* Or at least, we'll say we did and never actually do it
-						</p>
+					<div class="pricing-card-footer">
+						<a href="https://github.com/jacoblockett/palette" class="pricing-cta">Also View on GitHub</a>
+						<p class="pricing-note">* Or at least, we'll say we did and never actually do it</p>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<footer
-		class="border-t border-[var(--theme-background-60)] bg-[var(--theme-background-20)] py-12 text-center text-sm text-[var(--theme-text-100)]">
-		<div class="flex items-center justify-center gap-2 mb-4">
-			<Palette class="w-5 h-5" style="color: var(--theme-accent);" />
-			<span class="font-semibold" style="color: var(--theme-text);">Palette</span>
+	<footer class="app-footer">
+		<div class="footer-brand">
+			<Palette class="footer-brand-icon" />
+			<span class="footer-brand-text">Palette</span>
 		</div>
-		<div class="flex justify-center gap-6">
-			<a href="https://github.com/jacoblockett/palette" class="hover:text-[var(--theme-primary)]">Documentation</a>
-			<a href="https://github.com/jacoblockett/palette" class="hover:text-[var(--theme-primary)]">GitHub</a>
+		<div class="footer-links">
+			<a href="https://github.com/jacoblockett/palette" class="footer-link">Documentation</a>
+			<a href="https://github.com/jacoblockett/palette" class="footer-link">GitHub</a>
 		</div>
 	</footer>
 </div>
 
 <style>
+	:global(body) {
+		margin: 0;
+	}
+
+	:global(button),
+	:global(input) {
+		font: inherit;
+	}
+
+	:global(button) {
+		cursor: pointer;
+	}
+
+	:global(a) {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.app-shell {
+		min-height: 100vh;
+		background: var(--theme-background);
+		color: var(--theme-text);
+		font-family: "Inter", sans-serif;
+	}
+
+	.app-shell ::selection {
+		background: var(--theme-primary-120);
+	}
+
+	.page-shell {
+		width: min(100%, 80rem);
+		margin: 0 auto;
+		padding: 0 1rem;
+	}
+
+	.app-nav {
+		position: fixed;
+		top: 0;
+		z-index: 50;
+		width: 100%;
+		border-bottom: 1px solid var(--theme-primary-50);
+		backdrop-filter: blur(12px);
+		background: var(--theme-background);
+	}
+
+	.nav-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 4rem;
+	}
+
+	.nav-brand-row,
+	.nav-brand,
+	.nav-actions,
+	.install-pill-content,
+	.hero-actions,
+	.toolbar,
+	.toolbar-group,
+	.seed-action-row,
+	.wcag-row,
+	.code-preview-dots,
+	.code-preview-copy,
+	.footer-brand,
+	.footer-links,
+	.pricing-feature,
+	.pricing-price-row {
+		display: flex;
+		align-items: center;
+	}
+
+	.nav-brand-row,
+	.nav-actions,
+	.nav-link-list,
+	.hero-actions,
+	.toolbar-group,
+	.feature-grid,
+	.footer-links,
+	.pricing-grid {
+		gap: 1rem;
+	}
+
+	.nav-brand-row {
+		gap: 2rem;
+	}
+
+	.nav-brand {
+		gap: 0.5rem;
+	}
+
+	.install-pill-content,
+	.footer-brand {
+		gap: 0.5rem;
+	}
+
+	.nav-brand-mark {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 0.75rem;
+		background-image: linear-gradient(to bottom right, var(--theme-primary-90), var(--theme-accent-90));
+	}
+
+	.nav-brand-icon,
+	.footer-brand-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.nav-brand-icon {
+		color: var(--theme-text);
+	}
+
+	.nav-brand-text,
+	.footer-brand-text {
+		font-weight: 700;
+	}
+
+	.nav-brand-text {
+		font-size: 1.25rem;
+		letter-spacing: -0.02em;
+	}
+
+	.nav-link-list {
+		display: none;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--theme-text-90);
+	}
+
+	.nav-link:hover,
+	.footer-link:hover {
+		color: var(--theme-primary);
+	}
+
+	.icon-button,
+	.toolbar-button,
+	.seed-action-button,
+	.wcag-toggle,
+	.scheme-trigger,
+	.code-preview-copy,
+	.primary-cta,
+	.secondary-cta,
+	.install-pill,
+	.pricing-cta {
+		border: 0;
+		outline: 0;
+	}
+
+	.icon-button,
+	.toolbar-button,
+	.seed-action-button,
+	.code-preview-copy {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.nav-action-button {
+		display: none;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 999px;
+		color: var(--theme-text);
+		background: transparent;
+	}
+
+	.nav-action-button:hover {
+		background: var(--theme-primary-80);
+	}
+
+	.nav-action-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.github-icon {
+		width: 1.5rem;
+		height: 1.5rem;
+		fill: currentColor;
+	}
+
+	.install-pill {
+		position: relative;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		height: 2.5rem;
+		margin-left: 0.5rem;
+		padding: 0 1rem;
+		border: 1px solid var(--theme-background-60);
+		border-radius: 999px;
+		background: var(--theme-background-20);
+		color: var(--theme-text);
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.75rem;
+	}
+
+	.install-pill:hover,
+	.secondary-cta:hover {
+		background: var(--theme-background-40);
+	}
+
+	.install-pill-icon,
+	.cta-icon {
+		width: 1rem;
+		height: 1rem;
+	}
+
+	.install-pill-icon {
+		color: var(--theme-primary);
+	}
+
+	.copy-tooltip {
+		position: absolute;
+		pointer-events: none;
+		white-space: nowrap;
+		padding: 0.375rem 0.75rem;
+		border: 1px solid var(--theme-background-140);
+		border-radius: 0.75rem;
+		background: var(--theme-background-200);
+		color: var(--theme-text);
+		font-size: 0.875rem;
+		font-weight: 600;
+		box-shadow: 0 1.5rem 3rem -1.5rem rgb(0 0 0 / 0.9);
+		opacity: 0;
+	}
+
+	.copy-tooltip.is-visible {
+		opacity: 1;
+	}
+
+	.nav-copy-tooltip {
+		left: 50%;
+		top: 100%;
+		margin-top: 0.5rem;
+		transform: translateX(-50%);
+	}
+
+	.hero-copy-tooltip {
+		left: 50%;
+		bottom: 100%;
+		margin-bottom: 0.625rem;
+		transform: translateX(-50%);
+	}
+
+	.hero {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding-top: 8rem;
+		padding-bottom: 5rem;
+		text-align: center;
+	}
+
+	.hero-title {
+		margin: 0 0 1.5rem;
+		font-size: 3rem;
+		font-weight: 800;
+		line-height: 1.05;
+		letter-spacing: -0.04em;
+		color: transparent;
+		background-image: linear-gradient(to right, var(--theme-text), var(--theme-primary-110), var(--theme-accent-110));
+		background-clip: text;
+		-webkit-background-clip: text;
+	}
+
+	.hero-break {
+		display: none;
+	}
+
+	.hero-copy,
+	.section-copy,
+	.feature-card-copy,
+	.testimonial-quote,
+	.pricing-copy {
+		line-height: 1.75;
+	}
+
+	.hero-copy {
+		max-width: 42rem;
+		margin: 0 0 2.5rem;
+		font-size: 1.125rem;
+		color: var(--theme-text-100);
+	}
+
+	.hero-actions {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.hero-actions .primary-cta,
+	.hero-actions .secondary-cta {
+		width: 100%;
+	}
+
+	.primary-cta,
+	.secondary-cta,
+	.pricing-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		border-radius: 999px;
+		font-weight: 600;
+	}
+
+	.primary-cta,
+	.secondary-cta {
+		padding: 0.875rem 2rem;
+	}
+
+	.primary-cta {
+		background: var(--theme-primary);
+		color: var(--theme-background);
+		box-shadow: 0 0 40px -10px var(--theme-primary-100);
+	}
+
+	.primary-cta:hover {
+		background: var(--theme-primary-110);
+		box-shadow: 0 0 60px -15px var(--theme-primary-120);
+	}
+
+	.secondary-cta {
+		position: relative;
+		border: 1px solid var(--theme-background-60);
+		background: var(--theme-background-20);
+		color: var(--theme-text);
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.875rem;
+	}
+
+	.playground,
+	.testimonial-section,
+	.pricing-section {
+		padding: 5rem 0;
+		background: var(--theme-background-10);
+	}
+
+	.playground,
+	.testimonial-section {
+		border-top: 1px solid var(--theme-background-60);
+		border-bottom: 1px solid var(--theme-background-60);
+	}
+
+	.pricing-section {
+		border-top: 1px solid var(--theme-background-60);
+	}
+
+	.feature-section {
+		padding-top: 6rem;
+		padding-bottom: 6rem;
+	}
+
+	.section-intro {
+		margin-bottom: 2rem;
+	}
+
+	.section-intro-centered {
+		margin-bottom: 4rem;
+		text-align: center;
+	}
+
+	.section-title {
+		margin: 0 0 1rem;
+		font-size: 1.875rem;
+		font-weight: 700;
+		line-height: 1.2;
+	}
+
+	.section-copy {
+		margin: 0;
+		font-size: 1.125rem;
+		color: var(--theme-text-100);
+	}
+
+	.playground-grid,
+	.feature-grid,
+	.pricing-grid {
+		display: grid;
+		gap: 2rem;
+	}
+
+	.playground-grid {
+		align-items: start;
+	}
+
+	.playground-panel,
+	.code-preview,
+	.feature-card,
+	.testimonial-card,
+	.pricing-card {
+		border: 1px solid var(--theme-background-60);
+		background: var(--theme-background-20);
+	}
+
+	.playground-panel {
+		padding: 1.5rem;
+		border-radius: 1rem;
+	}
+
+	.toolbar {
+		justify-content: center;
+		margin-bottom: 1.5rem;
+	}
+
+	.toolbar-button {
+		width: 2.5rem;
+		height: 2.5rem;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 999px;
+		background: var(--theme-background-30);
+		color: var(--theme-text);
+	}
+
+	.toolbar-button:hover,
+	.code-preview-copy:hover {
+		background: var(--theme-background-50);
+	}
+
+	.toolbar-button:disabled {
+		cursor: not-allowed;
+		opacity: 0.4;
+	}
+
+	.toolbar-icon {
+		width: 1rem;
+		height: 1rem;
+	}
+
+	.seed-grid {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.seed-field {
+		position: relative;
+	}
+
+	.seed-label,
+	.scheme-label,
+	.wcag-label {
+		display: block;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--theme-text-100);
+	}
+
+	.seed-label,
+	.scheme-label {
+		margin-bottom: 0.5rem;
+	}
+
+	.seed-input-wrap {
+		position: relative;
+	}
+
+	.seed-input {
+		width: 100%;
+		height: 3rem;
+		padding: 0 5rem 0 1rem;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 0.75rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.875rem;
+	}
+
+	.seed-input:focus,
+	.scheme-trigger:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px var(--theme-primary);
+	}
+
+	.seed-input.is-error {
+		border-color: var(--theme-accent);
+		box-shadow: 0 0 0 2px var(--theme-accent);
+	}
+
+	.seed-action-row {
+		position: absolute;
+		top: 50%;
+		right: 0.5rem;
+		transform: translateY(-50%);
+	}
+
+	.seed-action-button {
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--seed-action-color);
+		opacity: 0;
+	}
+
+	.seed-input-wrap:hover .seed-action-button,
+	.seed-action-button.is-locked {
+		opacity: 1;
+	}
+
+	.seed-action-button:hover {
+		background: var(--seed-action-hover);
+	}
+
+	.seed-action-icon {
+		width: 0.875rem;
+		height: 0.875rem;
+	}
+
+	.color-picker-wrap {
+		position: absolute;
+		bottom: calc(100% + 0.75rem);
+		z-index: 30;
+		width: min(20rem, calc(100vw - 2.5rem));
+	}
+
+	.color-picker-wrap.align-left {
+		left: 0;
+	}
+
+	.color-picker-wrap.align-right {
+		right: 0;
+	}
+
+	.color-picker {
+		padding: 1rem;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 1rem;
+		background: var(--theme-background-20);
+		box-shadow: 0 20px 50px -24px rgb(0 0 0 / 0.95);
+	}
+
+	.color-picker-surface,
+	.color-picker-group {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.color-picker-canvas {
+		position: relative;
+		height: 12rem;
+		border: 1px solid var(--theme-background-70);
+		touch-action: none;
+	}
+
+	.color-picker-canvas-fill {
+		position: absolute;
+		inset: 1px;
+		overflow: hidden;
+	}
+
+	.color-picker-thumb,
+	.color-picker-hue-thumb {
+		position: absolute;
+		pointer-events: none;
+		width: 1rem;
+		height: 1rem;
+		border: 2px solid #fff;
+		border-radius: 999px;
+		background: transparent;
+		box-shadow: 0 0 0 1px rgb(15 23 42 / 0.9);
+		transform: translate(-50%, -50%);
+	}
+
+	.color-picker-label {
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--theme-text-120);
+	}
+
+	.color-picker-hue {
+		position: relative;
+		height: 1rem;
+		touch-action: none;
+	}
+
+	.color-picker-hue-track {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 999px;
+	}
+
+	.color-picker-hue-fill {
+		position: absolute;
+		inset: 1px;
+		border-radius: 999px;
+		background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+	}
+
+	.color-picker-hue-thumb {
+		top: 50%;
+		box-shadow: 0 0 0 1px rgb(15 23 42 / 0.85);
+	}
+
+	.palette-error {
+		margin-top: 1rem;
+		margin-right: auto;
+		padding: 0.5rem 0.75rem;
+		border: 1px solid;
+		border-radius: 0.75rem;
+		font-size: 0.875rem;
+	}
+
+	.scheme-field {
+		position: relative;
+		margin-top: 1.5rem;
+	}
+
+	.scheme-trigger {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		height: 3rem;
+		padding: 0 1rem;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 0.75rem;
+		background: var(--theme-background-30);
+		color: var(--theme-text);
+		font-size: 0.875rem;
+	}
+
+	.scheme-trigger:hover {
+		background: var(--theme-background-40);
+	}
+
+	.scheme-chevron {
+		width: 1rem;
+		height: 1rem;
+		color: var(--theme-text-120);
+	}
+
+	.scheme-chevron.is-open {
+		transform: rotate(180deg);
+	}
+
+	.scheme-menu-wrap {
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: 20;
+		overflow: hidden;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 0.75rem;
+		background: var(--theme-background-20);
+		box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.9);
+	}
+
+	.scheme-menu-wrap.direction-up {
+		bottom: calc(100% + 0.5rem);
+	}
+
+	.scheme-menu-wrap.direction-down {
+		top: calc(100% + 0.5rem);
+	}
+
+	.scheme-menu {
+		overflow-y: auto;
+		padding: 0.5rem;
+	}
+
+	.scheme-option {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding: 0.5rem 0.75rem;
+		border: 0;
+		border-radius: 0.5rem;
+		background: transparent;
+		color: var(--theme-text);
+		font-size: 0.875rem;
+		text-align: left;
+	}
+
+	.scheme-option:hover {
+		background: var(--theme-background-40);
+	}
+
+	.scheme-option.is-active {
+		background: var(--theme-primary-20);
+		color: var(--theme-primary-110);
+	}
+
+	.wcag-row {
+		gap: 0.75rem;
+		padding-top: 0.5rem;
+	}
+
+	.wcag-toggle {
+		position: relative;
+		width: 3rem;
+		height: 1.5rem;
+		border-radius: 999px;
+		background: var(--theme-background-50);
+	}
+
+	.wcag-toggle.is-active {
+		background: var(--theme-primary);
+	}
+
+	.wcag-toggle-thumb {
+		position: absolute;
+		top: 0.25rem;
+		left: 0.25rem;
+		width: 1rem;
+		height: 1rem;
+		border-radius: 999px;
+		background: var(--theme-background);
+	}
+
+	.wcag-toggle-thumb.is-active {
+		transform: translateX(1.5rem);
+	}
+
+	.code-preview-wrap {
+		position: relative;
+	}
+
+	.code-preview-glow {
+		position: absolute;
+		inset: -0.25rem;
+		border-radius: 1.5rem;
+		background: var(--theme-accent);
+		opacity: 0.14;
+		filter: blur(32px);
+		pointer-events: none;
+	}
+
+	.code-preview {
+		position: relative;
+		overflow: hidden;
+		border-radius: 1rem;
+		box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+	}
+
+	.code-preview-header {
+		position: relative;
+		display: flex;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--theme-background-70);
+		background: var(--theme-background-30);
+	}
+
+	.code-preview-dots {
+		position: relative;
+		z-index: 1;
+		gap: 0.5rem;
+	}
+
+	.code-preview-dot {
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 999px;
+	}
+
+	.code-preview-title {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		font-size: 0.875rem;
+		color: var(--theme-text-120);
+		transform: translate(-50%, -50%);
+	}
+
+	.code-preview-copy {
+		position: relative;
+		z-index: 1;
+		margin-left: auto;
+		gap: 0.375rem;
+		width: 4rem;
+		padding: 0.375rem 0.75rem;
+		border: 1px solid var(--theme-background-70);
+		border-radius: 999px;
+		background: var(--theme-background-30);
+		color: var(--theme-primary);
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.code-preview-copy-icon {
+		width: 0.875rem;
+		height: 0.875rem;
+	}
+
+	.code-preview-body {
+		overflow: auto;
+		padding: 1rem;
+		color: var(--theme-text);
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.875rem;
+	}
+
+	.code-preview-lines {
+		display: flex;
+		flex-direction: column;
+		min-width: max-content;
+	}
+
+	.code-preview-line {
+		display: grid;
+		grid-template-columns: 2rem minmax(0, 1fr);
+		line-height: 1.5rem;
+	}
+
+	.code-preview-line-number {
+		padding-right: 1rem;
+		color: var(--theme-text-130);
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.code-preview-line-content {
+		white-space: pre;
+	}
+
+	.token-text,
+	.token-identifier {
+		color: var(--theme-text);
+	}
+
+	.token-keyword {
+		color: var(--theme-primary-110);
+	}
+
+	.token-string {
+		color: var(--theme-accent-110);
+	}
+
+	.token-boolean {
+		color: var(--theme-secondary-110);
+	}
+
+	.token-punctuation {
+		color: var(--theme-text-120);
+	}
+
+	.feature-grid {
+		gap: 2rem;
+	}
+
+	.feature-card,
+	.testimonial-card,
+	.pricing-card {
+		padding: 2rem;
+		border-radius: 1rem;
+	}
+
+	.feature-card:hover {
+		background: var(--theme-background-30);
+	}
+
+	.feature-icon-shell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		margin-bottom: 1.5rem;
+		border: 1px solid;
+		border-radius: 0.75rem;
+	}
+
+	.feature-icon-shell.is-primary {
+		border-color: var(--theme-primary-60);
+		background: var(--theme-primary-20);
+		color: var(--theme-primary-110);
+	}
+
+	.feature-icon-shell.is-secondary {
+		border-color: var(--theme-secondary-60);
+		background: var(--theme-secondary-20);
+		color: var(--theme-secondary-110);
+	}
+
+	.feature-icon-shell.is-accent {
+		border-color: var(--theme-accent-60);
+		background: var(--theme-accent-20);
+		color: var(--theme-accent-110);
+	}
+
+	.feature-icon-svg {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	.feature-card-title,
+	.pricing-card-title {
+		margin: 0 0 0.75rem;
+		font-size: 1.25rem;
+		font-weight: 700;
+	}
+
+	.feature-card-copy,
+	.testimonial-role,
+	.pricing-note,
+	.pricing-period {
+		color: var(--theme-text-100);
+	}
+
+	.testimonials-carousel {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.testimonial-fade {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		z-index: 10;
+		width: 4rem;
+		pointer-events: none;
+	}
+
+	.testimonial-fade-left {
+		left: 0;
+		background-image: linear-gradient(to right, var(--theme-background-10), transparent);
+	}
+
+	.testimonial-fade-right {
+		right: 0;
+		background-image: linear-gradient(to left, var(--theme-background-10), transparent);
+	}
+
+	.testimonials-track {
+		display: flex;
+		gap: 2rem;
+		width: max-content;
+		animation: testimonials-scroll 36s linear infinite;
+	}
+
+	.testimonials-carousel:hover .testimonials-track {
+		animation-play-state: paused;
+	}
+
+	.testimonial-card {
+		width: 20rem;
+		flex-shrink: 0;
+	}
+
+	.testimonial-quote,
+	.pricing-copy {
+		margin: 0 0 1.5rem;
+		color: var(--theme-text-100);
+	}
+
+	.testimonial-name {
+		font-weight: 600;
+	}
+
+	.testimonial-role,
+	.pricing-period,
+	.pricing-note {
+		font-size: 0.875rem;
+	}
+
+	.pricing-grid {
+		width: min(100%, 64rem);
+		margin: 0 auto;
+	}
+
+	.pricing-card {
+		display: flex;
+		flex-direction: column;
+		border-radius: 1.5rem;
+	}
+
+	.pricing-card-featured {
+		position: relative;
+		border-color: var(--theme-background-60);
+		background: linear-gradient(to bottom, var(--theme-primary-20), var(--theme-background-20));
+	}
+
+	.pricing-badge {
+		position: absolute;
+		top: 0;
+		right: 2rem;
+		padding: 0.25rem 0.75rem;
+		border: 1px solid var(--theme-primary-60);
+		border-radius: 999px;
+		background: var(--theme-primary-20);
+		color: var(--theme-primary-110);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		transform: translateY(-50%);
+	}
+
+	.pricing-price-row {
+		gap: 0.25rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.pricing-price {
+		font-size: 2.25rem;
+		font-weight: 700;
+	}
+
+	.pricing-feature-list {
+		display: grid;
+		gap: 1rem;
+		margin: 0 0 2rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.pricing-feature {
+		gap: 0.75rem;
+		color: var(--theme-text-100);
+	}
+
+	.pricing-check-icon {
+		width: 1rem;
+		height: 1rem;
+		flex-shrink: 0;
+		color: var(--theme-primary-110);
+	}
+
+	.pricing-card-footer {
+		margin-top: auto;
+	}
+
+	.pricing-cta {
+		display: flex;
+		width: 100%;
+		padding: 0.75rem 1rem;
+		border-radius: 0.75rem;
+		background: var(--theme-primary);
+		color: var(--theme-background);
+		font-weight: 500;
+		text-align: center;
+	}
+
+	.pricing-cta:hover {
+		background: var(--theme-primary-110);
+	}
+
+	.pricing-note {
+		margin: 1rem 0 0;
+	}
+
+	.app-footer {
+		padding: 3rem 1rem;
+		border-top: 1px solid var(--theme-background-60);
+		background: var(--theme-background-20);
+		color: var(--theme-text-100);
+		font-size: 0.875rem;
+		text-align: center;
+	}
+
+	.footer-brand {
+		justify-content: center;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.footer-brand-icon {
+		color: var(--theme-accent);
+	}
+
+	.footer-brand-text {
+		color: var(--theme-text);
+	}
+
+	.footer-links {
+		justify-content: center;
+		gap: 1.5rem;
+	}
+
 	.scheme-menu-scrollbar {
 		scrollbar-width: thin;
 		scrollbar-color: var(--theme-background-70) var(--theme-background-20);
@@ -1615,12 +2547,75 @@
 		background: var(--theme-primary-90);
 	}
 
-	.testimonials-track {
-		animation: testimonials-scroll 36s linear infinite;
+	@media (min-width: 640px) {
+		.page-shell {
+			padding: 0 1.5rem;
+		}
+
+		.install-pill {
+			display: inline-flex;
+		}
+
+		.hero-actions {
+			flex-direction: row;
+			width: auto;
+		}
+
+		.hero-actions .primary-cta,
+		.hero-actions .secondary-cta {
+			width: auto;
+		}
+
+		.seed-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.code-preview-body {
+			padding: 1.5rem;
+		}
 	}
 
-	.testimonials-carousel:hover .testimonials-track {
-		animation-play-state: paused;
+	@media (min-width: 768px) {
+		.nav-link-list,
+		.nav-action-button {
+			display: flex;
+		}
+
+		.hero-title,
+		.section-title {
+			font-size: 3.5rem;
+		}
+
+		.hero-copy,
+		.section-copy {
+			font-size: 1.25rem;
+		}
+
+		.hero-break {
+			display: block;
+		}
+
+		.feature-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+
+		.pricing-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.testimonial-card {
+			width: 24rem;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.page-shell {
+			padding: 0 2rem;
+		}
+
+		.playground-grid {
+			grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+		}
 	}
 
 	@keyframes testimonials-scroll {
