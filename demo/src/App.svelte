@@ -1288,7 +1288,11 @@
 
 					<div class="scheme-field" tabindex="-1" onfocusout={handleSchemeFocusOut}>
 						<label class="scheme-label">Scheme</label>
-						<button bind:this={schemeTriggerElement} type="button" onclick={toggleSchemeMenu} class="scheme-trigger">
+						<button
+							bind:this={schemeTriggerElement}
+							type="button"
+							onclick={toggleSchemeMenu}
+							class={`scheme-trigger ${isSchemeOpen ? "is-open" : ""} ${isSchemeOpen && schemeMenuDirection === "up" ? "opens-up" : ""} ${isSchemeOpen && schemeMenuDirection === "down" ? "opens-down" : ""}`}>
 							<span>{formatSchemeLabel(demoScheme)}</span>
 							<ChevronDown class={`scheme-chevron ${isSchemeOpen ? "is-open" : ""}`} />
 						</button>
@@ -2194,6 +2198,7 @@
 	}
 
 	.scheme-trigger {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -2208,6 +2213,20 @@
 		background: var(--theme-background-30);
 		color: var(--theme-text);
 		font-size: 0.875rem;
+	}
+
+	.scheme-trigger.is-open {
+		z-index: 21;
+	}
+
+	.scheme-trigger.is-open.opens-down {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.scheme-trigger.is-open.opens-up {
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
 	}
 
 	.scheme-trigger:hover {
@@ -2234,16 +2253,20 @@
 		border-style: solid;
 		border-color: var(--theme-background-70);
 		border-radius: 0.75rem;
-		background: var(--theme-background-20);
-		box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.9);
+		background: var(--theme-background-30);
+		box-shadow: 0 16px 32px -28px rgb(0 0 0 / 0.9);
 	}
 
 	.scheme-menu-wrap.direction-up {
-		bottom: calc(100% + 0.5rem);
+		bottom: calc(100% - 1px);
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
 	}
 
 	.scheme-menu-wrap.direction-down {
-		top: calc(100% + 0.5rem);
+		top: calc(100% - 1px);
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
 	}
 
 	.scheme-menu {
@@ -2923,6 +2946,10 @@
 	.app-shell[data-theme="dark"] .toolbar-button,
 	.app-shell[data-theme="dark"] .scheme-trigger,
 	.app-shell[data-theme="dark"] .code-preview-copy {
+		background: var(--theme-dark-background-130);
+	}
+
+	.app-shell[data-theme="dark"] .scheme-menu-wrap {
 		background: var(--theme-dark-background-130);
 	}
 
