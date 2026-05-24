@@ -1091,24 +1091,24 @@
 						<span class="font-bold text-xl tracking-tight">Palette</span>
 					</div>
 					<div class="hidden gap-8 text-sm font-medium text-[var(--theme-text-90)] md:flex">
-						<a href="#playground" class="transition-colors hover:text-[var(--theme-primary)]">Playground</a>
-						<a href="#features" class="transition-colors hover:text-[var(--theme-primary)]">Features</a>
-						<a href="#testimonials" class="transition-colors hover:text-[var(--theme-primary)]">Testimonials</a>
-						<a href="#pricing" class="transition-colors hover:text-[var(--theme-primary)]">Pricing</a>
+						<a href="#playground" class="hover:text-[var(--theme-primary)]">Playground</a>
+						<a href="#features" class="hover:text-[var(--theme-primary)]">Features</a>
+						<a href="#testimonials" class="hover:text-[var(--theme-primary)]">Testimonials</a>
+						<a href="#pricing" class="hover:text-[var(--theme-primary)]">Pricing</a>
 					</div>
 				</div>
 				<div class="flex items-center gap-2">
 					<button
 						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 						onclick={toggleActiveColorMode}
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-40)] md:inline-flex">
+						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-background-40)] md:inline-flex">
 						<Moon />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-40)] md:inline-flex">
+						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-background-40)] md:inline-flex">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -1117,9 +1117,9 @@
 						type="button"
 						aria-label="Copy install command"
 						onclick={() => handleCopyInstallCommand("nav")}
-						class="relative ml-2 hidden h-10 items-center justify-center rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-4 font-mono text-[var(--theme-text)] text-xs transition-colors hover:bg-[var(--theme-background-40)] sm:inline-flex">
+						class="relative ml-2 hidden h-10 items-center justify-center rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-4 font-mono text-[var(--theme-text)] text-xs hover:bg-[var(--theme-background-40)] sm:inline-flex">
 						<span
-							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl transition-all duration-150 ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
+							class={`pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl ${isNavInstallCopied ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"}`}>
 							Copied!
 						</span>
 						<span class="flex items-center gap-2">
@@ -1147,15 +1147,15 @@
 		</p>
 		<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
 			<button
-				class="flex items-center justify-center gap-2 rounded-full bg-[var(--theme-primary)] px-8 py-3.5 font-semibold text-[var(--theme-background)] transition-all hover:bg-[var(--theme-primary-110)] shadow-[0_0_40px_-10px_var(--theme-primary-100)] hover:shadow-[0_0_60px_-15px_var(--theme-primary-120)]">
+				class="flex items-center justify-center gap-2 rounded-full bg-[var(--theme-primary)] px-8 py-3.5 font-semibold text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)] shadow-[0_0_40px_-10px_var(--theme-primary-100)] hover:shadow-[0_0_60px_-15px_var(--theme-primary-120)]">
 				Read the docs <ArrowRight class="w-4 h-4" />
 			</button>
 			<button
 				type="button"
 				onclick={() => handleCopyInstallCommand("hero")}
-				class="relative flex items-center justify-center gap-2 rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-8 py-3.5 font-mono text-[var(--theme-text)] text-sm font-semibold transition-colors hover:bg-[var(--theme-background-40)]">
+				class="relative flex items-center justify-center gap-2 rounded-full border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] px-8 py-3.5 font-mono text-[var(--theme-text)] text-sm font-semibold hover:bg-[var(--theme-background-40)]">
 				<span
-					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl transition-all duration-150 ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
+					class={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-[var(--theme-background-140)] bg-[var(--theme-background-200)] px-3 py-1.5 text-sm font-semibold text-[var(--theme-text)] shadow-xl ${isHeroInstallCopied ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}>
 					Copied!
 				</span>
 				<Terminal class="w-4 h-4" />
@@ -1183,7 +1183,7 @@
 									type="button"
 									aria-label="Randomize colors"
 									onclick={randomizeSeeds}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-50)]">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)]">
 									<Dices class="w-4 h-4" />
 								</button>
 								<button
@@ -1191,7 +1191,7 @@
 									aria-label="Undo color change"
 									onclick={undoColorChange}
 									disabled={colorHistoryIndex === 0}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-50)] disabled:cursor-not-allowed disabled:opacity-40">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)] disabled:cursor-not-allowed disabled:opacity-40">
 									<Undo2 class="w-4 h-4" />
 								</button>
 								<button
@@ -1199,14 +1199,14 @@
 									aria-label="Redo color change"
 									onclick={redoColorChange}
 									disabled={colorHistoryIndex >= colorHistory.length - 1}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-50)] disabled:cursor-not-allowed disabled:opacity-40">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)] disabled:cursor-not-allowed disabled:opacity-40">
 									<Redo2 class="w-4 h-4" />
 								</button>
 								<button
 									type="button"
 									aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 									onclick={toggleActiveColorMode}
-									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] transition-colors hover:bg-[var(--theme-background-50)]">
+									class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] text-[var(--theme-text)] hover:bg-[var(--theme-background-50)]">
 									<Moon class="w-4 h-4" />
 								</button>
 							</div>
@@ -1236,7 +1236,7 @@
 												type="button"
 												aria-label={`${lockedSeedRoles[field.key] ? "Unlock" : "Lock"} ${field.label} hex`}
 												onclick={() => toggleSeedLock(field.key)}
-												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)] ${lockedSeedRoles[field.key] ? "opacity-100" : ""}`}
+												class={`inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)] ${lockedSeedRoles[field.key] ? "opacity-100" : ""}`}
 												style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
 												{#if lockedSeedRoles[field.key]}
 													<Lock class="w-3.5 h-3.5" />
@@ -1248,7 +1248,7 @@
 												type="button"
 												aria-label={`Copy ${field.label} hex`}
 												onclick={() => handleCopySeed(field.key, theme[activeColorMode][field.key])}
-												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)]"
+												class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[var(--seed-action-color)] opacity-0 group-hover:opacity-100 hover:bg-[var(--seed-action-hover)]"
 												style={`--seed-action-color: ${getReadableTextColor(theme[activeColorMode][field.key])}; --seed-action-hover: ${getSeedActionHoverColor(theme[activeColorMode][field.key])};`}>
 												{#if copiedSeedRole === field.key}
 													<CheckCircle2 class="w-3.5 h-3.5" />
@@ -1328,10 +1328,10 @@
 								bind:this={schemeTriggerElement}
 								type="button"
 								onclick={toggleSchemeMenu}
-								class="flex h-12 w-full items-center justify-between rounded-xl border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 text-[var(--theme-text)] text-sm transition-colors hover:bg-[var(--theme-background-40)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]">
+								class="flex h-12 w-full items-center justify-between rounded-xl border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-4 text-[var(--theme-text)] text-sm hover:bg-[var(--theme-background-40)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]">
 								<span>{formatSchemeLabel(demoScheme)}</span>
 								<ChevronDown
-									class={`w-4 h-4 transition-transform ${isSchemeOpen ? "rotate-180" : ""}`}
+									class={`w-4 h-4 ${isSchemeOpen ? "rotate-180" : ""}`}
 									style="color: var(--theme-text-120);" />
 							</button>
 							{#if isSchemeOpen}
@@ -1345,7 +1345,7 @@
 											<button
 												type="button"
 												onclick={() => selectScheme(scheme)}
-												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+												class={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm ${
 													demoScheme === scheme
 														? "bg-[var(--theme-primary-20)] text-[var(--theme-primary-110)]"
 														: "hover:bg-[var(--theme-background-40)] hover:text-[var(--theme-text)]"
@@ -1362,9 +1362,9 @@
 							<button
 								type="button"
 								onclick={toggleWcag}
-								class={`relative h-6 w-12 rounded-full transition-colors ${wcag ? "bg-[var(--theme-primary)]" : "bg-[var(--theme-background-50)]"}`}>
+								class={`relative h-6 w-12 rounded-full ${wcag ? "bg-[var(--theme-primary)]" : "bg-[var(--theme-background-50)]"}`}>
 								<div
-									class={`w-4 h-4 rounded-full bg-[var(--theme-background)] absolute top-1 transition-transform ${wcag ? "translate-x-7" : "translate-x-1"}`}>
+									class={`w-4 h-4 rounded-full bg-[var(--theme-background)] absolute top-1 ${wcag ? "translate-x-7" : "translate-x-1"}`}>
 								</div>
 							</button>
 							<label class="text-sm font-medium" style="color: var(--theme-text-100);">
@@ -1394,7 +1394,7 @@
 							</div>
 							<button
 								onclick={handleCopyCode}
-								class="relative z-10 ml-auto flex w-16 items-center gap-1.5 rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-3 py-1.5 text-xs font-medium text-[var(--theme-primary)] transition-colors hover:bg-[var(--theme-background-50)]">
+								class="relative z-10 ml-auto flex w-16 items-center gap-1.5 rounded-full border border-[var(--theme-background-70)] bg-[var(--theme-background-30)] px-3 py-1.5 text-xs font-medium text-[var(--theme-primary)] hover:bg-[var(--theme-background-50)]">
 								{#if isCopied}
 									<CheckCircle2 class="h-3.5 w-3.5 text-[var(--theme-primary)]" />
 								{:else}
@@ -1442,7 +1442,7 @@
 		<div class="grid md:grid-cols-3 gap-8">
 			{#each features as feature, idx (idx)}
 				<div
-					class="rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8 transition-colors hover:bg-[var(--theme-background-30)]">
+					class="rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-8 hover:bg-[var(--theme-background-30)]">
 					<div
 						class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border"
 						style={`background-color: ${idx === 0 ? "var(--theme-primary-20)" : idx === 1 ? "var(--theme-secondary-20)" : "var(--theme-accent-20)"}; border-color: ${idx === 0 ? "var(--theme-primary-60)" : idx === 1 ? "var(--theme-secondary-60)" : "var(--theme-accent-60)"};`}>
@@ -1535,7 +1535,7 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] transition-colors hover:bg-[var(--theme-primary-110)]">
+							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)]">
 							View on GitHub
 						</a>
 						<p class="mt-4 text-xs text-[var(--theme-text-120)]">
@@ -1575,7 +1575,7 @@
 					<div class="mt-auto">
 						<a
 							href="https://github.com/jacoblockett/palette"
-							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] transition-colors hover:bg-[var(--theme-primary-110)]">
+							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)]">
 							Also View on GitHub
 						</a>
 						<p class="mt-4 text-xs text-[var(--theme-text-120)]">
@@ -1594,8 +1594,8 @@
 			<span class="font-semibold" style="color: var(--theme-text);">Palette</span>
 		</div>
 		<div class="flex justify-center gap-6">
-			<a href="https://github.com/jacoblockett/palette" class="transition-colors hover:text-[var(--theme-primary)]">Documentation</a>
-			<a href="https://github.com/jacoblockett/palette" class="transition-colors hover:text-[var(--theme-primary)]">GitHub</a>
+			<a href="https://github.com/jacoblockett/palette" class="hover:text-[var(--theme-primary)]">Documentation</a>
+			<a href="https://github.com/jacoblockett/palette" class="hover:text-[var(--theme-primary)]">GitHub</a>
 		</div>
 	</footer>
 </div>
