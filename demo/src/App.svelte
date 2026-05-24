@@ -185,58 +185,53 @@
 	function updateTheme(newTheme) {
 		if (newTheme.light && newTheme.dark) {
 			theme = newTheme
-			applyThemeVariables()
-			return
-		}
-
-		const colors = theme[activeColorMode]
-		const [role, value] = Object.entries(newTheme)[0]
-		const nextModeTheme = {
-			...colors,
-			[role]: value,
-			shades: {
-				text: { ...colors.shades.text },
-				background: { ...colors.shades.background },
-				primary: { ...colors.shades.primary },
-				secondary: { ...colors.shades.secondary },
-				accent: { ...colors.shades.accent }
+		} else {
+			const colors = theme[activeColorMode]
+			const [role, value] = Object.entries(newTheme)[0]
+			const nextModeTheme = {
+				...colors,
+				[role]: value,
+				shades: {
+					text: { ...colors.shades.text },
+					background: { ...colors.shades.background },
+					primary: { ...colors.shades.primary },
+					secondary: { ...colors.shades.secondary },
+					accent: { ...colors.shades.accent }
+				}
 			}
-		}
 
-		if (role === "background") {
-			if (seedFields.every(field => isValidHex(nextModeTheme[field.key]))) {
-				nextModeTheme.shades = palette.shades({
+			if (role === "background") {
+				if (seedFields.every(field => isValidHex(nextModeTheme[field.key]))) {
+					nextModeTheme.shades = palette.shades({
+						background: nextModeTheme.background,
+						colors: {
+							text: nextModeTheme.text,
+							background: nextModeTheme.background,
+							primary: nextModeTheme.primary,
+							secondary: nextModeTheme.secondary,
+							accent: nextModeTheme.accent
+						},
+						wcag: false
+					})
+				}
+			} else if (isValidHex(nextModeTheme.background) && isValidHex(value)) {
+				const nextRoleShades = palette.shades({
 					background: nextModeTheme.background,
 					colors: {
-						text: nextModeTheme.text,
-						background: nextModeTheme.background,
-						primary: nextModeTheme.primary,
-						secondary: nextModeTheme.secondary,
-						accent: nextModeTheme.accent
+						[role]: value
 					},
 					wcag: false
 				})
+
+				nextModeTheme.shades[role] = nextRoleShades[role]
 			}
-		} else if (isValidHex(nextModeTheme.background) && isValidHex(value)) {
-			const nextRoleShades = palette.shades({
-				background: nextModeTheme.background,
-				colors: {
-					[role]: value
-				},
-				wcag: false
-			})
 
-			nextModeTheme.shades[role] = nextRoleShades[role]
+			theme = {
+				...theme,
+				[activeColorMode]: nextModeTheme
+			}
 		}
 
-		theme = {
-			...theme,
-			[activeColorMode]: nextModeTheme
-		}
-		applyThemeVariables()
-	}
-
-	function applyThemeVariables() {
 		if (!appElement) {
 			return
 		}
@@ -306,10 +301,9 @@
 	}
 
 	function applyPlaygroundSnapshot(snapshot) {
-		theme = cloneTheme(snapshot.theme)
 		lockedSeedRoles = { ...snapshot.lockedSeedRoles }
 		activeColorMode = snapshot.activeColorMode
-		applyThemeVariables()
+		updateTheme(cloneTheme(snapshot.theme))
 		demoScheme = snapshot.demoScheme
 		wcag = snapshot.wcag
 		lastGeneratedPalette = cloneGeneratedPalette(snapshot.lastGeneratedPalette)
@@ -1029,7 +1023,6 @@
 		const nextMode = activeColorMode === "light" ? "dark" : "light"
 
 		activeColorMode = nextMode
-		applyThemeVariables()
 
 		if (activeColorField && isValidHex(theme[nextMode][activeColorField])) {
 			syncPickerFromHex(theme[nextMode][activeColorField])
