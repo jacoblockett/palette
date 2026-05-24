@@ -86,7 +86,28 @@
 	const installCommand = "pnpm i @jacoblockett/palette"
 	const fixedNavbarHeight = 64
 	const colorPickerViewportBuffer = 24
-	const previewShadeSteps = ["10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200"]
+	const previewShadeSteps = [
+		"10",
+		"20",
+		"30",
+		"40",
+		"50",
+		"60",
+		"70",
+		"80",
+		"90",
+		"100",
+		"110",
+		"120",
+		"130",
+		"140",
+		"150",
+		"160",
+		"170",
+		"180",
+		"190",
+		"200"
+	]
 	const themeShadeStops = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 	const previewShadeControlGutterClass = "inline-flex w-16 shrink-0 justify-end pr-2"
 	const previewShadeCodeColumnClass = "min-w-0"
@@ -915,7 +936,9 @@
 				if (optionMatch) {
 					const [, key, value, comma] = optionMatch
 					const valueClassName =
-						value === "true" || value === "false" ? "text-[var(--theme-secondary-110)]" : "text-[var(--theme-accent-110)]"
+						value === "true" || value === "false"
+							? "text-[var(--theme-secondary-110)]"
+							: "text-[var(--theme-accent-110)]"
 					const segments = [
 						{ text: `${key}: `, className: "text-[var(--theme-text)]" },
 						{ text: value, className: valueClassName }
@@ -1075,10 +1098,10 @@
 <div
 	bind:this={appElement}
 	data-theme={activeColorMode}
-	class="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)] selection:bg-[var(--theme-primary-80)]">
+	class="min-h-screen bg-[var(--theme-background)] font-sans text-[var(--theme-text)] selection:bg-[var(--theme-primary-120)]">
 	<nav
 		class="fixed top-0 z-50 w-full border-b backdrop-blur-md"
-		style="background-color: var(--theme-background-10); border-color: var(--theme-background-60);">
+		style="background-color: var(--theme-background); border-color: var(--theme-primary-50);">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between h-16 items-center">
 				<div class="flex items-center gap-8">
@@ -1101,14 +1124,14 @@
 					<button
 						aria-label={`Switch to ${activeColorMode === "light" ? "dark" : "light"} mode`}
 						onclick={toggleActiveColorMode}
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-background-40)] md:inline-flex">
+						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-primary-80)] md:inline-flex">
 						<Moon />
 					</button>
 					<a
 						href="https://github.com/jacoblockett/palette"
 						target="_blank"
 						rel="noreferrer"
-						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-background-40)] md:inline-flex">
+						class="hidden h-10 w-10 items-center justify-center rounded-full text-[var(--theme-text)] hover:bg-[var(--theme-primary-80)] md:inline-flex">
 						<svg viewBox="0 0 24 24" aria-hidden="true" class="w-6 h-6 fill-current" role="img">
 							<path d={siGithub.path}></path>
 						</svg>
@@ -1139,9 +1162,7 @@
 			Enterprise-grade colors. <br class="hidden md:block" />
 			Zero cost.
 		</h1>
-		<p
-			class="text-lg md:text-xl max-w-2xl mb-10 leading-relaxed"
-			style="color: var(--theme-text-100);">
+		<p class="text-lg md:text-xl max-w-2xl mb-10 leading-relaxed" style="color: var(--theme-text-100);">
 			Why pick light and dark mode colors manually when you can install a dependency that mathematically generates all 5
 			roles and 20 shades automatically? Welcome to the future.
 		</p>
@@ -1164,19 +1185,16 @@
 		</div>
 	</section>
 
-	<section
-		id="playground"
-		class="border-y border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-20">
+	<section id="playground" class="border-y border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-20">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="mb-8">
 				<h2 class="text-3xl font-bold mb-4">Playground</h2>
-				<p class="leading-relaxed text-[var(--theme-text-100)]">
-					Go ahead. Change the colors. I dare you.
-				</p>
+				<p class="leading-relaxed text-[var(--theme-text-100)]">Go ahead. Change the colors. I dare you.</p>
 			</div>
 			<div class="grid gap-8 items-start lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:gap-12">
 				<div>
-					<div class="space-y-6 rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-6">
+					<div
+						class="space-y-6 rounded-2xl border border-[var(--theme-background-60)] bg-[var(--theme-background-20)] p-6">
 						<div class="flex items-center justify-center gap-4">
 							<div class="flex items-center gap-2">
 								<button
@@ -1215,9 +1233,7 @@
 						<div class="grid gap-4 sm:grid-cols-2">
 							{#each seedFields as field, index}
 								<div class="relative" onfocusout={handleSeedFieldFocusOut}>
-									<label
-										class="mb-2 block text-sm font-medium"
-										style="color: var(--theme-text-100);">
+									<label class="mb-2 block text-sm font-medium" style="color: var(--theme-text-100);">
 										{field.label}
 									</label>
 									<div class="relative group">
@@ -1228,7 +1244,9 @@
 											onclick={() => activateColorField(field.key)}
 											oninput={event => handleSeedTextInput(field.key, event.currentTarget.value)}
 											class={`h-12 w-full rounded-xl border px-4 pr-20 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] ${
-												hasPaletteError(field.key) ? "border-[var(--theme-accent)] ring-2 ring-[var(--theme-accent)]" : "border-[var(--theme-background-70)]"
+												hasPaletteError(field.key)
+													? "border-[var(--theme-accent)] ring-2 ring-[var(--theme-accent)]"
+													: "border-[var(--theme-background-70)]"
 											}`}
 											style={`background-color: ${theme[activeColorMode][field.key]}; color: ${getReadableTextColor(theme[activeColorMode][field.key])};`} />
 										<div class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center">
@@ -1266,10 +1284,10 @@
 												onpointerdown={handleColorPickerPointerDown}
 												class="rounded-2xl border border-[var(--theme-background-70)] bg-[var(--theme-background-20)] p-4 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.95)]">
 												<div class="space-y-4">
-														<div
-															bind:this={saturationValueElement}
-															onpointerdown={beginSaturationValueDrag}
-															class="relative h-48 w-full border border-[var(--theme-background-70)] touch-none">
+													<div
+														bind:this={saturationValueElement}
+														onpointerdown={beginSaturationValueDrag}
+														class="relative h-48 w-full border border-[var(--theme-background-70)] touch-none">
 														<div
 															class="absolute inset-px overflow-hidden"
 															style={`background:
@@ -1291,7 +1309,8 @@
 															bind:this={hueTrackElement}
 															onpointerdown={beginHueDrag}
 															class="relative h-4 w-full overflow-visible touch-none">
-															<div class="absolute inset-0 overflow-hidden rounded-full border border-[var(--theme-background-70)]">
+															<div
+																class="absolute inset-0 overflow-hidden rounded-full border border-[var(--theme-background-70)]">
 																<div
 																	class="absolute inset-px rounded-full"
 																	style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);">
@@ -1319,11 +1338,7 @@
 						{/if}
 
 						<div class="relative" tabindex="-1" onfocusout={handleSchemeFocusOut}>
-							<label
-								class="block text-sm font-medium mb-2"
-								style="color: var(--theme-text-100);">
-								Scheme
-							</label>
+							<label class="block text-sm font-medium mb-2" style="color: var(--theme-text-100);"> Scheme </label>
 							<button
 								bind:this={schemeTriggerElement}
 								type="button"
@@ -1367,9 +1382,7 @@
 									class={`w-4 h-4 rounded-full bg-[var(--theme-background)] absolute top-1 ${wcag ? "translate-x-7" : "translate-x-1"}`}>
 								</div>
 							</button>
-							<label class="text-sm font-medium" style="color: var(--theme-text-100);">
-								Strict WCAG Checks
-							</label>
+							<label class="text-sm font-medium" style="color: var(--theme-text-100);"> Strict WCAG Checks </label>
 						</div>
 					</div>
 				</div>
@@ -1434,9 +1447,7 @@
 	<section id="features" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 		<div class="text-center mb-16">
 			<h2 class="text-3xl md:text-4xl font-bold mb-4">Features that sound cool.</h2>
-			<p class="text-lg text-[var(--theme-text-100)]">
-				This section has never been useful... like, ever.
-			</p>
+			<p class="text-lg text-[var(--theme-text-100)]">This section has never been useful... like, ever.</p>
 		</div>
 
 		<div class="grid md:grid-cols-3 gap-8">
@@ -1460,9 +1471,7 @@
 		</div>
 	</section>
 
-	<section
-		id="testimonials"
-		class="border-y border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-24">
+	<section id="testimonials" class="border-y border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-24">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16">
 				<h2 class="text-3xl md:text-4xl font-bold mb-4">Testimonials from real-ish people.</h2>
@@ -1500,15 +1509,11 @@
 		</div>
 	</section>
 
-	<section
-		id="pricing"
-		class="border-t border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-24">
+	<section id="pricing" class="border-t border-[var(--theme-background-60)] bg-[var(--theme-background-10)] py-24">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16">
 				<h2 class="text-3xl md:text-4xl font-bold mb-4">Pricing that scales with you.</h2>
-				<p class="text-lg text-[var(--theme-text-100)]">
-					By which we mean it's literally just open source.
-				</p>
+				<p class="text-lg text-[var(--theme-text-100)]">By which we mean it's literally just open source.</p>
 			</div>
 
 			<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -1519,14 +1524,10 @@
 						<span class="text-4xl font-bold">$0</span>
 						<span class="text-[var(--theme-text-120)]">/forever</span>
 					</div>
-					<p class="mb-8 text-[var(--theme-text-100)]">
-						Perfect for developers who know how to use a package manager.
-					</p>
+					<p class="mb-8 text-[var(--theme-text-100)]">Perfect for developers who know how to use a package manager.</p>
 					<ul class="space-y-4 mb-8">
 						{#each openSourceFeatures as item, i (i)}
-							<li
-								class="flex items-center gap-3 text-sm"
-								style="color: var(--theme-text-100);">
+							<li class="flex items-center gap-3 text-sm" style="color: var(--theme-text-100);">
 								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary-110);" />
 								{item}
 							</li>
@@ -1538,9 +1539,7 @@
 							class="block w-full rounded-xl bg-[var(--theme-primary)] py-3 text-center font-medium text-[var(--theme-background)] hover:bg-[var(--theme-primary-110)]">
 							View on GitHub
 						</a>
-						<p class="mt-4 text-xs text-[var(--theme-text-120)]">
-							* If you consider a lone dev a community
-						</p>
+						<p class="mt-4 text-xs text-[var(--theme-text-120)]">* If you consider a lone dev a community</p>
 					</div>
 				</div>
 
@@ -1564,9 +1563,7 @@
 					</p>
 					<ul class="space-y-4 mb-8">
 						{#each enterpriseFeatures as item, i (i)}
-							<li
-								class="flex items-center gap-3 text-sm"
-								style="color: var(--theme-text-100);">
+							<li class="flex items-center gap-3 text-sm" style="color: var(--theme-text-100);">
 								<CheckCircle2 class="w-4 h-4" style="color: var(--theme-primary-110);" />
 								{item}
 							</li>
