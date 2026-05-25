@@ -2,6 +2,10 @@
 
 _<p align="center">A five-role, seedable color palette generator for light and dark UI themes.</p>_
 
+## Playground
+
+Visit the interactive demo site [here](https://jacoblockett.github.io/palette/).
+
 ## Installation
 
 ```bash
