@@ -19,7 +19,7 @@ export default [
 	{
 		input: "demo/src/main.js",
 		output: {
-			file: "demo/dist/bundle.js",
+			file: "demo/dist/script.js",
 			format: "iife",
 			name: "paletteDemo",
 			sourcemap: !production
@@ -31,7 +31,7 @@ export default [
 				},
 				emitCss: true
 			}),
-			css({ output: "demo/dist/bundle.css" }),
+			css({ output: "style.css" }),
 			resolve({
 				browser: true,
 				exportConditions: ["svelte"],
