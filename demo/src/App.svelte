@@ -1146,7 +1146,7 @@
 					class="install-pill nav-install-pill">
 					<span class={`copy-tooltip nav-copy-tooltip ${isNavInstallCopied ? "is-visible" : ""}`}>Copied!</span>
 					<span class="install-pill-content">
-						<Terminal class="install-pill-icon" />
+						<Terminal size={16} class="install-pill-icon" />
 						{installCommand}
 					</span>
 				</button>
@@ -1165,11 +1165,11 @@
 		</p>
 		<div class="hero-actions">
 			<button class="primary-cta">
-				Read the docs <ArrowRight class="cta-icon" />
+				Read the docs <ArrowRight size={16} class="cta-icon" />
 			</button>
 			<button type="button" onclick={() => handleCopyInstallCommand("hero")} class="secondary-cta">
 				<span class={`copy-tooltip hero-copy-tooltip ${isHeroInstallCopied ? "is-visible" : ""}`}>Copied!</span>
-				<Terminal class="cta-icon" />
+				<Terminal size={16} class="cta-icon" />
 				{installCommand}
 			</button>
 		</div>
@@ -1303,7 +1303,8 @@
 
 					<div class="scheme-field" tabindex="-1" onfocusout={handleSchemeFocusOut}>
 						<label class="scheme-label">Scheme</label>
-						<div class={`scheme-control ${isSchemeOpen ? "is-open" : ""} ${isSchemeOpen && schemeMenuDirection === "up" ? "opens-up" : ""} ${isSchemeOpen && schemeMenuDirection === "down" ? "opens-down" : ""}`}>
+						<div
+							class={`scheme-control ${isSchemeOpen ? "is-open" : ""} ${isSchemeOpen && schemeMenuDirection === "up" ? "opens-up" : ""} ${isSchemeOpen && schemeMenuDirection === "down" ? "opens-down" : ""}`}>
 							<button
 								bind:this={schemeTriggerElement}
 								type="button"
@@ -1546,7 +1547,7 @@
 		width: 100%;
 		border-bottom-width: 1px;
 		border-bottom-style: solid;
-		border-bottom-color: var(--theme-primary-50);
+		border-bottom-color: var(--theme-primary-80);
 		backdrop-filter: blur(12px);
 		background: var(--theme-background);
 	}
@@ -1985,8 +1986,8 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.5rem;
-		height: 2.5rem;
+		width: 2.15rem;
+		height: 2.15rem;
 		border-width: 1px;
 		border-style: solid;
 		border-color: var(--theme-background-70);
@@ -2075,8 +2076,8 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2rem;
-		height: 2rem;
+		width: 1.85rem;
+		height: 1.85rem;
 		border-radius: 9999px;
 		background: transparent;
 		color: var(--seed-action-color);
@@ -2096,8 +2097,8 @@
 	}
 
 	.seed-action-icon {
-		width: 0.875rem;
-		height: 0.875rem;
+		width: 100%;
+		height: 100%;
 	}
 
 	.color-picker-wrap {
@@ -2368,7 +2369,8 @@
 	}
 
 	.wcag-toggle-thumb.is-active {
-		transform: translateX(1.75rem);
+		left: unset;
+		right: 0.25rem;
 	}
 
 	.code-preview-wrap {
@@ -2399,7 +2401,7 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		padding: 0.75rem 1rem;
+		padding: 0.5rem 1rem;
 		border-bottom-width: 1px;
 		border-bottom-style: solid;
 		border-bottom-color: var(--theme-background-70);
@@ -2425,7 +2427,7 @@
 		top: 50%;
 		max-width: none;
 		overflow: visible;
-		font-size: 0.875rem;
+		font-size: 0.825rem;
 		color: var(--theme-text-120);
 		white-space: nowrap;
 		transform: translate(-50%, -50%);
@@ -2440,7 +2442,7 @@
 		justify-content: center;
 		gap: 0.375rem;
 		width: 4rem;
-		padding: 0.375rem 0.75rem;
+		padding: 0.375rem 2.5rem;
 		border-width: 1px;
 		border-style: solid;
 		border-color: var(--theme-background-70);
@@ -2974,7 +2976,7 @@
 	.app-shell[data-theme="light"] .primary-cta,
 	.app-shell[data-theme="light"] .pricing-cta,
 	.app-shell[data-theme="light"] .wcag-toggle.is-active {
-		background: var(--theme-light-primary-110);
+		background: var(--theme-light-accent);
 		color: var(--theme-light-background-10);
 	}
 
@@ -3164,7 +3166,7 @@
 	}
 
 	.app-shell[data-theme="dark"] .app-nav {
-		border-bottom: 1px solid var(--theme-dark-background-160);
+		border-bottom: 1px solid var(--theme-dark-primary-50);
 		background: var(--theme-dark-background-120);
 	}
 
@@ -3302,7 +3304,7 @@
 	.app-shell[data-theme="dark"] .primary-cta,
 	.app-shell[data-theme="dark"] .pricing-cta,
 	.app-shell[data-theme="dark"] .wcag-toggle.is-active {
-		background: var(--theme-dark-primary-120);
+		background: var(--theme-dark-accent);
 		color: var(--theme-dark-background-10);
 	}
 
@@ -3390,7 +3392,7 @@
 	}
 
 	.app-shell[data-theme="dark"] .wcag-toggle {
-		background: var(--theme-dark-background-150);
+		background: var(--theme-dark-background-170);
 	}
 
 	.app-shell[data-theme="dark"] .wcag-toggle-thumb {
