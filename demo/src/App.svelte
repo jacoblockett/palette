@@ -2811,7 +2811,7 @@
 	}
 
 	.app-shell[data-theme="dark"] .app-nav {
-		border-bottom: 1px solid var(--theme-dark-background-140);
+		border-bottom: 1px solid var(--theme-dark-background-160);
 		background: var(--theme-dark-background-120);
 	}
 
@@ -2841,25 +2841,28 @@
 	.app-shell[data-theme="dark"] .section-copy,
 	.app-shell[data-theme="dark"] .feature-card-copy,
 	.app-shell[data-theme="dark"] .testimonial-quote,
-	.app-shell[data-theme="dark"] .testimonial-role,
 	.app-shell[data-theme="dark"] .pricing-copy,
-	.app-shell[data-theme="dark"] .pricing-period,
-	.app-shell[data-theme="dark"] .pricing-note,
 	.app-shell[data-theme="dark"] .pricing-feature,
 	.app-shell[data-theme="dark"] .app-footer,
 	.app-shell[data-theme="dark"] .seed-label,
 	.app-shell[data-theme="dark"] .scheme-label,
-	.app-shell[data-theme="dark"] .wcag-label,
+	.app-shell[data-theme="dark"] .wcag-label {
+		color: var(--theme-dark-text-100);
+	}
+
+	.app-shell[data-theme="dark"] .testimonial-role,
+	.app-shell[data-theme="dark"] .pricing-period,
+	.app-shell[data-theme="dark"] .pricing-note,
 	.app-shell[data-theme="dark"] .code-preview-line-number,
 	.app-shell[data-theme="dark"] .code-preview-title,
 	.app-shell[data-theme="dark"] .color-picker-label,
 	.app-shell[data-theme="dark"] .scheme-chevron {
-		color: var(--theme-dark-text-80);
+		color: var(--theme-dark-text-100);
 	}
 
 	.app-shell[data-theme="dark"] .nav-link:hover,
 	.app-shell[data-theme="dark"] .footer-link:hover {
-		color: var(--theme-dark-primary-120);
+		color: var(--theme-dark-primary-130);
 	}
 
 	.app-shell[data-theme="dark"] .nav-action-button,
@@ -2876,9 +2879,12 @@
 	.app-shell[data-theme="dark"] .scheme-trigger:hover,
 	.app-shell[data-theme="dark"] .scheme-trigger:focus-visible,
 	.app-shell[data-theme="dark"] .scheme-option:hover,
-	.app-shell[data-theme="dark"] .scheme-option:focus-visible,
+	.app-shell[data-theme="dark"] .scheme-option:focus-visible {
+		background: var(--theme-dark-background-170);
+	}
+
 	.app-shell[data-theme="dark"] .feature-card:hover {
-		background: var(--theme-dark-background-140);
+		background: var(--theme-dark-background-160);
 	}
 
 	.app-shell[data-theme="dark"] .install-pill,
@@ -2891,16 +2897,16 @@
 	.app-shell[data-theme="dark"] .color-picker,
 	.app-shell[data-theme="dark"] .scheme-menu-wrap,
 	.app-shell[data-theme="dark"] .app-footer {
-		border-color: var(--theme-dark-background-140);
-		background: var(--theme-dark-background-120);
+		border-color: var(--theme-dark-background-170);
+		background: var(--theme-dark-background-140);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-control {
-		--scheme-control-border: var(--theme-dark-background-150);
+		--scheme-control-border: var(--theme-dark-background-180);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-control.is-open {
-		--scheme-control-border: var(--theme-dark-primary);
+		--scheme-control-border: var(--theme-dark-primary-130);
 	}
 
 	.app-shell[data-theme="dark"] .install-pill,
@@ -2916,17 +2922,17 @@
 	.app-shell[data-theme="dark"] .install-pill:focus-visible,
 	.app-shell[data-theme="dark"] .secondary-cta:hover,
 	.app-shell[data-theme="dark"] .secondary-cta:focus-visible {
-		background: var(--theme-dark-background-140);
+		background: var(--theme-dark-background-170);
 	}
 
 	.app-shell[data-theme="dark"] .install-pill-icon,
 	.app-shell[data-theme="dark"] .code-preview-copy,
 	.app-shell[data-theme="dark"] .pricing-check-icon {
-		color: var(--theme-dark-primary-120);
+		color: var(--theme-dark-primary-130);
 	}
 
 	.app-shell[data-theme="dark"] .copy-tooltip {
-		border-color: var(--theme-dark-background-150);
+		border-color: var(--theme-dark-background-180);
 		background: var(--theme-dark-background-170);
 		color: var(--theme-dark-text);
 	}
@@ -2935,16 +2941,16 @@
 		background-image: linear-gradient(
 			to right,
 			var(--theme-dark-text),
-			var(--theme-dark-primary-120),
-			var(--theme-dark-accent-120)
+			var(--theme-dark-primary-130),
+			var(--theme-dark-accent-140)
 		);
 	}
 
 	.app-shell[data-theme="dark"] .primary-cta,
 	.app-shell[data-theme="dark"] .pricing-cta,
 	.app-shell[data-theme="dark"] .wcag-toggle.is-active {
-		background: var(--theme-dark-primary);
-		color: var(--theme-dark-background-20);
+		background: var(--theme-dark-primary-120);
+		color: var(--theme-dark-background-10);
 	}
 
 	.app-shell[data-theme="dark"] .primary-cta {
@@ -2955,7 +2961,7 @@
 	.app-shell[data-theme="dark"] .primary-cta:focus-visible,
 	.app-shell[data-theme="dark"] .pricing-cta:hover,
 	.app-shell[data-theme="dark"] .pricing-cta:focus-visible {
-		background: var(--theme-dark-primary-120);
+		background: var(--theme-dark-primary-140);
 	}
 
 	.app-shell[data-theme="dark"] .primary-cta:hover {
@@ -2965,19 +2971,19 @@
 	.app-shell[data-theme="dark"] .playground,
 	.app-shell[data-theme="dark"] .testimonial-section,
 	.app-shell[data-theme="dark"] .pricing-section {
-		background: var(--theme-dark-background-110);
+		background: var(--theme-dark-background-120);
 	}
 
 	.app-shell[data-theme="dark"] .playground,
 	.app-shell[data-theme="dark"] .testimonial-section,
 	.app-shell[data-theme="dark"] .pricing-section,
 	.app-shell[data-theme="dark"] .app-footer {
-		border-top-color: var(--theme-dark-background-140);
+		border-top-color: var(--theme-dark-background-160);
 	}
 
 	.app-shell[data-theme="dark"] .playground,
 	.app-shell[data-theme="dark"] .testimonial-section {
-		border-bottom-color: var(--theme-dark-background-140);
+		border-bottom-color: var(--theme-dark-background-160);
 	}
 
 	.app-shell[data-theme="dark"] .toolbar-button,
@@ -2986,17 +2992,17 @@
 	.app-shell[data-theme="dark"] .color-picker-canvas,
 	.app-shell[data-theme="dark"] .color-picker-hue-track,
 	.app-shell[data-theme="dark"] .code-preview-header {
-		border-color: var(--theme-dark-background-150);
+		border-color: var(--theme-dark-background-180);
 	}
 
 	.app-shell[data-theme="dark"] .toolbar-button,
 	.app-shell[data-theme="dark"] .scheme-trigger,
 	.app-shell[data-theme="dark"] .code-preview-copy {
-		background: var(--theme-dark-background-130);
+		background: var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-menu-wrap {
-		background: var(--theme-dark-background-130);
+		background: var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-trigger,
@@ -3005,7 +3011,7 @@
 	}
 
 	.app-shell[data-theme="dark"] .seed-input {
-		background: var(--theme-dark-background-130);
+		background: var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .seed-input:focus {
@@ -3026,8 +3032,8 @@
 	}
 
 	.app-shell[data-theme="dark"] .scheme-option.is-active {
-		background: var(--theme-dark-primary-120);
-		color: var(--theme-dark-background-20);
+		background: var(--theme-dark-primary-130);
+		color: var(--theme-dark-background-10);
 	}
 
 	.app-shell[data-theme="dark"] .wcag-toggle {
@@ -3039,15 +3045,15 @@
 	}
 
 	.app-shell[data-theme="dark"] .code-preview-glow {
-		background: var(--theme-dark-accent-120);
+		background: var(--theme-dark-accent-140);
 	}
 
 	.app-shell[data-theme="dark"] .code-preview-header {
-		background: var(--theme-dark-background-130);
+		background: var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .code-preview-body {
-		background: var(--theme-dark-background-110);
+		background: var(--theme-dark-background-130);
 		color: var(--theme-dark-text);
 	}
 
@@ -3057,77 +3063,77 @@
 	}
 
 	.app-shell[data-theme="dark"] .token-keyword {
-		color: var(--theme-dark-primary-120);
+		color: var(--theme-dark-primary-140);
 	}
 
 	.app-shell[data-theme="dark"] .token-string {
-		color: var(--theme-dark-accent-120);
+		color: var(--theme-dark-accent-140);
 	}
 
 	.app-shell[data-theme="dark"] .token-boolean {
-		color: var(--theme-dark-secondary-120);
+		color: var(--theme-dark-secondary-140);
 	}
 
 	.app-shell[data-theme="dark"] .token-punctuation {
-		color: var(--theme-dark-text-80);
+		color: var(--theme-dark-text-100);
 	}
 
 	.app-shell[data-theme="dark"] .feature-icon-shell.is-primary {
-		border-color: var(--theme-dark-primary-140);
-		background: var(--theme-dark-primary-30);
-		color: var(--theme-dark-primary-120);
+		border-color: var(--theme-dark-primary-150);
+		background: var(--theme-dark-primary-40);
+		color: var(--theme-dark-primary-130);
 	}
 
 	.app-shell[data-theme="dark"] .feature-icon-shell.is-secondary {
-		border-color: var(--theme-dark-secondary-140);
-		background: var(--theme-dark-secondary-30);
-		color: var(--theme-dark-secondary-120);
+		border-color: var(--theme-dark-secondary-150);
+		background: var(--theme-dark-secondary-40);
+		color: var(--theme-dark-secondary-130);
 	}
 
 	.app-shell[data-theme="dark"] .feature-icon-shell.is-accent {
-		border-color: var(--theme-dark-accent-140);
-		background: var(--theme-dark-accent-30);
-		color: var(--theme-dark-accent-120);
+		border-color: var(--theme-dark-accent-150);
+		background: var(--theme-dark-accent-40);
+		color: var(--theme-dark-accent-130);
 	}
 
 	.app-shell[data-theme="dark"] .testimonial-fade-left {
-		background-image: linear-gradient(to right, var(--theme-dark-background-110), transparent);
+		background-image: linear-gradient(to right, var(--theme-dark-background-120), transparent);
 	}
 
 	.app-shell[data-theme="dark"] .testimonial-fade-right {
-		background-image: linear-gradient(to left, var(--theme-dark-background-110), transparent);
+		background-image: linear-gradient(to left, var(--theme-dark-background-120), transparent);
 	}
 
 	.app-shell[data-theme="dark"] .pricing-card-featured {
-		border-color: var(--theme-dark-primary-140);
-		background: linear-gradient(to bottom, var(--theme-dark-primary-40), var(--theme-dark-background-120));
+		border-color: var(--theme-dark-primary-150);
+		background: linear-gradient(to bottom, var(--theme-dark-primary-50), var(--theme-dark-background-140));
 	}
 
 	.app-shell[data-theme="dark"] .pricing-badge {
-		border-color: var(--theme-dark-primary-140);
-		background: var(--theme-dark-primary-40);
-		color: var(--theme-dark-primary-120);
+		border-color: var(--theme-dark-primary-150);
+		background: var(--theme-dark-primary-50);
+		color: var(--theme-dark-primary-130);
 	}
 
 	.app-shell[data-theme="dark"] .footer-brand-icon {
-		color: var(--theme-dark-accent-120);
+		color: var(--theme-dark-accent-130);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-menu-scrollbar {
-		scrollbar-color: var(--theme-dark-background-150) var(--theme-dark-background-120);
+		scrollbar-color: var(--theme-dark-background-170) var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-menu-scrollbar::-webkit-scrollbar-track {
-		background: var(--theme-dark-background-120);
+		background: var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-menu-scrollbar::-webkit-scrollbar-thumb {
-		background: var(--theme-dark-background-150);
-		border-color: var(--theme-dark-background-120);
+		background: var(--theme-dark-background-170);
+		border-color: var(--theme-dark-background-150);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: var(--theme-dark-primary-110);
+		background: var(--theme-dark-primary-130);
 	}
 
 	@media (min-width: 640px) {
