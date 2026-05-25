@@ -2209,28 +2209,17 @@
 		position: relative;
 		width: 100%;
 		--scheme-control-border: var(--theme-background-70);
+		--scheme-control-border-width: 1px;
 	}
 
 	.scheme-control:focus-within {
 		outline: none;
-		box-shadow: 0 0 0 2px var(--scheme-control-border);
-		border-radius: 0.75rem;
+		--scheme-control-border-width: 2px;
 	}
 
 	.scheme-control.is-open {
 		--scheme-control-border: var(--theme-primary);
-		box-shadow: 0 0 0 2px var(--scheme-control-border);
-		border-radius: 0.75rem;
-	}
-
-	.scheme-control.is-open.opens-down {
-		border-bottom-left-radius: 0.75rem;
-		border-bottom-right-radius: 0.75rem;
-	}
-
-	.scheme-control.is-open.opens-up {
-		border-top-left-radius: 0.75rem;
-		border-top-right-radius: 0.75rem;
+		--scheme-control-border-width: 2px;
 	}
 
 	.scheme-trigger {
@@ -2242,7 +2231,7 @@
 		height: 3rem;
 		padding-left: 1rem;
 		padding-right: 1rem;
-		border-width: 1px;
+		border-width: var(--scheme-control-border-width);
 		border-style: solid;
 		border-color: var(--scheme-control-border);
 		border-radius: 0.75rem;
@@ -2252,6 +2241,7 @@
 	}
 
 	.scheme-trigger.is-open {
+		background: var(--theme-background-30);
 		z-index: 21;
 	}
 
@@ -2286,7 +2276,7 @@
 		right: 0;
 		z-index: 20;
 		overflow: hidden;
-		border-width: 1px;
+		border-width: var(--scheme-control-border-width);
 		border-style: solid;
 		border-color: var(--scheme-control-border);
 		border-radius: 0.75rem;
@@ -2295,15 +2285,15 @@
 	}
 
 	.scheme-menu-wrap.direction-up {
-		bottom: calc(100% - 1px);
-		border-bottom-color: transparent;
+		bottom: calc(100% - var(--scheme-control-border-width));
+		border-bottom-width: 0;
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
 	}
 
 	.scheme-menu-wrap.direction-down {
-		top: calc(100% - 1px);
-		border-top-color: transparent;
+		top: calc(100% - var(--scheme-control-border-width));
+		border-top-width: 0;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
 	}
@@ -2991,12 +2981,10 @@
 	}
 
 	.app-shell[data-theme="dark"] .toolbar-button,
-	.app-shell[data-theme="dark"] .scheme-trigger,
 	.app-shell[data-theme="dark"] .code-preview-copy,
 	.app-shell[data-theme="dark"] .seed-input,
 	.app-shell[data-theme="dark"] .color-picker-canvas,
 	.app-shell[data-theme="dark"] .color-picker-hue-track,
-	.app-shell[data-theme="dark"] .scheme-menu-wrap,
 	.app-shell[data-theme="dark"] .code-preview-header {
 		border-color: var(--theme-dark-background-150);
 	}
