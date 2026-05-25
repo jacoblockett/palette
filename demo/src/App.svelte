@@ -1191,9 +1191,9 @@
 			roles and 20 shades automatically? Welcome to the future.
 		</p>
 		<div class="hero-actions">
-			<button class="primary-cta">
+			<a href="https://github.com/jacoblockett/palette" class="primary-cta">
 				Read the docs <ArrowRight size={16} class="cta-icon" />
-			</button>
+			</a>
 			<button type="button" onclick={() => handleCopyInstallCommand("hero")} class="secondary-cta">
 				<span class={`copy-tooltip hero-copy-tooltip ${isHeroInstallCopied ? "is-visible" : ""}`}>Copied!</span>
 				<Terminal size={16} class="cta-icon" />
@@ -1920,6 +1920,7 @@
 	.primary-cta:focus-visible {
 		background: var(--theme-primary-110);
 		box-shadow: 0 0 60px -15px var(--theme-primary-120);
+		cursor: pointer;
 	}
 
 	.secondary-cta {
@@ -3060,7 +3061,7 @@
 	.app-shell[data-theme="light"] .primary-cta,
 	.app-shell[data-theme="light"] .pricing-cta,
 	.app-shell[data-theme="light"] .wcag-toggle.is-active {
-		background: var(--theme-light-accent);
+		background: var(--theme-light-primary);
 		color: var(--theme-light-background-10);
 	}
 
@@ -3404,7 +3405,7 @@
 	.app-shell[data-theme="dark"] .primary-cta,
 	.app-shell[data-theme="dark"] .pricing-cta,
 	.app-shell[data-theme="dark"] .wcag-toggle.is-active {
-		background: var(--theme-dark-accent);
+		background: var(--theme-dark-primary);
 		color: var(--theme-dark-background-10);
 	}
 
