@@ -1339,9 +1339,9 @@
 							<div class="code-preview-title">Don't worry, I don't actually use Unix</div>
 							<button onclick={handleCopyCode} class="code-preview-copy">
 								{#if isCopied}
-									<CheckCircle2 class="code-preview-copy-icon" />
+									<CheckCircle2 class="code-preview-copy-icon" size={14} strokeWidth={2.25} aria-hidden="true" />
 								{:else}
-									<Copy class="code-preview-copy-icon" />
+									<Copy class="code-preview-copy-icon" size={14} strokeWidth={2.25} aria-hidden="true" />
 								{/if}
 								{isCopied ? "Copied" : "Copy"}
 							</button>
@@ -2441,6 +2441,18 @@
 	.code-preview-copy-icon {
 		width: 0.875rem;
 		height: 0.875rem;
+		flex-shrink: 0;
+		display: block;
+		stroke: currentColor;
+		color: currentColor;
+	}
+
+	.code-preview-copy :global(svg) {
+		width: 0.875rem;
+		height: 0.875rem;
+		flex-shrink: 0;
+		display: block;
+		stroke: currentColor;
 	}
 
 	.code-preview-body {
