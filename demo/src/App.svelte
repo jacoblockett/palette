@@ -24,6 +24,7 @@
 	let demoScheme = "random"
 	let wcag = false
 	let isCopied = false
+	let codePreviewLines = []
 	let copiedSeedRole = null
 	let lockedSeedRoles = {}
 	let isNavInstallCopied = false
@@ -969,7 +970,14 @@
 			})
 	}
 
-	$: codePreviewLines = buildCodePreviewLines()
+	$: {
+		lockedSeedRoles
+		theme
+		activeColorMode
+		demoScheme
+		wcag
+		codePreviewLines = buildCodePreviewLines()
+	}
 
 	function handleCopyCode() {
 		navigator.clipboard.writeText(buildPaletteCode())
