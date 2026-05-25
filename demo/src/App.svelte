@@ -311,6 +311,10 @@
 	function createPlaygroundSnapshot() {
 		return {
 			theme: cloneTheme(theme),
+			lockedSeedRoles: { ...lockedSeedRoles },
+			activeColorMode,
+			demoScheme,
+			wcag,
 			lastGeneratedPalette: cloneGeneratedPalette(lastGeneratedPalette),
 			paletteErrorMessage,
 			paletteErrorRoles: [...paletteErrorRoles]
@@ -318,7 +322,11 @@
 	}
 
 	function applyPlaygroundSnapshot(snapshot) {
+		lockedSeedRoles = { ...snapshot.lockedSeedRoles }
+		activeColorMode = snapshot.activeColorMode
 		updateTheme(cloneTheme(snapshot.theme))
+		demoScheme = snapshot.demoScheme
+		wcag = snapshot.wcag
 		lastGeneratedPalette = cloneGeneratedPalette(snapshot.lastGeneratedPalette)
 		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
 		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
@@ -1076,6 +1084,7 @@
 				const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
 				nextHistory.push(nextSnapshot)
 				colorHistory = nextHistory
+				colorHistoryIndex = nextHistory.length - 2
 				applyPlaygroundSnapshot(pendingSnapshot)
 				return
 			}
