@@ -2039,8 +2039,7 @@
 		font-size: 0.875rem;
 	}
 
-	.seed-input:focus,
-	.scheme-trigger:focus {
+	.seed-input:focus {
 		outline: none;
 		box-shadow: 0 0 0 2px var(--theme-primary);
 	}
@@ -2212,8 +2211,26 @@
 		--scheme-control-border: var(--theme-background-70);
 	}
 
+	.scheme-control:focus-within {
+		outline: none;
+		box-shadow: 0 0 0 2px var(--scheme-control-border);
+		border-radius: 0.75rem;
+	}
+
 	.scheme-control.is-open {
 		--scheme-control-border: var(--theme-primary);
+		box-shadow: 0 0 0 2px var(--scheme-control-border);
+		border-radius: 0.75rem;
+	}
+
+	.scheme-control.is-open.opens-down {
+		border-bottom-left-radius: 0.75rem;
+		border-bottom-right-radius: 0.75rem;
+	}
+
+	.scheme-control.is-open.opens-up {
+		border-top-left-radius: 0.75rem;
+		border-top-right-radius: 0.75rem;
 	}
 
 	.scheme-trigger {
@@ -2279,12 +2296,14 @@
 
 	.scheme-menu-wrap.direction-up {
 		bottom: calc(100% - 1px);
+		border-bottom-color: transparent;
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
 	}
 
 	.scheme-menu-wrap.direction-down {
 		top: calc(100% - 1px);
+		border-top-color: transparent;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
 	}
@@ -3001,8 +3020,7 @@
 		background: var(--theme-dark-background-130);
 	}
 
-	.app-shell[data-theme="dark"] .seed-input:focus,
-	.app-shell[data-theme="dark"] .scheme-trigger:focus {
+	.app-shell[data-theme="dark"] .seed-input:focus {
 		box-shadow: 0 0 0 2px var(--theme-dark-primary);
 	}
 
