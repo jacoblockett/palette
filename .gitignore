@@ -4,4 +4,4 @@ node_modules
 .npmrc
 /.vscode
 .pnpm-store
-/dist
+dist
