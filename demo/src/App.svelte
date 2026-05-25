@@ -231,6 +231,19 @@
 			return
 		}
 
+		const lightTheme = theme.light
+		appElement.style.setProperty("--theme-light-text", lightTheme.text)
+		appElement.style.setProperty("--theme-light-background", lightTheme.background)
+		appElement.style.setProperty("--theme-light-primary", lightTheme.primary)
+		appElement.style.setProperty("--theme-light-secondary", lightTheme.secondary)
+		appElement.style.setProperty("--theme-light-accent", lightTheme.accent)
+
+		for (const role of ["text", "background", "primary", "secondary", "accent"]) {
+			for (const stop of themeShadeStops) {
+				appElement.style.setProperty(`--theme-light-${role}-${stop}`, lightTheme.shades[role][stop])
+			}
+		}
+
 		const darkTheme = theme.dark
 		appElement.style.setProperty("--theme-dark-text", darkTheme.text)
 		appElement.style.setProperty("--theme-dark-background", darkTheme.background)
@@ -2810,6 +2823,334 @@
 
 	.scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
 		background: var(--theme-primary-90);
+	}
+
+	.app-shell[data-theme="light"] {
+		background: var(--theme-light-background);
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] ::selection {
+		background: var(--theme-light-primary-110);
+		color: var(--theme-light-background-10);
+	}
+
+	.app-shell[data-theme="light"] .app-nav {
+		border-bottom: 1px solid var(--theme-light-background-150);
+		background: var(--theme-light-background-10);
+	}
+
+	.app-shell[data-theme="light"] .nav-brand-mark {
+		background-image: linear-gradient(to bottom right, var(--theme-light-primary-110), var(--theme-light-accent-120));
+	}
+
+	.app-shell[data-theme="light"] .nav-brand-icon,
+	.app-shell[data-theme="light"] .nav-brand-text,
+	.app-shell[data-theme="light"] .footer-brand-text {
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .nav-link,
+	.app-shell[data-theme="light"] .footer-link,
+	.app-shell[data-theme="light"] .section-title,
+	.app-shell[data-theme="light"] .feature-card-title,
+	.app-shell[data-theme="light"] .testimonial-name,
+	.app-shell[data-theme="light"] .pricing-card-title,
+	.app-shell[data-theme="light"] .pricing-price,
+	.app-shell[data-theme="light"] .code-preview-wrap {
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .nav-link-list,
+	.app-shell[data-theme="light"] .hero-copy,
+	.app-shell[data-theme="light"] .section-copy,
+	.app-shell[data-theme="light"] .feature-card-copy,
+	.app-shell[data-theme="light"] .testimonial-quote,
+	.app-shell[data-theme="light"] .pricing-copy,
+	.app-shell[data-theme="light"] .pricing-feature,
+	.app-shell[data-theme="light"] .app-footer,
+	.app-shell[data-theme="light"] .seed-label,
+	.app-shell[data-theme="light"] .scheme-label,
+	.app-shell[data-theme="light"] .wcag-label {
+		color: var(--theme-light-text-100);
+	}
+
+	.app-shell[data-theme="light"] .testimonial-role,
+	.app-shell[data-theme="light"] .pricing-period,
+	.app-shell[data-theme="light"] .pricing-note,
+	.app-shell[data-theme="light"] .code-preview-line-number,
+	.app-shell[data-theme="light"] .code-preview-title,
+	.app-shell[data-theme="light"] .color-picker-label,
+	.app-shell[data-theme="light"] .scheme-chevron {
+		color: var(--theme-light-text-90);
+	}
+
+	.app-shell[data-theme="light"] .nav-link:hover,
+	.app-shell[data-theme="light"] .footer-link:hover {
+		color: var(--theme-light-primary-120);
+	}
+
+	.app-shell[data-theme="light"] .nav-action-button,
+	.app-shell[data-theme="light"] .toolbar-button {
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .nav-action-button:hover,
+	.app-shell[data-theme="light"] .nav-action-button:focus-visible,
+	.app-shell[data-theme="light"] .toolbar-button:hover,
+	.app-shell[data-theme="light"] .toolbar-button:focus-visible,
+	.app-shell[data-theme="light"] .code-preview-copy:hover,
+	.app-shell[data-theme="light"] .code-preview-copy:focus-visible,
+	.app-shell[data-theme="light"] .scheme-trigger:hover,
+	.app-shell[data-theme="light"] .scheme-trigger:focus-visible,
+	.app-shell[data-theme="light"] .scheme-option:hover,
+	.app-shell[data-theme="light"] .scheme-option:focus-visible {
+		background: var(--theme-light-background-60);
+	}
+
+	.app-shell[data-theme="light"] .feature-card:hover {
+		background: var(--theme-light-background-50);
+	}
+
+	.app-shell[data-theme="light"] .install-pill,
+	.app-shell[data-theme="light"] .secondary-cta,
+	.app-shell[data-theme="light"] .playground-panel,
+	.app-shell[data-theme="light"] .code-preview,
+	.app-shell[data-theme="light"] .feature-card,
+	.app-shell[data-theme="light"] .testimonial-card,
+	.app-shell[data-theme="light"] .pricing-card,
+	.app-shell[data-theme="light"] .color-picker,
+	.app-shell[data-theme="light"] .scheme-menu-wrap,
+	.app-shell[data-theme="light"] .app-footer {
+		border-color: var(--theme-light-background-160);
+		background: var(--theme-light-background-10);
+	}
+
+	.app-shell[data-theme="light"] .scheme-control {
+		--scheme-control-border: var(--theme-light-background-170);
+	}
+
+	.app-shell[data-theme="light"] .scheme-control.is-open {
+		--scheme-control-border: var(--theme-light-primary-120);
+	}
+
+	.app-shell[data-theme="light"] .install-pill,
+	.app-shell[data-theme="light"] .secondary-cta,
+	.app-shell[data-theme="light"] .scheme-trigger,
+	.app-shell[data-theme="light"] .scheme-option,
+	.app-shell[data-theme="light"] .code-preview-copy,
+	.app-shell[data-theme="light"] .seed-input {
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .install-pill:hover,
+	.app-shell[data-theme="light"] .install-pill:focus-visible,
+	.app-shell[data-theme="light"] .secondary-cta:hover,
+	.app-shell[data-theme="light"] .secondary-cta:focus-visible {
+		background: var(--theme-light-background-60);
+	}
+
+	.app-shell[data-theme="light"] .install-pill-icon,
+	.app-shell[data-theme="light"] .code-preview-copy,
+	.app-shell[data-theme="light"] .pricing-check-icon {
+		color: var(--theme-light-primary-120);
+	}
+
+	.app-shell[data-theme="light"] .copy-tooltip {
+		border-color: var(--theme-light-background-170);
+		background: var(--theme-light-background-10);
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .hero-title {
+		background-image: linear-gradient(
+			to right,
+			var(--theme-light-text),
+			var(--theme-light-primary-110),
+			var(--theme-light-accent-120)
+		);
+	}
+
+	.app-shell[data-theme="light"] .primary-cta,
+	.app-shell[data-theme="light"] .pricing-cta,
+	.app-shell[data-theme="light"] .wcag-toggle.is-active {
+		background: var(--theme-light-primary-110);
+		color: var(--theme-light-background-10);
+	}
+
+	.app-shell[data-theme="light"] .primary-cta:hover,
+	.app-shell[data-theme="light"] .primary-cta:focus-visible,
+	.app-shell[data-theme="light"] .pricing-cta:hover,
+	.app-shell[data-theme="light"] .pricing-cta:focus-visible {
+		background: var(--theme-light-primary-130);
+	}
+
+	.app-shell[data-theme="light"] .feature-section {
+		background: var(--theme-light-background);
+	}
+
+	.app-shell[data-theme="light"] .playground,
+	.app-shell[data-theme="light"] .testimonial-section,
+	.app-shell[data-theme="light"] .pricing-section {
+		background: var(--theme-light-background-30);
+	}
+
+	.app-shell[data-theme="light"] .playground,
+	.app-shell[data-theme="light"] .testimonial-section,
+	.app-shell[data-theme="light"] .pricing-section,
+	.app-shell[data-theme="light"] .app-footer {
+		border-top-color: var(--theme-light-background-150);
+	}
+
+	.app-shell[data-theme="light"] .playground,
+	.app-shell[data-theme="light"] .testimonial-section {
+		border-bottom-color: var(--theme-light-background-150);
+	}
+
+	.app-shell[data-theme="light"] .toolbar-button,
+	.app-shell[data-theme="light"] .code-preview-copy,
+	.app-shell[data-theme="light"] .seed-input,
+	.app-shell[data-theme="light"] .color-picker-canvas,
+	.app-shell[data-theme="light"] .color-picker-hue-track,
+	.app-shell[data-theme="light"] .code-preview-header {
+		border-color: var(--theme-light-background-170);
+	}
+
+	.app-shell[data-theme="light"] .toolbar-button,
+	.app-shell[data-theme="light"] .scheme-trigger,
+	.app-shell[data-theme="light"] .code-preview-copy {
+		background: var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .scheme-menu-wrap {
+		background: var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .scheme-trigger,
+	.app-shell[data-theme="light"] .scheme-menu-wrap {
+		border-color: var(--scheme-control-border);
+	}
+
+	.app-shell[data-theme="light"] .seed-input {
+		background: var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .seed-input:focus {
+		box-shadow: 0 0 0 2px var(--theme-light-primary-120);
+	}
+
+	.app-shell[data-theme="light"] .seed-input.is-error {
+		border-color: var(--theme-light-accent-120);
+		box-shadow: 0 0 0 2px var(--theme-light-accent-120);
+	}
+
+	.app-shell[data-theme="light"] .seed-action-button:hover {
+		background: var(--seed-action-hover);
+	}
+
+	.app-shell[data-theme="light"] .scheme-option.is-active {
+		background: var(--theme-light-primary-120);
+		color: var(--theme-light-background-10);
+	}
+
+	.app-shell[data-theme="light"] .wcag-toggle {
+		background: var(--theme-light-background-150);
+	}
+
+	.app-shell[data-theme="light"] .wcag-toggle-thumb {
+		background: var(--theme-light-background-10);
+	}
+
+	.app-shell[data-theme="light"] .code-preview-glow {
+		background: var(--theme-light-accent-60);
+	}
+
+	.app-shell[data-theme="light"] .code-preview-header {
+		background: var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .code-preview-body {
+		background: var(--theme-light-background-30);
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .token-text,
+	.app-shell[data-theme="light"] .token-identifier {
+		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .token-keyword {
+		color: var(--theme-light-primary-130);
+	}
+
+	.app-shell[data-theme="light"] .token-string {
+		color: var(--theme-light-accent-130);
+	}
+
+	.app-shell[data-theme="light"] .token-boolean {
+		color: var(--theme-light-secondary-130);
+	}
+
+	.app-shell[data-theme="light"] .token-punctuation {
+		color: var(--theme-light-text-90);
+	}
+
+	.app-shell[data-theme="light"] .feature-icon-shell.is-primary {
+		border-color: var(--theme-light-primary-120);
+		background: var(--theme-light-primary-20);
+		color: var(--theme-light-primary-130);
+	}
+
+	.app-shell[data-theme="light"] .feature-icon-shell.is-secondary {
+		border-color: var(--theme-light-secondary-120);
+		background: var(--theme-light-secondary-20);
+		color: var(--theme-light-secondary-130);
+	}
+
+	.app-shell[data-theme="light"] .feature-icon-shell.is-accent {
+		border-color: var(--theme-light-accent-120);
+		background: var(--theme-light-accent-20);
+		color: var(--theme-light-accent-130);
+	}
+
+	.app-shell[data-theme="light"] .testimonial-fade-left {
+		background-image: linear-gradient(to right, var(--theme-light-background-30), transparent);
+	}
+
+	.app-shell[data-theme="light"] .testimonial-fade-right {
+		background-image: linear-gradient(to left, var(--theme-light-background-30), transparent);
+	}
+
+	.app-shell[data-theme="light"] .pricing-card-featured {
+		border-color: var(--theme-light-primary-120);
+		background: linear-gradient(to bottom, var(--theme-light-primary-20), var(--theme-light-background-10));
+	}
+
+	.app-shell[data-theme="light"] .pricing-badge {
+		border-color: var(--theme-light-primary-120);
+		background: var(--theme-light-primary-20);
+		color: var(--theme-light-primary-130);
+	}
+
+	.app-shell[data-theme="light"] .footer-brand-icon {
+		color: var(--theme-light-accent-120);
+	}
+
+	.app-shell[data-theme="light"] .scheme-menu-scrollbar {
+		scrollbar-color: var(--theme-light-background-160) var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .scheme-menu-scrollbar::-webkit-scrollbar-track {
+		background: var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .scheme-menu-scrollbar::-webkit-scrollbar-thumb {
+		background: var(--theme-light-background-160);
+		border-color: var(--theme-light-background-20);
+	}
+
+	.app-shell[data-theme="light"] .scheme-menu-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: var(--theme-light-primary-120);
 	}
 
 	.app-shell[data-theme="dark"] {
