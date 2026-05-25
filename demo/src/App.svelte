@@ -11,7 +11,6 @@
 		Layers,
 		Lock,
 		Moon,
-		Palette,
 		Redo2,
 		Terminal,
 		Unlock,
@@ -1111,8 +1110,12 @@
 		<div class="page-shell nav-inner">
 			<div class="nav-brand-row">
 				<div class="nav-brand">
-					<div class="nav-brand-mark">
-						<Palette class="nav-brand-icon" />
+					<div class="brand-mark" aria-hidden="true">
+						<span class="brand-swatch brand-swatch-text"></span>
+						<span class="brand-swatch brand-swatch-background"></span>
+						<span class="brand-swatch brand-swatch-primary"></span>
+						<span class="brand-swatch brand-swatch-secondary"></span>
+						<span class="brand-swatch brand-swatch-accent"></span>
 					</div>
 					<span class="nav-brand-text">Palette</span>
 				</div>
@@ -1465,7 +1468,8 @@
 						<span class="pricing-period">/forever</span>
 					</div>
 					<p class="pricing-copy">
-						The exact same code, but you wear a suit while running it. Or maybe not. Idk what your dresscode looks like.
+						The exact same code, but you wear a suit while running it. Or maybe not. Idk what your dress code looks
+						like.
 					</p>
 					<ul class="pricing-feature-list">
 						{#each enterpriseFeatures as item, i (i)}
@@ -1486,7 +1490,13 @@
 
 	<footer class="app-footer">
 		<div class="footer-brand">
-			<Palette class="footer-brand-icon" />
+			<span class="brand-mark footer-brand-mark" aria-hidden="true">
+				<span class="brand-swatch brand-swatch-text"></span>
+				<span class="brand-swatch brand-swatch-background"></span>
+				<span class="brand-swatch brand-swatch-primary"></span>
+				<span class="brand-swatch brand-swatch-secondary"></span>
+				<span class="brand-swatch brand-swatch-accent"></span>
+			</span>
 			<span class="footer-brand-text">Palette</span>
 		</div>
 		<div class="footer-links">
@@ -1584,24 +1594,54 @@
 		gap: 0.5rem;
 	}
 
-	.nav-brand-mark {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	.brand-mark {
+		position: relative;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		grid-template-rows: repeat(3, 1fr);
+		gap: 0.125rem;
+		padding: 0.4rem;
 		width: 2rem;
 		height: 2rem;
-		border-radius: 0.5rem;
-		background-image: linear-gradient(to bottom right, var(--theme-primary-90), var(--theme-accent-90));
+		border-radius: 100px;
+		background: var(--theme-background-20);
+		overflow: hidden;
 	}
 
-	.nav-brand-icon,
-	.footer-brand-icon {
-		width: 1.25rem;
-		height: 1.25rem;
+	.brand-swatch {
+		border-radius: 0.125rem;
+		min-width: 0;
+		min-height: 0;
 	}
 
-	.nav-brand-icon {
-		color: var(--theme-text);
+	.brand-swatch-text {
+		grid-column: 1;
+		grid-row: 1 / span 2;
+		background: var(--theme-text);
+	}
+
+	.brand-swatch-background {
+		grid-column: 2 / span 2;
+		grid-row: 1;
+		background: var(--theme-background);
+	}
+
+	.brand-swatch-primary {
+		grid-column: 2;
+		grid-row: 2;
+		background: var(--theme-primary);
+	}
+
+	.brand-swatch-secondary {
+		grid-column: 3;
+		grid-row: 2 / span 2;
+		background: var(--theme-secondary);
+	}
+
+	.brand-swatch-accent {
+		grid-column: 1 / span 2;
+		grid-row: 3;
+		background: var(--theme-accent);
 	}
 
 	.nav-brand-text,
@@ -2789,8 +2829,9 @@
 		margin-bottom: 1rem;
 	}
 
-	.footer-brand-icon {
-		color: var(--theme-accent);
+	.footer-brand-mark {
+		width: 1.5rem;
+		height: 1.5rem;
 	}
 
 	.footer-brand-text {
@@ -2842,14 +2883,33 @@
 		background: var(--theme-light-background-10);
 	}
 
-	.app-shell[data-theme="light"] .nav-brand-mark {
-		background-image: linear-gradient(to bottom right, var(--theme-light-primary-110), var(--theme-light-accent-120));
+	.app-shell[data-theme="light"] .brand-mark {
+		border-color: var(--theme-light-background-180);
+		background: var(--theme-light-accent-50);
 	}
 
-	.app-shell[data-theme="light"] .nav-brand-icon,
-	.app-shell[data-theme="light"] .nav-brand-text,
-	.app-shell[data-theme="light"] .footer-brand-text {
+	.app-shell[data-theme="light"] .brand-text {
 		color: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .brand-swatch-text {
+		background: var(--theme-light-text);
+	}
+
+	.app-shell[data-theme="light"] .brand-swatch-background {
+		background: var(--theme-light-background);
+	}
+
+	.app-shell[data-theme="light"] .brand-swatch-primary {
+		background: var(--theme-light-primary);
+	}
+
+	.app-shell[data-theme="light"] .brand-swatch-secondary {
+		background: var(--theme-light-secondary);
+	}
+
+	.app-shell[data-theme="light"] .brand-swatch-accent {
+		background: var(--theme-light-accent);
 	}
 
 	.app-shell[data-theme="light"] .nav-link,
@@ -3134,10 +3194,6 @@
 		color: var(--theme-light-primary-130);
 	}
 
-	.app-shell[data-theme="light"] .footer-brand-icon {
-		color: var(--theme-light-accent-120);
-	}
-
 	.app-shell[data-theme="light"] .scheme-menu-scrollbar {
 		scrollbar-color: var(--theme-light-background-160) var(--theme-light-background-20);
 	}
@@ -3170,14 +3226,34 @@
 		background: var(--theme-dark-background-120);
 	}
 
-	.app-shell[data-theme="dark"] .nav-brand-mark {
-		background-image: linear-gradient(to bottom right, var(--theme-dark-primary-110), var(--theme-dark-accent-110));
+	.app-shell[data-theme="dark"] .brand-mark {
+		border-color: var(--theme-dark-background-180);
+		background: var(--theme-dark-accent-50);
 	}
 
-	.app-shell[data-theme="dark"] .nav-brand-icon,
 	.app-shell[data-theme="dark"] .nav-brand-text,
 	.app-shell[data-theme="dark"] .footer-brand-text {
 		color: var(--theme-dark-text);
+	}
+
+	.app-shell[data-theme="dark"] .brand-swatch-text {
+		background: var(--theme-dark-text);
+	}
+
+	.app-shell[data-theme="dark"] .brand-swatch-background {
+		background: var(--theme-dark-background);
+	}
+
+	.app-shell[data-theme="dark"] .brand-swatch-primary {
+		background: var(--theme-dark-primary);
+	}
+
+	.app-shell[data-theme="dark"] .brand-swatch-secondary {
+		background: var(--theme-dark-secondary);
+	}
+
+	.app-shell[data-theme="dark"] .brand-swatch-accent {
+		background: var(--theme-dark-accent);
 	}
 
 	.app-shell[data-theme="dark"] .nav-link,
@@ -3468,10 +3544,6 @@
 		border-color: var(--theme-dark-primary-150);
 		background: var(--theme-dark-primary-50);
 		color: var(--theme-dark-primary-130);
-	}
-
-	.app-shell[data-theme="dark"] .footer-brand-icon {
-		color: var(--theme-dark-accent-130);
 	}
 
 	.app-shell[data-theme="dark"] .scheme-menu-scrollbar {
