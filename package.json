@@ -21,7 +21,7 @@
 	},
 	"scripts": {
 		"build": "cross-env NODE_ENV=production rollup -c",
-		"dev": "vite --host 0.0.0.0 --open /demo/index.html",
+		"dev": "vite --host 0.0.0.0 --open /demo/vite.html",
 		"format": "prettier --write src demo/public demo/src demo/index.html scripts"
 	},
 	"keywords": [
