@@ -825,9 +825,7 @@
 	function handleWindowKeydown(event) {
 		const target = event.target
 		const isTextEditableTarget =
-			target instanceof HTMLInputElement ||
-			target instanceof HTMLTextAreaElement ||
-			target?.isContentEditable === true
+			target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable === true
 		const modifierPressed = event.metaKey || event.ctrlKey
 		const key = event.key.toLowerCase()
 		const isUndoShortcut = modifierPressed && key === "z" && !event.shiftKey
