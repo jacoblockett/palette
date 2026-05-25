@@ -311,10 +311,6 @@
 	function createPlaygroundSnapshot() {
 		return {
 			theme: cloneTheme(theme),
-			lockedSeedRoles: { ...lockedSeedRoles },
-			activeColorMode,
-			demoScheme,
-			wcag,
 			lastGeneratedPalette: cloneGeneratedPalette(lastGeneratedPalette),
 			paletteErrorMessage,
 			paletteErrorRoles: [...paletteErrorRoles]
@@ -322,11 +318,7 @@
 	}
 
 	function applyPlaygroundSnapshot(snapshot) {
-		lockedSeedRoles = { ...snapshot.lockedSeedRoles }
-		activeColorMode = snapshot.activeColorMode
 		updateTheme(cloneTheme(snapshot.theme))
-		demoScheme = snapshot.demoScheme
-		wcag = snapshot.wcag
 		lastGeneratedPalette = cloneGeneratedPalette(snapshot.lastGeneratedPalette)
 		paletteErrorMessage = snapshot.paletteErrorMessage ?? null
 		paletteErrorRoles = [...(snapshot.paletteErrorRoles ?? [])]
@@ -708,11 +700,6 @@
 			[role]: !lockedSeedRoles[role]
 		}
 		clearPaletteError()
-
-		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
-		nextHistory.push(createPlaygroundSnapshot())
-		colorHistory = nextHistory
-		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	function getReadableTextColor(hex) {
@@ -758,11 +745,6 @@
 		demoScheme = scheme
 		isSchemeOpen = false
 		clearPaletteError()
-
-		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
-		nextHistory.push(createPlaygroundSnapshot())
-		colorHistory = nextHistory
-		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	async function updateSchemeMenuPlacement() {
@@ -832,7 +814,29 @@
 		}
 	}
 
-	function handleSchemeKeydown(event) {
+	function handleWindowKeydown(event) {
+		const target = event.target
+		const isTextEditableTarget =
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLTextAreaElement ||
+			target?.isContentEditable === true
+		const modifierPressed = event.metaKey || event.ctrlKey
+		const key = event.key.toLowerCase()
+		const isUndoShortcut = modifierPressed && key === "z" && !event.shiftKey
+		const isRedoShortcut = modifierPressed && ((key === "z" && event.shiftKey) || key === "y")
+
+		if (!isTextEditableTarget && isUndoShortcut) {
+			event.preventDefault()
+			undoColorChange()
+			return
+		}
+
+		if (!isTextEditableTarget && isRedoShortcut) {
+			event.preventDefault()
+			redoColorChange()
+			return
+		}
+
 		if (!isSchemeOpen) {
 			return
 		}
@@ -1054,39 +1058,44 @@
 		}
 
 		clearPaletteError()
-
-		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
-		nextHistory.push(createPlaygroundSnapshot())
-		colorHistory = nextHistory
-		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	function toggleWcag() {
 		wcag = !wcag
 		clearPaletteError()
-
-		const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
-		nextHistory.push(createPlaygroundSnapshot())
-		colorHistory = nextHistory
-		colorHistoryIndex = nextHistory.length - 1
 	}
 
 	function undoColorChange() {
+		const pendingSnapshot = pendingHistorySnapshot
+
+		if (pendingSnapshot !== null) {
+			const nextSnapshot = createPlaygroundSnapshot()
+			pendingHistorySnapshot = null
+
+			if (!playgroundSnapshotsAreEqual(pendingSnapshot, nextSnapshot)) {
+				const nextHistory = colorHistory.slice(0, colorHistoryIndex + 1)
+				nextHistory.push(nextSnapshot)
+				colorHistory = nextHistory
+				applyPlaygroundSnapshot(pendingSnapshot)
+				return
+			}
+		}
+
 		if (colorHistoryIndex === 0) {
 			return
 		}
 
-		pendingHistorySnapshot = null
 		colorHistoryIndex -= 1
 		applyPlaygroundSnapshot(colorHistory[colorHistoryIndex])
 	}
 
 	function redoColorChange() {
+		pendingHistorySnapshot = null
+
 		if (colorHistoryIndex >= colorHistory.length - 1) {
 			return
 		}
 
-		pendingHistorySnapshot = null
 		colorHistoryIndex += 1
 		applyPlaygroundSnapshot(colorHistory[colorHistoryIndex])
 	}
@@ -1097,12 +1106,12 @@
 		updateTheme(theme)
 		window.addEventListener("wheel", handleSchemeWheel, { passive: false })
 		window.addEventListener("touchmove", handleSchemeTouchMove, { passive: false })
-		window.addEventListener("keydown", handleSchemeKeydown)
+		window.addEventListener("keydown", handleWindowKeydown)
 
 		return () => {
 			window.removeEventListener("wheel", handleSchemeWheel)
 			window.removeEventListener("touchmove", handleSchemeTouchMove)
-			window.removeEventListener("keydown", handleSchemeKeydown)
+			window.removeEventListener("keydown", handleWindowKeydown)
 		}
 	})
 </script>
