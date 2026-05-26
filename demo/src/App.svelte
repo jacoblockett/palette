@@ -1160,7 +1160,7 @@
 				<a
 					href="https://github.com/jacoblockett/palette"
 					target="_blank"
-					rel="noreferrer"
+					rel="noopener noreferrer"
 					class="icon-button nav-action-button">
 					<svg viewBox="0 0 24 24" aria-hidden="true" class="github-icon" role="img">
 						<path d={siGithub.path}></path>
@@ -1191,7 +1191,7 @@
 			roles and 20 shades automatically? Welcome to the future.
 		</p>
 		<div class="hero-actions">
-			<a href="https://github.com/jacoblockett/palette" class="primary-cta">
+			<a href="https://github.com/jacoblockett/palette" target="_blank" rel="noopener noreferrer" class="primary-cta">
 				Read the docs <ArrowRight size={16} class="cta-icon" />
 			</a>
 			<button type="button" onclick={() => handleCopyInstallCommand("hero")} class="secondary-cta">
@@ -1479,7 +1479,11 @@
 						{/each}
 					</ul>
 					<div class="pricing-card-footer">
-						<a href="https://github.com/jacoblockett/palette" class="pricing-cta">View on GitHub</a>
+						<a
+							href="https://github.com/jacoblockett/palette"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="pricing-cta">View on GitHub</a>
 						<p class="pricing-note">* If you consider a lone dev a community</p>
 					</div>
 				</div>
@@ -1504,7 +1508,11 @@
 						{/each}
 					</ul>
 					<div class="pricing-card-footer">
-						<a href="https://github.com/jacoblockett/palette" class="pricing-cta">Also View on GitHub</a>
+						<a
+							href="https://github.com/jacoblockett/palette"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="pricing-cta">Also View on GitHub</a>
 						<p class="pricing-note">* Or at least, we'll say we did and never actually do it</p>
 					</div>
 				</div>
@@ -1524,8 +1532,10 @@
 			<span class="footer-brand-text">Palette</span>
 		</div>
 		<div class="footer-links">
-			<a href="https://github.com/jacoblockett/palette" class="footer-link">Documentation</a>
-			<a href="https://github.com/jacoblockett/palette" class="footer-link">GitHub</a>
+			<a href="https://github.com/jacoblockett/palette" target="_blank" rel="noopener noreferrer" class="footer-link"
+				>Documentation</a>
+			<a href="https://github.com/jacoblockett/palette" target="_blank" rel="noopener noreferrer" class="footer-link"
+				>GitHub</a>
 		</div>
 	</footer>
 </div>
