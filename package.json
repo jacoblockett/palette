@@ -22,7 +22,8 @@
 	"scripts": {
 		"build": "cross-env NODE_ENV=production rollup -c",
 		"dev": "vite --host 0.0.0.0 --open /demo/vite.html",
-		"format": "prettier --write src demo/public demo/src demo/index.html scripts"
+		"format": "prettier --write src demo/public demo/src demo/index.html scripts",
+		"deploy": "pnpm build && gh-pages -d demo/dist"
 	},
 	"keywords": [
 		"palette",
@@ -42,6 +43,7 @@
 		"@rollup/plugin-terser": "^1.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"cross-env": "^10.1.0",
+		"gh-pages": "^6.3.0",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^4.0.1",
 		"rollup": "^4.53.2",
