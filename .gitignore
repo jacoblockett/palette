@@ -1,0 +1,7 @@
+node_modules
+.codex
+.agents
+.npmrc
+/.vscode
+.pnpm-store
+dist
